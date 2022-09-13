@@ -25,7 +25,7 @@ rule cellranger_multi:
         name="count_cellranger",
         base=config["base"],
         cell_ranger=config["cell_ranger"]
-    resources: mem_mb="210000",partition="quake",disk_mb="4000",time="4-0"
+    resources: mem_mb="210000",partition="quake",disk_mb="8000",time="6-0"
     threads:20
     shell:
         "mkdir -p {params.base}/10X &&"

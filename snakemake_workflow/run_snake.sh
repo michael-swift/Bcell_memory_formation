@@ -151,7 +151,7 @@ elif [ $1 = "sbatch" ]
         --cpus-per-task=1 \
         --mem=8000 \
         --mail-user=$EMAIL \
-        --time 3-0 \
+        --time 6-0 \
         -p quake \
         -o $SBATCH_LOGFILE \
         -e $SBATCH_LOGFILE_ERR \
