@@ -4,16 +4,17 @@
 library_info: "samplesheets/library_info.tsv"
 # output directory for processed data
 
-base: "/oak/stanford/groups/quake/mswift/TBD6_gex"
-outs_basedir: "/oak/stanford/groups/quake/mswift/TBD6_gex"
+base: "/oak/stanford/groups/quake/mswift/TBD_gex"
+outs_basedir: "/oak/stanford/groups/quake/mswift/TBD_gex"
 # specificed in multi_configs
 raw_data: "/oak/stanford/groups/quake/mswift/ilm2_TBD6"
+fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/sym_scTB"
 # human or mouse
 species: human
 # partition (for cluster computing)
 partition: "quake,owners"
 
-samplesheets: ["samplesheets/ilm_samplesheet_TBD6.tsv"]
+samplesheets: ["samplesheets/samplesheet_gex.tsv"]
 # Software
 #---------------------------
 cell_ranger: "/home/groups/quake/mswift/resources/cellranger-6.0.1"
@@ -23,7 +24,9 @@ resources: "/home/groups/quake/mswift/5prime_10X_workflow/resources"
 #------------
 vdj_ref_prefix: "vdj_human"
 cell_ranger_ref: "/oak/stanford/groups/quake/mswift/resources/cellranger/refdata-cellranger-vdj-GRCh38-alts-ensembl-3.1.0/"
+
 10X_transcriptome: "https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-GRCh38-2020-A.tar.gz"
+transcriptome: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow/db/refdata-gex-GRCh38-2020-A"
 # the assembly pipeline uses the immcantation framework for IgBLAST
 # options: 'docker' or 'singularity'
 container_type: singularity
