@@ -12,3 +12,4 @@ inner-enrichment-primers,/home/groups/quake/mswift/5prime_10X_workflow/db/inner_
 [libraries]
 fastq_id,fastqs,lanes,physical_library_id,feature_types,subsample_rate
 TBD6_SPL_TotalSeq,/oak/stanford/groups/quake/shared/swiftShare/ilm2/TBD6,any,TBD6_SPL_TotalSeq,Antibody Capture
+TBD6_SPL_GEX,/oak/stanford/groups/quake/shared/swiftShare/ilm2/TBD6,any,TBD6_SPL_GEX,Gene Expression

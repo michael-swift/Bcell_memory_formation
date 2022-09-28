@@ -4,10 +4,9 @@
 library_info: "samplesheets/library_info.tsv"
 # output directory for processed data
 
-base: "/oak/stanford/groups/quake/mswift/TBD_gex"
-outs_basedir: "/oak/stanford/groups/quake/mswift/TBD_gex"
+base: "/oak/stanford/groups/quake/shared/swiftShare/TBD_gex"
+outs_basedir: "/oak/stanford/groups/quake/shared/swiftShare/TBD_gex"
 # specificed in multi_configs
-raw_data: "/oak/stanford/groups/quake/mswift/ilm2_TBD6"
 fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/sym_scTB"
 # human or mouse
 species: human
