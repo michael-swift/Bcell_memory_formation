@@ -71,4 +71,3 @@ rule combine_cells_with_vdj_annotations:
         -outdir {base}/cell_calls \
         2> {log}
         """
-

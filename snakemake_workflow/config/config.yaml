@@ -12,7 +12,7 @@ fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/sym_scTB"
 species: human
 # partition (for cluster computing)
 partition: "quake,owners"
-
+workflow_dir: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow"
 samplesheets: ["samplesheets/samplesheet_gex.tsv"]
 # Software
 #---------------------------

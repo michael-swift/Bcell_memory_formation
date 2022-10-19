@@ -19,11 +19,9 @@ samplesheets = pd.concat(
     ignore_index=True,
 )
 
-# print(samplesheets.columns)
 samplesheets["sample_uid"] = samplesheets["donor"] + "_" + samplesheets["sample_type"] + "_" + samplesheets["sample_descriptor"]
 samplesheets['species'] = "human"
 samplesheets.set_index("sample_uid", inplace=True)
-print(samplesheets)
 # convenience variables
 base = config["outs_basedir"]
 sample_uids = samplesheets.index.to_list()
@@ -32,12 +30,7 @@ os.makedirs(base, exist_ok=True)
 
 
 rule all:
-    input:
-        expand(
-            "{base}/10X/{sample_uid}/outs/web_summary.html",
-            base=config["base"],
-            sample_uid=sample_uids,
-        ),
+    input:base+"/10X/aggr_gex.h5ad"
     params:
         name="all",
         partition="quake",

@@ -2,7 +2,7 @@ __default__:
     time: '8:00:00'
     name: "{rule}"
     partition: normal,owners,quake
-    mem: '8000'
+    mem: '32000'
     ntasks: '1'
     cpus-per-task: '2'
     output: 'snakemake_logs/slurm_logs/{rule}_%j.out'
@@ -20,6 +20,25 @@ cellranger_multi:
 
 cellranger_count:
     time: '48:00:00'
+    name: '{rule}'
+    partition: quake,owners
+    mem: '128000'
+    ntasks: '1'
+    cpus-per-task: '20'
+    output: 'snakemake_logs/slurm_logs/{rule}_%j.out'
+    error: 'snakemake_logs/slurm_logs/{rule}_%j.err'
+cellranger_count:
+    time: '48:00:00'
+    name: '{rule}'
+    partition: quake,owners
+    mem: '128000'
+    ntasks: '1'
+    cpus-per-task: '20'
+    output: 'snakemake_logs/slurm_logs/{rule}_%j.out'
+    error: 'snakemake_logs/slurm_logs/{rule}_%j.err'
+
+scanpy_aggregate_gex:
+    time: '1:00:00'
     name: '{rule}'
     partition: quake,owners
     mem: '128000'
