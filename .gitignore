@@ -8,3 +8,4 @@ snakemake_workflow/db/*
 .git/objects/pack/tmp_pack_2v5cgd
 .git/objects/pack/tmp_pack_gSSH1e
 .git/objects/pack/pack-96e69d7eb9e4db037f25e541e27bc3bd55d2e6d2.pack
+data*
