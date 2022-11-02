@@ -3,9 +3,8 @@
 # path to sheet describing each cell
 library_info: "samplesheets/library_info.tsv"
 # output directory for processed data
-
-base: "/oak/stanford/groups/quake/shared/swiftShare/TBD_gex"
-outs_basedir: "/oak/stanford/groups/quake/shared/swiftShare/TBD_gex"
+base: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_GEX"
+outs_basedir: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_GEX"
 # specificed in multi_configs
 fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/sym_scTB"
 # human or mouse
@@ -17,6 +16,8 @@ samplesheets: ["samplesheets/samplesheet_gex.tsv"]
 # Software
 #---------------------------
 cell_ranger: "/home/groups/quake/mswift/resources/cellranger-6.0.1"
+
+cell_ranger: "/home/groups/quake/mswift/resources/cellranger-7.0.1"
 resources: "/home/groups/quake/mswift/5prime_10X_workflow/resources"
 
 # references

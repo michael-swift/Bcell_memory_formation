@@ -22,6 +22,8 @@ samplesheets = pd.concat(
 samplesheets["sample_uid"] = samplesheets["donor"] + "_" + samplesheets["sample_type"] + "_" + samplesheets["sample_descriptor"]
 samplesheets['species'] = "human"
 samplesheets.set_index("sample_uid", inplace=True)
+
+#samplesheets = samplesheets.head()
 # convenience variables
 base = config["outs_basedir"]
 sample_uids = samplesheets.index.to_list()
@@ -30,7 +32,7 @@ os.makedirs(base, exist_ok=True)
 
 
 rule all:
-    input:base+"/10X/aggr_gex.h5ad"
+    input:base+"/post_10X/processed/gex_object.h5ad.gz"
     params:
         name="all",
         partition="quake",

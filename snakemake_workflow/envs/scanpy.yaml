@@ -8,6 +8,7 @@ dependencies:
   - _openmp_mutex=4.5=2_gnu
   - alabaster=0.7.12=py_0
   - anndata=0.8.0=pyhd8ed1ab_1
+  - arpack=3.7.0=hdefa2d7_2
   - babel=2.10.3=pyhd8ed1ab_0
   - brotli=1.0.9=h166bdaf_7
   - brotli-bin=1.0.9=h166bdaf_7
@@ -17,19 +18,26 @@ dependencies:
   - ca-certificates=2022.9.24=ha878542_0
   - cached-property=1.5.2=hd8ed1ab_1
   - cached_property=1.5.2=pyha770c72_1
+  - celltypist=0.1.9=pyhdfd78af_0
   - certifi=2022.9.24=pyhd8ed1ab_0
   - cffi=1.15.1=py310h255011f_0
   - charset-normalizer=2.1.1=pyhd8ed1ab_0
+  - click=8.1.3=py310hff52083_0
   - colorama=0.4.5=pyhd8ed1ab_0
   - contourpy=1.0.5=py310hbf28c38_0
   - cryptography=38.0.2=py310h597c629_0
   - cycler=0.11.0=pyhd8ed1ab_0
   - docutils=0.19=py310hff52083_0
+  - et_xmlfile=1.0.1=py_1001
   - fonttools=4.37.4=py310h5764c6d_0
   - freetype=2.12.1=hca18f0e_0
+  - glpk=5.0=h445213a_0
+  - gmp=6.2.1=h58526e2_0
   - h5py=3.7.0=nompi_py310h416281c_101
   - hdf5=1.12.2=nompi_h2386368_100
+  - icu=70.1=h27087fc_0
   - idna=3.4=pyhd8ed1ab_0
+  - igraph=0.10.2=ha1f048c_0
   - imagesize=1.4.1=pyhd8ed1ab_0
   - importlib-metadata=4.11.4=py310hff52083_0
   - importlib_metadata=4.11.4=hd8ed1ab_0
@@ -41,6 +49,7 @@ dependencies:
   - krb5=1.19.3=h3790be6_0
   - lcms2=2.12=hddcbb42_0
   - ld_impl_linux-64=2.39=hc81fddc_0
+  - leidenalg=0.9.0=py310hd8f1fbe_0
   - lerc=4.0.0=h27087fc_0
   - libblas=3.9.0=16_linux64_openblas
   - libbrotlicommon=1.0.9=h166bdaf_7
@@ -56,6 +65,7 @@ dependencies:
   - libgfortran-ng=12.2.0=h69a702a_18
   - libgfortran5=12.2.0=h337968e_18
   - libgomp=12.2.0=h65d4601_18
+  - libiconv=1.17=h166bdaf_0
   - liblapack=3.9.0=16_linux64_openblas
   - libllvm11=11.1.0=he0ac6c6_4
   - libnghttp2=1.47.0=hdcd2b5c_1
@@ -69,10 +79,13 @@ dependencies:
   - libuuid=2.32.1=h7f98852_1000
   - libwebp-base=1.2.4=h166bdaf_0
   - libxcb=1.13=h7f98852_1004
+  - libxml2=2.10.3=h7463322_0
   - libzlib=1.2.13=h166bdaf_4
   - llvmlite=0.39.1=py310h58363a5_0
   - markupsafe=2.1.1=py310h5764c6d_1
   - matplotlib-base=3.6.1=py310h8d5ebf3_0
+  - metis=5.1.0=h58526e2_1006
+  - mpfr=4.1.0=h9202a9a_1
   - munkres=1.1.4=pyh9f0ad1d_0
   - natsort=8.2.0=pyhd8ed1ab_0
   - ncurses=6.3=h27087fc_1
@@ -80,7 +93,8 @@ dependencies:
   - numba=0.56.3=py310ha5257ce_0
   - numpy=1.23.3=py310h53a5b5f_0
   - openjpeg=2.5.0=h7d73246_1
-  - openssl=1.1.1q=h166bdaf_0
+  - openpyxl=3.0.10=py310h5764c6d_1
+  - openssl=1.1.1q=h166bdaf_1
   - packaging=21.3=pyhd8ed1ab_0
   - pandas=1.5.0=py310h769672d_0
   - patsy=0.5.3=pyhd8ed1ab_0
@@ -95,6 +109,7 @@ dependencies:
   - pysocks=1.7.1=pyha2e5f31_6
   - python=3.10.6=h582c2e5_0_cpython
   - python-dateutil=2.8.2=pyhd8ed1ab_0
+  - python-igraph=0.10.2=py310hf05fc85_0
   - python_abi=3.10=2_cp310
   - pytz=2022.4=pyhd8ed1ab_0
   - readline=8.1.2=h0f457ee_0
@@ -117,7 +132,9 @@ dependencies:
   - sphinxcontrib-serializinghtml=1.1.5=pyhd8ed1ab_2
   - statsmodels=0.13.2=py310hde88566_0
   - stdlib-list=0.7.0=py_2
+  - suitesparse=5.10.1=h9e50725_1
   - tbb=2021.6.0=h924138e_0
+  - texttable=1.6.4=pyhd8ed1ab_0
   - threadpoolctl=3.1.0=pyh8a188c0_0
   - tk=8.6.12=h27826a3_0
   - tqdm=4.64.1=pyhd8ed1ab_0
