@@ -8,7 +8,7 @@ SNAKEFILE=Snakefile.smk
 EMAIL=mswift2@stanford.edu
 
 CLUSTER_CONFIG=config/slurm_config.yaml
-echo $CLUSTER_CONFIG
+
 #Snakemake config
 NJOBS=200
 WAIT=120
@@ -117,31 +117,17 @@ elif [ $1 = "snakemake" ]
         --restart-times $RESTART \
         --keep-going
 
-elif [ $1 = "snakemake force" ]
+elif [ $1 = "profile dry" ]
     then
   # Run snakemake
     echo 'running snakemake'
-    snakemake \
-        -s $SNAKEFILE $TARGET \
-        --use-conda \
-        --cluster-config ${CLUSTER_CONFIG} \
-        --cluster "sbatch \
-                  --job-name={cluster.name} \
-                  --time {cluster.time} \
-                  --mem={cluster.mem} \
-                  --ntasks={cluster.ntasks} \
-                  --cpus-per-task={cluster.cpus-per-task} \
-                  --partition={cluster.partition} \
-                  --output={cluster.output} \
-                  --error={cluster.error}" \
-        --keep-target-files \
-        --rerun-incomplete \
-        -j $NJOBS \
-        -w $WAIT \
-        -k \
-	-F \
-        --restart-times $RESTART \
-        --keep-going
+    snakemake --profile profile/ -n
+
+elif [ $1 = "profile" ]
+    then
+  # Run snakemake
+    echo 'running snakemake'
+    snakemake --profile profile/
 
 elif [ $1 = "sbatch" ]
     # Run snakemake as an SBATCH job, good for long workflows
@@ -151,7 +137,7 @@ elif [ $1 = "sbatch" ]
         --cpus-per-task=1 \
         --mem=8000 \
         --mail-user=$EMAIL \
-        --time 6-0 \
+        --time 4-0 \
         -p quake \
         -o $SBATCH_LOGFILE \
         -e $SBATCH_LOGFILE_ERR \

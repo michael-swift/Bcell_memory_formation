@@ -9,38 +9,38 @@ parser <- add_option(parser,c("-o", "--output"), default="./",
                     help="path to output directory")
 parser <- add_option(parser, c("-n", "--name"), default="sample")
 
+parser <- add_option(parser, c("-m", "--mode"), default="raw")
+
+parser <- add_option(parser, c("-l", "--labels"), default = "celltypist")
+
 # get command line options, if help option encountered print help and exit,
 # otherwise if options not found on command line then set defaults, 
 args <- parse_args(parser)
 
-SAMPLENAME = args$n
-INPUT_DIR = args$i
-OUTPUT_DIR = args$o
 
+INPUT_COUNTS = args$c
+INPUT_ANNO = args$a
+INPUT_FEAT = args$f
+OUTPUT_DIR = args$o
+SAMPLENAME = args$n
+MODE = args$m
 library("singleCellTK", quietly=TRUE)
 
 message(paste0("Processing sample ", SAMPLENAME, "..."))
   
-sce <-singleCellTK::importCellRanger(INPUT_DIR, sampleName = SAMPLENAME)
+sce <-singleCellTK::importFromFiles(assayFile = INPUT_COUNTS, annotFile = INPUT_ANNO, featureFile = INPUT_FEAT, annotFileHeader = True, annotFileSep = ',', featureSep = ",", featureHeader = True)
 
-
-sce <- importCellRanger(
-    cellRangerDirs = ,
-    sampleDirs = "hgmm_1k_v3_20x20",
-    sampleNames = "hgmm1kv3",
-    dataType = "raw")  
 #remove null cells
 rm.ix <- which(colSums(assay(sce, 'counts')) == 0)
 if(length(rm.ix) > 0){
   sce <- sce[,-rm.ix]
 }
-# run decontX
 
-sce <- singleCellTK::runDecontX(sce)
+# run decontX
+sce <- singleCellTK::runDecontX(sce, useAssay = "counts", z = "celltypist")
 message("Exporting...")
 singleCellTK::exportSCEtoAnnData(sce,
                                  useAssay = "decontXcounts", 
                                  outputDir = OUTPUT_DIR, 
-                                 prefix= paste0(SAMPLENAME,"_decontX"))
+                                 prefix= SAMPLENAME)
 message("Done!")
-

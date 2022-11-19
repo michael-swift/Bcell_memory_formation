@@ -8,18 +8,36 @@ __default__:
     output: 'snakemake_logs/slurm_logs/{rule}_%j.out'
     error: 'snakemake_logs/slurm_logs/{rule}_%j.err'
 
-cellranger_multi:
-    time: '36:00:00'
+cellranger_count:
+    time: '48:00:00'
+    name: '{rule}'
+    partition: quake,owners
+    mem: '128000'
+    ntasks: '1'
+    cpus-per-task: '20'
+    output: 'snakemake_logs/slurm_logs/{rule}_%j.out'
+    error: 'snakemake_logs/slurm_logs/{rule}_%j.err'
+
+aggregate_gex:
+    time: '3:00:00'
     name: '{rule}'
     partition: quake
+    mem: '120000'
+    ntasks: '1'
+    cpus-per-task: '20'
+    output: 'snakemake_logs/slurm_logs/{rule}_%j.out'
+    error: 'snakemake_logs/slurm_logs/{rule}_%j.err'
+preprocess_scanpy:
+    time: '1:00:00'
+    name: '{rule}'
+    partition: quake,owners
     mem: '210000'
     ntasks: '1'
     cpus-per-task: '20'
     output: 'snakemake_logs/slurm_logs/{rule}_%j.out'
     error: 'snakemake_logs/slurm_logs/{rule}_%j.err'
-
-cellranger_count:
-    time: '48:00:00'
+run_decontx:
+    time: '2:00:00'
     name: '{rule}'
     partition: quake,owners
     mem: '128000'
@@ -27,44 +45,7 @@ cellranger_count:
     cpus-per-task: '20'
     output: 'snakemake_logs/slurm_logs/{rule}_%j.out'
     error: 'snakemake_logs/slurm_logs/{rule}_%j.err'
-cellranger_count:
-    time: '48:00:00'
-    name: '{rule}'
-    partition: quake,owners
-    mem: '128000'
-    ntasks: '1'
-    cpus-per-task: '20'
-    output: 'snakemake_logs/slurm_logs/{rule}_%j.out'
-    error: 'snakemake_logs/slurm_logs/{rule}_%j.err'
-
-scanpy_aggregate_gex:
-    time: '1:00:00'
-    name: '{rule}'
-    partition: quake,owners
-    mem: '128000'
-    ntasks: '1'
-    cpus-per-task: '20'
-    output: 'snakemake_logs/slurm_logs/{rule}_%j.out'
-    error: 'snakemake_logs/slurm_logs/{rule}_%j.err'
-scanpy_aggregate_gex:
-    time: '1:00:00'
-    name: '{rule}'
-    partition: quake,owners
-    mem: '128000'
-    ntasks: '1'
-    cpus-per-task: '20'
-    output: 'snakemake_logs/slurm_logs/{rule}_%j.out'
-    error: 'snakemake_logs/slurm_logs/{rule}_%j.err'
-scanpy_aggregate_gex:
-    time: '1:00:00'
-    name: '{rule}'
-    partition: quake,owners
-    mem: '128000'
-    ntasks: '1'
-    cpus-per-task: '20'
-    output: 'snakemake_logs/slurm_logs/{rule}_%j.out'
-    error: 'snakemake_logs/slurm_logs/{rule}_%j.err'
-preprocess_gex:
+preprocess_scanvi:
     time: '1:00:00'
     name: '{rule}'
     partition: quake,owners

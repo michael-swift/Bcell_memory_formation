@@ -41,3 +41,6 @@ ighc_db:
 IGDBDIR: /oak/stanford/groups/quake/shared/swiftShare/igblast
 path_to_grmlin: /home/users/cvijovic/ig-germline-discovery/grmlin/
 scripts: ./scripts
+
+# params:
+decontX_mode: filtered
