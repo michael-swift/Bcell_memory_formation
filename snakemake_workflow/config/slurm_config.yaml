@@ -19,7 +19,7 @@ cellranger_count:
     error: 'snakemake_logs/slurm_logs/{rule}_%j.err'
 
 aggregate_gex:
-    time: '3:00:00'
+    time: '1:00:00'
     name: '{rule}'
     partition: quake
     mem: '120000'
@@ -27,15 +27,17 @@ aggregate_gex:
     cpus-per-task: '20'
     output: 'snakemake_logs/slurm_logs/{rule}_%j.out'
     error: 'snakemake_logs/slurm_logs/{rule}_%j.err'
+
 preprocess_scanpy:
     time: '1:00:00'
     name: '{rule}'
     partition: quake,owners
-    mem: '210000'
+    mem: '128000'
     ntasks: '1'
     cpus-per-task: '20'
     output: 'snakemake_logs/slurm_logs/{rule}_%j.out'
     error: 'snakemake_logs/slurm_logs/{rule}_%j.err'
+
 run_decontx:
     time: '2:00:00'
     name: '{rule}'
@@ -45,6 +47,7 @@ run_decontx:
     cpus-per-task: '20'
     output: 'snakemake_logs/slurm_logs/{rule}_%j.out'
     error: 'snakemake_logs/slurm_logs/{rule}_%j.err'
+
 preprocess_scanvi:
     time: '1:00:00'
     name: '{rule}'

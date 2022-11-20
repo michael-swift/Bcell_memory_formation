@@ -7,7 +7,7 @@ import scanpy.external as sce
 from celltypist import models
 
 # single cell preprocessing functions
-def perform_qc(adata, filter_cells=False):
+def perform_qc(adata, filter_cells=True):
     # calculate qc metrics
     adata.var["mt"] = adata.var_names.str.startswith(
         "MT-"
@@ -24,8 +24,6 @@ def perform_qc(adata, filter_cells=False):
         multi_panel=True,
         save="prefilter",
     )
-    adata.obs["log10_total_counts"] = np.log10(adata.obs["total_counts"] + 1)
-    adata.obs["log10_n_genes"] = np.log10(adata.obs["n_genes"] + 1)
     if filter_cells == True:
         sc.pp.filter_cells(adata, min_counts=1000)
         sc.pp.filter_cells(adata, min_genes=300)
@@ -93,13 +91,9 @@ h5ad, samplesheet = snakemake.input
 
 adata = sc.read_h5ad(h5ad)
 
-adata = perform_qc(adata, filter_cells=False)
 
+adata = perform_qc(adata, filter_cells=True)
 adata = add_samplesheet(samplesheet, adata)
-# subset
-adata = adata[adata.obs.sample_uid.str.contains("BM")]
-print(adata)
-
 adata.var_names_make_unique()
 adata.obs_names_make_unique()
 
@@ -112,20 +106,20 @@ sc.pl.highly_variable_genes(adata)
 adata.raw = adata
 print("annotating with celltypist")
 # celltypist annotation
-anno_1 = "celltypist"
+anno = "celltypist"
 # Download all the available models.
 models.download_models()
 # Provide the input as an `AnnData`.
 predictions = celltypist.annotate(adata, model="Immune_All_Low.pkl", majority_voting=True)
 # Celltypist Annotations to bcells object
-adata.obs[anno_1] = predictions.predicted_labels.majority_voting
-print("putting raw counts in the adata.X")
-adata.X = adata.layers['raw_counts']
+adata.obs[anno] = predictions.predicted_labels.majority_voting
+print(adata.obs[anno])
 print('writing h5ad')
 adata.write_h5ad(str(snakemake.output[0]))
-# write flat files since read AnnData isn't working for scTK
-t = adata.X.toarray()
-print('writing flat files')
-pd.DataFrame(data = t, index = adata.obs_names, columns = adata.var_names).to_csv(str(snakemake.output[1]))
-adata.obs.to_csv(str(snakemake.output[2]))
-adata.var.to_csv(str(snakemake.output[3]))
+write_flat_files = True
+if write_flat_files:
+    # write flat files since read AnnData isn't working for scTK
+    t = adata.X.toarray()
+    pd.DataFrame(data = t, index = adata.obs_names, columns = adata.var_names).to_csv(str(snakemake.output[1]))
+    adata.obs.to_csv(str(snakemake.output[2]))
+    adata.var.to_csv(str(snakemake.output[3]))

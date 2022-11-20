@@ -9,6 +9,8 @@ filter_cells = snakemake.params.filter_cells
 def load_and_filter(filename, min_genes=min_genes, min_counts=min_counts):
     adata = sc.read_h5ad(filename)
     adata.obs_names_make_unique()
+    adata.var_names_make_unique()
+
     # filter very leniently
     if filter_cells == True:
         sc.pp.filter_cells(adata, min_genes = min_genes)
@@ -23,7 +25,6 @@ for i, file_name in enumerate(files):
     print(i, " anndatas concatenated")
 
 adata = ad.concat(adata_list)
-adata.obs_names_make_unique()
 print(str(snakemake.output))
-adata.write_h5ad(str(snakemake.output), compression = 'gzip')
+adata.write_h5ad(str(snakemake.output))
 print("Done!!")

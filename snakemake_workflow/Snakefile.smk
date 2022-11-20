@@ -24,7 +24,7 @@ samplesheets['species'] = "human"
 samplesheets.set_index("sample_uid", inplace=True)
 samplesheets = samplesheets[samplesheets.donor == 'TBd3']
 # convenience variables
-base = config["outs_basedir"]
+base = config["base"]
 sample_uids = samplesheets.index.to_list()
 donors = list(set(samplesheets[samplesheets.species == "human"].donor.to_list()))
 os.makedirs(base, exist_ok=True)

@@ -11,7 +11,7 @@ fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/sym_scTB"
 species: human
 # partition (for cluster computing)
 partition: "quake,owners"
-workflow_dir: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow"
+workflow_dir: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow" 
 samplesheets: ["samplesheets/samplesheet_gex.tsv"]
 # Software
 #---------------------------
@@ -39,8 +39,7 @@ ighc_db:
   mouse: db/IGHC/mouse_IGHC_IMGT_reformatted.fast
 # Igblast
 IGDBDIR: /oak/stanford/groups/quake/shared/swiftShare/igblast
-path_to_grmlin: /home/users/cvijovic/ig-germline-discovery/grmlin/
-scripts: ./scripts
-
+scripts: 
+path_to_grmlin:
 # params:
 decontX_mode: filtered

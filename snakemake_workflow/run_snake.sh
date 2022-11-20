@@ -33,6 +33,7 @@ if [ $# -eq 0 ]
   then
     # Dry run snakemake
     snakemake -s $SNAKEFILE $TARGET --use-conda --keep-target-files --rerun-incomplete -n -r --quiet --keep-going
+
 elif [ $1 = "unlock" ]
     then
         snakemake -s $SNAKEFILE $TARGET -F --rerun-incomplete --unlock --cores 1
@@ -49,48 +50,6 @@ elif [ $1 = "dryrun" ]
             -r \
             -k \
             --printshellcmds
-
-elif [ $1 = "dryforce" ]
-    # Dry run snakemake and print shell cmds 
-    then
-        snakemake \
-            -s $SNAKEFILE $TARGET \
-            --use-conda \
-            --keep-target-files \
-            --rerun-incomplete \
-            -n \
-            -r \
-            -k \
-	    -F \
-            --printshellcmds
-
-elif [ $1 = "force" ]
-    # Dry run snakemake and print shell cmds 
-    then
-        snakemake \
-            -s $SNAKEFILE $TARGET \
-            --use-conda \
-            --keep-target-files \
-            --rerun-incomplete \
-            -n \
-            -r \
-            -k \
-            --printshellcmds \
-	    -F
-
-elif [ $1 = "dag" ]
-    # Dry run snakemake and print shell cmds 
-    then
-        snakemake \
-            -s $SNAKEFILE $TARGET \
-            --use-conda \
-            --keep-target-files \
-            --rerun-incomplete \
-            -n \
-            -r \
-            -k \
-            --printshellcmds \
-	    --debug-dag
 
 elif [ $1 = "snakemake" ]
     then
@@ -117,17 +76,17 @@ elif [ $1 = "snakemake" ]
         --restart-times $RESTART \
         --keep-going
 
-elif [ $1 = "profile dry" ]
+elif [ $1 = "profile_dry" ]
     then
   # Run snakemake
     echo 'running snakemake'
-    snakemake --profile profile/ -n
+    snakemake --profile _profile/ -n
 
 elif [ $1 = "profile" ]
     then
   # Run snakemake
     echo 'running snakemake'
-    snakemake --profile profile/
+    snakemake --profile _profile/
 
 elif [ $1 = "sbatch" ]
     # Run snakemake as an SBATCH job, good for long workflows
