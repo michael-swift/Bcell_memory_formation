@@ -1,6 +1,8 @@
 import sys
 import os
 
+def expected_cells_adj(wildcards, attempt):
+    return 10000 / attempt
 # -----------------------------
 # Configuration
 
@@ -8,8 +10,7 @@ species = config["species"]
 
 rule cellranger_count:
     output:
-        "{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5",
-        directory("{base}/per_sample/cellranger/{sample_uid}"),
+        "{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5"
     log:
         "{base}/logs/{sample_uid}/cellranger.log",
     params:
@@ -29,11 +30,77 @@ rule cellranger_count:
         " cd {params.base}/cellranger &&"
         " rm -rf {wildcards.sample_uid} && {params.cell_ranger}/cellranger count --id={wildcards.sample_uid} --transcriptome={params.transcriptome} --fastqs {params.fastq_dir} --sample={wildcards.sample_uid} --localcores=20 --nosecondary --no-bam > {log}"
 
-rule run_decontx_per_sample:
+rule run_cellbender:
     input:
-        ancient("{base}/per_sample/cellranger/{sample_uid}"),
+        ancient("{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5")
     output:
-        "{base}/per_sample/decontX/{sample_uid}.h5ad",
+        "{base}/per_sample/cellbender/{sample_uid}/background_removed.h5"
+    conda:
+        "cellbender2"
+    log:
+        "{base}/logs/cellbender/{sample_uid}.log",
+    resources:
+        time="4:00:00",
+        partition="gpu",
+        expected_cells=expected_cells_adj
+    shell:
+        "cellbender remove-background"
+        " --input {input}"
+        " --output {output}"
+        " --expected-cells {resources.expected_cells}" # this should be in params but something about wildcards
+        " --fpr 0.01"
+        " --cuda"
+
+rule aggregate_h5ads:
+    """ aggreate h5 from cellranger or h5ads scanpy """
+    input:
+        expand(
+                    "{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5",
+            base=config["base"],
+            sample_uid=sample_uids,
+        ),
+    output:
+        "{base}/aggregated/aggr_gex_raw.h5ad",
+    log:
+        "{base}/logs/aggregation.log",
+    resources:
+        mem_mb="210000",
+        partition="quake,owners",
+        time="0-1",
+    conda:
+        #"scanpy_latest"
+        config["workflow_dir"] + "/envs/scanpy.yaml"
+    params:
+        min_genes=10,
+        min_counts=300,
+        filter_cells = True
+    script:
+        config["workflow_dir"] + "/scripts/post_cellranger/aggregate_with_scanpy.py"
+
+rule preprocess_scanpy:
+    """ performs some preprocessing and qc as well as celltypist labeling, adds samplesheet info to object"""
+    input:
+        "{base}/aggregated/aggr_gex_raw.h5ad",
+        config["samplesheets"],
+    output:
+        "{base}/analysis/scanpy/gex_object.h5ad",
+    resources:
+        partition="quake,owners",
+        mem_mb="210000"
+    params:
+        outdir="{base}/analysis/scanpy/h5ad_by_sample_uids"
+    log:
+        "{base}/logs/scanpy/preprocess.log",
+    conda:
+        config["workflow_dir"] + "/envs/scanpy.yaml"
+    script:
+        config["workflow_dir"] + "/scripts/post_cellranger/scanpy_pp.py"
+
+rule run_decontx:
+    input:
+        "{base}/analysis/scanpy/gex_object.h5ad",    
+    output:
+        "{base}/aggregated/decontX/gex_object.h5ad",
     container:
         "docker://campbio/sctk_qc:1.7.6"
     params:
@@ -41,76 +108,14 @@ rule run_decontx_per_sample:
         output_dir="{base}/decontX/",
         mode=config["decontX_mode"],
     resources:
-        mem_mb="32000",
-        partition="owners,quake",
+        mem_mb="210000",
+        partition="quake",
         time="0-2",
     log:
-        "{base}/logs/decontX/{sample_uid}_decontX.log",
+        "{base}/logs/decontX/decontX.log",
     shell:
         "Rscript {params.scripts}/post_cellranger/decontX.R"
         " -i {input}"
         " -o {params.output_dir}"
-        " -n {wildcards.sample_uid}"
+        " -n "
         " -m {params.mode}"
-
-rule add_sampleuid_column:
-    input:
-        "{base}/per_sample/decontX/{sample_uid}.h5ad",
-    output:
-        "{base}/per_sample/add_column/{sample_uid}.h5ad"
-    conda:
-        config["workflow_dir"] + "/envs/scanpy.yaml"
-    resources:
-        mem_mb="16000",
-        partition="owners,quake",
-        time="0-2",
-    log:
-        "{base}/logs/add_column/{sample_uid}.log",
-    script:        
-        "../scripts/post_cellranger/add_sampleuid_column.py"
-
-rule aggregate_h5ads:
-    """ aggreate h5ads converted from cellranger """
-    input:
-        expand(
-            "{base}/per_sample/add_column/{sample_uid}.h5ad",
-            base=config["base"],
-            sample_uid=sample_uids,
-        ),
-    output:
-        "{base}/aggregated/aggr_gex.h5ad",
-    log:
-        "{base}/logs/aggregation.log",
-    resources:
-        mem_mb="210000",
-        partition="quake",
-        time="0-1",
-    conda:
-        config["workflow_dir"] + "/envs/scanpy.yaml"
-    params:
-        min_genes=3,
-        min_counts=10,
-        filter_cells = False
-    script:
-        config["workflow_dir"] + "/scripts/post_cellranger/aggregate_with_scanpy.py"
-
-rule preprocess_scanpy:
-    """ performs some preprocessing and qc as well as celltypist labeling, adds samplesheet info to object"""
-    input:
-        "{base}/aggregated/aggr_gex.h5ad",
-        config["samplesheets"],
-    output:
-        "{base}/analysis/scanpy/gex_object.h5ad",
-        "{base}/analysis/scanpy/assayFile.csv",
-        "{base}/analysis/scanpy/annotFile.csv",
-        "{base}/analysis/scanpy/featureFile.csv",
-    resources:
-        mem_mb="64000",
-        partition="owners,quake",
-        time="0-2",
-    log:
-        "{base}/logs/scanpy/preprocess.log",
-    conda:
-        config["workflow_dir"] + "/envs/scanpy.yaml"
-    script:
-        config["workflow_dir"] + "/scripts/post_cellranger/scanpy_pp.py"

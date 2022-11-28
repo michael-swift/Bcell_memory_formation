@@ -122,6 +122,9 @@ predictions = celltypist.annotate(
 adata.obs[anno_1] = predictions.predicted_labels.majority_voting
 
 print("clustering and umaping")
-adata = cluster(adata, batch_correct=False)
+adata = cluster(adata, batch_correct=True)
 print('writing h5ad')
 
+adata.write_h5ad(str(snakemake.output[0])
+
+print(

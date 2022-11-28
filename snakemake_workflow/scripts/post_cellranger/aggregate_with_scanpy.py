@@ -7,16 +7,18 @@ min_genes = int(snakemake.params.min_genes)
 min_counts = int(snakemake.params.min_counts)
 filter_cells = snakemake.params.filter_cells
 def load_and_filter(filename, min_genes=min_genes, min_counts=min_counts):
-    adata = sc.read_h5ad(filename)
+    if "h5ad" in filename:
+        adata = sc.read_h5ad(filename)
+    else:
+        adata = sc.read_10x_h5(filename)
     adata.obs_names_make_unique()
     adata.var_names_make_unique()
-
-    # filter very leniently
+    # flexibly parse this later for sample_uid
+    adata.obs['sample_uid'] = str(filename)
     if filter_cells == True:
         sc.pp.filter_cells(adata, min_genes = min_genes)
         sc.pp.filter_cells(adata, min_counts = min_counts)
     return adata
-
 
 adata_list = []
 # construct aggregated object

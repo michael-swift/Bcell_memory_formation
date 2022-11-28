@@ -13,7 +13,7 @@ CLUSTER_CONFIG=config/slurm_config.yaml
 NJOBS=200
 WAIT=120
 
-source $HOME/miniconda3/etc/profile.d/conda.sh
+source /home/groups/quake/mswift/miniconda3/etc/profile.d/conda.sh
 conda activate snakemake
 mkdir -p snakemake_logs/slurm_logs/
 
@@ -62,7 +62,7 @@ elif [ $1 = "snakemake" ]
         --cluster "sbatch \
                   --job-name={cluster.name} \
                   --time {cluster.time} \
-                  --mem={cluster.mem} \
+                  --mem={cluster.mem_mb}M \
                   --ntasks={cluster.ntasks} \
                   --cpus-per-task={cluster.cpus-per-task} \
                   --partition={cluster.partition} \
@@ -76,17 +76,17 @@ elif [ $1 = "snakemake" ]
         --restart-times $RESTART \
         --keep-going
 
-elif [ $1 = "profile_dry" ]
+elif [ $1 = "profiledry" ]
     then
   # Run snakemake
     echo 'running snakemake'
-    snakemake --profile _profile/ -n
+    snakemake --profile profile/ -n
 
 elif [ $1 = "profile" ]
     then
   # Run snakemake
     echo 'running snakemake'
-    snakemake --profile _profile/
+    snakemake --profile profile/
 
 elif [ $1 = "sbatch" ]
     # Run snakemake as an SBATCH job, good for long workflows

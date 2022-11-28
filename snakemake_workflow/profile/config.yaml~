@@ -1,16 +1,22 @@
 cluster:
   mkdir -p logs/{rule} &&
   sbatch
+    --job-name={rule}
+    --time={resources.time}    
     --partition={resources.partition}
     --cpus-per-task={threads}
     --mem={resources.mem_mb}
-    --job-name={rule}-{wildcards}
-    --output=logs/{rule}/{rule}-{wildcards}-%j.out
+    --output=logs/{rule}/{rule}-%j.out
+    --error=logs/{rule}/{rule}-%j.err
+    --gpus={resources.gpus}
+
 default-resources:
   - partition=normal,owners,quake
   - mem_mb=4000
-  - time="1:0"
-restart-times: 0
+  - gpus=0
+  - time="03:00:00"
+  - threads=1
+restart-times: 3
 max-jobs-per-second: 10
 max-status-checks-per-second: 1
 local-cores: 1
@@ -27,3 +33,7 @@ set-resources:
     - preprocess_scanpy:mem_mb=64000
     - preprocess_scanpy:time=01:00:00
     - preprocess_scanpy:partition=quake,owners
+    - run_cellbender:mem_mb=16000
+    - run_cellbender:time=4:00:00
+    - run_cellbender:partition=gpu
+    - run_cellbender:gpus=1
