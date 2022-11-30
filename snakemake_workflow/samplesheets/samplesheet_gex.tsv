@@ -1,7 +1,7 @@
 donor	sample_type	sample_descriptor	tissue	sample_index	library_uid	lib_type	expected_cells
-TBd3	fresh	P50	PB	H1	1	gex	10000
+TBd3	fresh	P50	PB	H1	1	gex	20000
 TBd3	fresh	P6	PB	H2	2	gex	3000
-TBd3	fresh	B200	BM	H3	3	gex	10000
+TBd3	fresh	B200	BM	H3	3	gex	15000
 TBd3	fresh	B20	BM	H4	4	gex	10000
 TBd3	frozen	PBa	PB	H5	5	gex	10000
 TBd3	frozen	PBb	PB	H6	6	gex	10000
