@@ -3,8 +3,8 @@
 # path to sheet describing each cell
 library_info: "samplesheets/library_info.tsv"
 # output directory for processed data
-base: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_GEX"
-outs_basedir: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_GEX"
+base: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline"
+outs_basedir: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline"
 # specificed in multi_configs
 fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/sym_scTB"
 # human or mouse
@@ -15,7 +15,6 @@ workflow_dir: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow"
 samplesheets: ["samplesheets/samplesheet_gex.tsv"]
 # Software
 #---------------------------
-cell_ranger: "/home/groups/quake/mswift/resources/cellranger-6.0.1"
 
 cell_ranger: "/home/groups/quake/mswift/resources/cellranger-7.0.1"
 resources: "/home/groups/quake/mswift/5prime_10X_workflow/resources"
@@ -23,8 +22,8 @@ resources: "/home/groups/quake/mswift/5prime_10X_workflow/resources"
 # references
 #------------
 vdj_ref_prefix: "vdj_human"
-cell_ranger_ref: "/oak/stanford/groups/quake/mswift/resources/cellranger/refdata-cellranger-vdj-GRCh38-alts-ensembl-3.1.0/"
-
+vdj_reference: "/home/groups/quake/mswift/5prime_10X_workflow/db/vdj_reference"
+inner_primers: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow/db/inner_primers.txt"
 10X_transcriptome: "https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-GRCh38-2020-A.tar.gz"
 transcriptome: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow/db/refdata-gex-GRCh38-2020-A"
 # the assembly pipeline uses the immcantation framework for IgBLAST

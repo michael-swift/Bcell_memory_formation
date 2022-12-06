@@ -32,8 +32,9 @@ samplesheets["sample_uid"] = (
 )
 samplesheets["species"] = "human"
 samplesheets.set_index("sample_uid", inplace=True)
-# samplesheets = samplesheets[samplesheets.donor.str.contains('TBd3|TBd5|TBd6')]
-samplesheets = samplesheets[samplesheets.sample_descriptor.str.contains('B200')]
+#samplesheets = samplesheets[samplesheets.donor.str.contains('TBd3|TBd5|TBd6')]
+#samplesheets = samplesheets[samplesheets.donor.str.contains('TBd3_fro')]
+
 # convenience variables
 base = config["base"]
 sample_uids = samplesheets.index.to_list()
@@ -43,7 +44,7 @@ os.makedirs(base, exist_ok=True)
 
 rule all:
     input:
-        "{}/analysis/scanpy/gex_object.h5ad".format(base),
+        expand("{base}/per_sample/cellranger_vdj/{sample_uid}/outs/web_summary.html", base = base, sample_uid = sample_uids)
     params:
         name="all",
         partition="quake",
