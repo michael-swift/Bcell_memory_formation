@@ -6,7 +6,7 @@ library_info: "samplesheets/library_info.tsv"
 base: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_GEX"
 outs_basedir: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_GEX"
 # specificed in multi_configs
-fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/sym_scTB"
+fastq_dir: ["/oak/stanford/groups/quake/shared/swiftShare/ilm4_gex/Ivana_Cvijovic/", "/oak/stanford/groups/quake/shared/swiftShare/ilm6_gex/Ivana_Cvijovic/"]
 # human or mouse
 species: human
 # partition (for cluster computing)

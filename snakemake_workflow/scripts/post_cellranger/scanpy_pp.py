@@ -12,6 +12,7 @@ from celltypist import models
 # functions
 ###############################
 ###############################
+
 def perform_qc(adata, filter_cells=True):
     # calculate qc metrics
     adata.var["mt"] = adata.var_names.str.startswith(
@@ -30,10 +31,10 @@ def perform_qc(adata, filter_cells=True):
         save="prefilter",
     )
     if filter_cells == True:
-        sc.pp.filter_cells(adata, min_counts=1000)
-        sc.pp.filter_cells(adata, min_genes=300)
-        sc.pp.filter_cells(adata, max_genes=9000)
-        sc.pp.filter_cells(adata, max_counts=89000)
+        sc.pp.filter_cells(adata, min_counts=2000)
+        sc.pp.filter_cells(adata, min_genes=500)
+        sc.pp.filter_cells(adata, max_genes=12000)
+        sc.pp.filter_cells(adata, max_counts=150000)
     adata = adata[adata.obs["pct_counts_mt"] < 12]
     # plot results of filtering
     sc.pl.violin(
@@ -85,7 +86,7 @@ def recluster(adata, batch_correct):
     if batch_correct == True:
         sc.external.pp.bbknn(adata, batch_key="sample_iud")
     else:
-        sc.pp.neighbors(adata, n_neighbors=10)
+        sc.pp.neighbors(adata, n_neighbors=20)
     print("calculating umap")
     sc.tl.umap(adata)
     sc.tl.leiden(adata, resolution=0.2)
@@ -98,44 +99,61 @@ def recluster(adata, batch_correct):
 h5ad, samplesheet = snakemake.input
 
 adata = sc.read_h5ad(h5ad)
-adata.obs['sample_uid'] = adata.obs['sample_uid'].str.rsplit('/', expand = True).iloc[:,10]
-adata = perform_qc(adata, filter_cells=True)
-adata = add_samplesheet(samplesheet, adata)
 adata.var_names_make_unique()
 adata.obs_names_make_unique()
 
+subsample = False
+if subsample:
+    adata = adata[adata.obs.index.isin(adata.obs.sample(n=20000, replace = False).index)]
+    print(adata.shape)
+
+adata = perform_qc(adata, filter_cells=True)
+adata = add_samplesheet(samplesheet, adata)
 print("transforming gene expression")
-adata.layers['raw_counts'] = adata.X.copy()
+adata.layers['umi_counts'] = adata.X.copy()
+print("normalize per 10K counts")
 sc.pp.normalize_total(adata, target_sum=1e4)
-sc.pp.log1p(adata, base=2, chunk_size=10000)
-sc.pp.highly_variable_genes(adata, n_top_genes=3000)
-sc.pl.highly_variable_genes(adata)
+print("log1p")
+sc.pp.log1p(adata, chunk_size=10000)
+print("top highly variable genes")
+sc.pp.highly_variable_genes(adata, n_top_genes=3000, batch_key = "tissue")
+
+# remove IGH and IGL variable genes from highly variable genes for clustering analysis 
+adata.var.loc[adata.var.index.str.contains("IGHV|IGLV|IGKV"), 'highly_variable'] = False
 
 # set raw as the normalized log counts
 adata.raw = adata
+adata = recluster(adata, batch_correct = False)
 print("annotating with celltypist")
+
 # celltypist annotation
 anno = "celltypist"
+
 # Download all the available models.
 models.download_models()
 # Provide the input as an `AnnData`.
-predictions = celltypist.annotate(adata, model="Immune_All_Low.pkl", majority_voting=True)
-# Celltypist Annotations to bcells object
-adata.obs[anno] = predictions.predicted_labels.majority_voting
-print(adata.obs[anno])
-print('writing h5ad')
-adata.write_h5ad(str(snakemake.output[0]))
-print("writing h5ads by sample_uid")
+# majority voting forces construction of a neighborhood graph
+majority_voting = True
+if majority_voting:
+    predictions = celltypist.annotate(adata, model="Immune_All_Low.pkl", majority_voting=True)
+    print('calculating UMAP')
+    sc.tl.umap(adata)
+else:
+    predictions = celltypist.annotate(adata, model = "Immune_All_Low.pkl")
 
-for uid in adata.obs.sample_uid.unique():
-    sub_adata = adata[adata.obs.sample_uid == uid]
-    sub_adata.write_h5ad("{}/{}.h5ad".format(str(snakemake.params.outdir), uid))
+# Get an `AnnData` with predicted labels embedded into the cell metadata columns.
+adata = predictions.to_adata()
 
-write_flat_files = False
+# write h5ads
+out_prefix = str(snakemake.output[0]).split('.')[0]
+for tissue in adata.obs.tissue.unique():
+    print('writing per {} h5ads'.format(tissue))
+    sub_adata = adata[adata.obs.tissue == tissue]
+    sub_adata.write_h5ad("{}_{}.h5ad.gz".format(out_prefix, str(tissue)), compression = "gzip")
 
-if write_flat_files:
-    # write flat files since read AnnData isn't working for scTK
-    t = adata.layers['raw_counts'].toarray()
-    pd.DataFrame(data = t, index = adata.obs_names, columns = adata.var_names).to_csv(str(snakemake.output[1]), sep = '\t')
-    adata.obs.to_csv(str(snakemake.output[2]), sep = '\t')
-    adata.var.to_csv(str(snakemake.output[3]), sep = '\t')
+print('writing full-h5ad')
+adata.write_h5ad(str(snakemake.output[0]), compression = "gzip")
+
+sc.pp.subsample(adata, fraction=0.2, copy=False)
+
+adata.write_h5ad("{}_{}.h5ad.gz".format(out_prefix, "subsampled"), compression = "gzip")
