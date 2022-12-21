@@ -32,12 +32,13 @@ samplesheets.set_index("sample_uid", inplace=True)
 base = config["base"]
 donors = list(set(samplesheets[samplesheets.species == "human"].donor.to_list()))
 os.makedirs(base, exist_ok=True)
-
 samplesheets['expected_cells'] = samplesheets['expected_cells_thousands'].astype(int) * 1000
 
 
-samplesheets = samplesheets[samplesheets.donor != "TBd5"]
+#samplesheets = samplesheets[samplesheets.donor != "TBd5"]
 sample_uids = samplesheets.index.to_list()
+
+print(sample_uids)
 rule all:
     input:
         "{}/analysis/scanpy/gex_object.h5ad.gz".format(base),
