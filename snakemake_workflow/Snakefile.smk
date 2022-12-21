@@ -34,7 +34,9 @@ donors = list(set(samplesheets[samplesheets.species == "human"].donor.to_list())
 os.makedirs(base, exist_ok=True)
 
 samplesheets['expected_cells'] = samplesheets['expected_cells_thousands'].astype(int) * 1000
-#samplesheets = samplesheets[samplesheets.donor == "TBd3"]
+
+
+samplesheets = samplesheets[samplesheets.donor != "TBd5"]
 sample_uids = samplesheets.index.to_list()
 rule all:
     input:
@@ -47,7 +49,7 @@ rule all:
 
 include: "rules/gex.smk"
 include: "rules/vdjc.smk"
-
+#include: "rules/cellranger.smk"
 
 def samplesheet_lookup(idx, col):
     return samplesheets.loc[idx, col]
