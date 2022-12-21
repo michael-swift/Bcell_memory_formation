@@ -4,11 +4,7 @@ import glob
 from collections import defaultdict
 
 shell.prefix("set +euo pipefail;")
-
-
 configfile: "config/path_config.yaml"
-
-
 base = config["base"]
 library_info = config["library_info"]
 libuid_to_datadirs = pd.read_table(library_info, sep="    ", engine="python")
@@ -32,19 +28,20 @@ samplesheets["sample_uid"] = (
 )
 samplesheets["species"] = "human"
 samplesheets.set_index("sample_uid", inplace=True)
-#samplesheets = samplesheets[samplesheets.donor.str.contains('TBd3|TBd5|TBd6')]
-#samplesheets = samplesheets[samplesheets.donor.str.contains('TBd3_fro')]
-
 # convenience variables
 base = config["base"]
-sample_uids = samplesheets.index.to_list()
 donors = list(set(samplesheets[samplesheets.species == "human"].donor.to_list()))
 os.makedirs(base, exist_ok=True)
 
+samplesheets['expected_cells'] = samplesheets['expected_cells_thousands'].astype(int) * 1000
 
+
+#samplesheets = samplesheets[samplesheets.donor != "TBd5"]
+sample_uids = samplesheets.index.to_list()
 rule all:
     input:
-        expand("{base}/per_sample/cellranger_vdj/{sample_uid}/outs/web_summary.html", base = base, sample_uid = sample_uids)
+        expand("{base}/per_sample/cellranger_vdj/{sample_uid}/outs/web_summary.html", base = base, sample_uid = sample_uids),
+        "{}/analysis/scanpy/gex_object.h5ad.gz".format(base),
     params:
         name="all",
         partition="quake",
@@ -53,11 +50,9 @@ rule all:
 
 include: "rules/gex.smk"
 include: "rules/vdjc.smk"
-
+#include: "rules/cellranger.smk"
 
 def samplesheet_lookup(idx, col):
     return samplesheets.loc[idx, col]
 
-
-localrules:
-    aggregate_h5ads,
+#localrules:preprocess_scanpy

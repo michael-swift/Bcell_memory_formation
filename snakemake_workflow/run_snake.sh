@@ -38,19 +38,6 @@ elif [ $1 = "unlock" ]
     then
         snakemake -s $SNAKEFILE $TARGET -F --rerun-incomplete --unlock --cores 1
     
-elif [ $1 = "dryrun" ]
-    # Dry run snakemake and print shell cmds 
-    then
-        snakemake \
-            -s $SNAKEFILE $TARGET \
-            --use-conda \
-            --keep-target-files \
-            --rerun-incomplete \
-            -n \
-            -r \
-            -k \
-            --printshellcmds
-
 elif [ $1 = "snakemake" ]
     then
   # Run snakemake
@@ -76,7 +63,7 @@ elif [ $1 = "snakemake" ]
         --restart-times $RESTART \
         --keep-going
 
-elif [ $1 = "profiledry" ]
+elif [ $1 = "dry" ]
     then
   # Run snakemake
     echo 'running snakemake'

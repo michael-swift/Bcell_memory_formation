@@ -16,7 +16,7 @@ default-resources:
   - gpus=0
   - time="03:00:00"
   - threads=1
-restart-times: 3
+restart-times: 0
 max-jobs-per-second: 10
 max-status-checks-per-second: 1
 local-cores: 1
@@ -37,3 +37,5 @@ set-resources:
     - run_cellbender:time=4:00:00
     - run_cellbender:partition=gpu
     - run_cellbender:gpus=1
+    - cellranger_count:mem_mb=120000
+    - aggegrate_h5ads:mem_mb=210000
