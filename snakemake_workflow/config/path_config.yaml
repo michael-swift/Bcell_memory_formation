@@ -9,6 +9,7 @@ outs_basedir: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipelin
 
 fastq_dirs: ["/oak/stanford/groups/quake/shared/swiftShare/ilm4_gex/Ivana_Cvijovic/", "/oak/stanford/groups/quake/shared/swiftShare/ilm6_gex/Ivana_Cvijovic/"]
 fastq_dirs: ["/oak/stanford/groups/quake/shared/swiftShare/all_gex_fastqs/"]
+vdj_fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/ilm7_vdj/"
 
 # human or mouse
 species: human

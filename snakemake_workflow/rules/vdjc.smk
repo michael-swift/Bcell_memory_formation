@@ -8,7 +8,7 @@ rule cellranger_vdj:
         base=config["base"],
         cell_ranger=config["cell_ranger"],
         vdj_reference=config["vdj_reference"],
-        fastq_dir=config["fastq_dir"],
+        fastq_dir=config["vdj_fastq_dir"],
         inner_primers=config["inner_primers"]
     resources:
         mem_mb="120000",
@@ -22,4 +22,4 @@ rule cellranger_vdj:
         "rm -rf {wildcards.sample_uid} && "
         "{params.cell_ranger}/cellranger vdj --id={wildcards.sample_uid} "
         "--reference={params.vdj_reference} --fastqs {params.fastq_dir} "
-        "--sample={wildcards.sample_uid}_VDJ --localcores=20 --inner-enrichment-primers {params.inner_primers} > {log}"
+        "--sample={wildcards.sample_uid}_VDJ --localcores=20 > {log}"

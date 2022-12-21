@@ -41,7 +41,7 @@ sample_uids = samplesheets.index.to_list()
 rule all:
     input:
         expand("{base}/per_sample/cellranger_vdj/{sample_uid}/outs/web_summary.html", base = base, sample_uid = sample_uids),
-        "{}/analysis/scanpy/gex_object.h5ad.gz".format(base),
+#        "{}/analysis/scanpy/gex_object.h5ad.gz".format(base),
     params:
         name="all",
         partition="quake",
