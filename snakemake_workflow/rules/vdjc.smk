@@ -22,4 +22,4 @@ rule cellranger_vdj:
         "rm -rf {wildcards.sample_uid} && "
         "{params.cell_ranger}/cellranger vdj --id={wildcards.sample_uid} "
         "--reference={params.vdj_reference} --fastqs {params.fastq_dir} "
-        "--sample={wildcards.sample_uid}_VDJ --localcores=20 > {log}"
+        "--sample={wildcards.sample_uid} --localcores=20 > {log}"
