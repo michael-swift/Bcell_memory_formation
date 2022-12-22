@@ -83,11 +83,11 @@ elif [ $1 = "sbatch" ]
         --cpus-per-task=1 \
         --mem=8000 \
         --mail-user=$EMAIL \
-        --time 4-0 \
-        -p quake \
+        --time 2-0 \
+        -p quake,owners \
         -o $SBATCH_LOGFILE \
         -e $SBATCH_LOGFILE_ERR \
-        run_snake.sh snakemake
+        run_snake.sh profile
 
 else
     echo "wrong option"

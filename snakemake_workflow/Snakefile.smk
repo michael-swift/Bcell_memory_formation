@@ -35,7 +35,7 @@ os.makedirs(base, exist_ok=True)
 samplesheets['expected_cells'] = samplesheets['expected_cells_thousands'].astype(int) * 1000
 
 
-samplesheets = samplesheets[samplesheets.donor == "TBd3"]
+#samplesheets = samplesheets[samplesheets.donor == "TBd3"]
 sample_uids = samplesheets.index.to_list()
 
 print(sample_uids)
@@ -51,7 +51,7 @@ rule all:
 
 include: "rules/gex.smk"
 include: "rules/vdjc.smk"
-#include: "rules/cellranger.smk"
+
 
 def samplesheet_lookup(idx, col):
     return samplesheets.loc[idx, col]

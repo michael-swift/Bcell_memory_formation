@@ -39,3 +39,4 @@ set-resources:
     - run_cellbender:gpus=1
     - cellranger_count:mem_mb=120000
     - aggegrate_h5ads:mem_mb=210000
+    - cellranger_vdj:mem_mb=120000

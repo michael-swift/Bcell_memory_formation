@@ -17,8 +17,8 @@ rule cellranger_vdj:
         time="1-0",
     threads: 20
     shell:
-        "mkdir -p {params.base}/cellranger_vdj && "
-        "cd {params.base}/cellranger_vdj && "
+        "mkdir -p {params.base}/per_sample/cellranger_vdj && "
+        "cd {params.base}/per_sample/cellranger_vdj && "
         "rm -rf {wildcards.sample_uid} && "
         "{params.cell_ranger}/cellranger vdj --id={wildcards.sample_uid} "
         "--reference={params.vdj_reference} --fastqs {params.fastq_dir} "
