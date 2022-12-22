@@ -32,12 +32,13 @@ samplesheets.set_index("sample_uid", inplace=True)
 base = config["base"]
 donors = list(set(samplesheets[samplesheets.species == "human"].donor.to_list()))
 os.makedirs(base, exist_ok=True)
-
 samplesheets['expected_cells'] = samplesheets['expected_cells_thousands'].astype(int) * 1000
 
 
 samplesheets = samplesheets[samplesheets.donor == "TBd3"]
 sample_uids = samplesheets.index.to_list()
+
+print(sample_uids)
 rule all:
     input:
         expand("{base}/per_sample/cellranger_vdj/{sample_uid}/outs/web_summary.html", base = base, sample_uid = sample_uids),
