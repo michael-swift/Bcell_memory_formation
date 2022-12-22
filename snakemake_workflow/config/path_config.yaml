@@ -16,6 +16,7 @@ species: human
 partition: "quake,owners"
 workflow_dir: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow" 
 samplesheets: ["samplesheets/samplesheet.tsv"]
+samplesheet_vdj: ["samplesheets/samplesheet_vdj.tsv"]
 # Software
 #---------------------------
 

@@ -19,30 +19,25 @@ samplesheets = pd.concat(
     ignore_index=True,
 )
 
-samplesheets["sample_uid"] = (
-    samplesheets["donor"]
-    + "_"
-    + samplesheets["sample_type"]
-    + "_"
-    + samplesheets["sample_descriptor"]
-)
+samplesheets['expected_cells'] = samplesheets['expected_cells_thousands'].astype(float) * 1000
 samplesheets["species"] = "human"
-samplesheets.set_index("sample_uid", inplace=True)
-# convenience variables
-base = config["base"]
 donors = list(set(samplesheets[samplesheets.species == "human"].donor.to_list()))
+samplesheets_gex = samplesheets[samplesheets.lib_type == 'gex']
+samplesheets_vdj = samplesheets[samplesheets.lib_type == 'vdj']
+samplesheets_vdj = samplesheets_vdj[samplesheets_vdj.sample_uid.str.contains("ver")]
+sample_uids_vdj = samplesheets_vdj.sample_uid.to_list()
+sample_uids_gex = samplesheets_gex.sample_uid.to_list()
+
+
+#samplesheets.set_index("sample_uid", inplace=True)
+# make processsed data dir
 os.makedirs(base, exist_ok=True)
-samplesheets['expected_cells'] = samplesheets['expected_cells_thousands'].astype(int) * 1000
-
-
 #samplesheets = samplesheets[samplesheets.donor == "TBd3"]
-sample_uids = samplesheets.index.to_list()
-
-print(sample_uids)
+#sample_uids = samplesheets.index.to_list()
 rule all:
     input:
-        expand("{base}/per_sample/cellranger_vdj/{sample_uid}/outs/web_summary.html", base = base, sample_uid = sample_uids),
-        "{}/analysis/scanpy/gex_object.h5ad.gz".format(base),
+        expand("{base}/per_sample/cellranger_vdj/{sample_uid_vdj}/outs/web_summary.html", base = base, sample_uid_vdj = sample_uids_vdj),
+        #"{}/analysis/scanpy/gex_object.h5ad.gz".format(base),
     params:
         name="all",
         partition="quake",

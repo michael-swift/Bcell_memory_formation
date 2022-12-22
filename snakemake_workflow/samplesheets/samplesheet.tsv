@@ -1,34 +1,103 @@
-donor	sample_type	sample_descriptor	tissue	sample_index	library_uid	lib_type	expected_cells_thousands	resequenced
-TBd3	fresh	P50	PB	H1	1	gex	20	False
-TBd3	fresh	P6	PB	H2	2	gex	5	True
-TBd3	fresh	B200	BM	H3	3	gex	20	False
-TBd3	fresh	B20	BM	H4	4	gex	20	True
-TBd3	frozen	PBa	PB	H5	5	gex	10	True
-TBd3	frozen	PBb	PB	H6	6	gex	10	True
-TBd3	frozen	BMa	BM	H7	7	gex	16	True
-TBd3	frozen	BMb	BM	H8	8	gex	16	True
-TBd5	frozen	LN	LN	H9	9	gex	10	False
-TBd5	frozen	SP	SP	H10	10	gex	20	True
-TBd5	frozen	BM	BM	H11	11	gex	20	True
-TBd4	frozen	PBa	PB	E12	12	gex	10	True
-TBd4	frozen	PBb	PB	F12	13	gex	10	True
-TBd4	frozen	BMa	BM	G12	14	gex	10	True
-TBd4	frozen	BMb	BM	H12	15	gex	10	True
-TBd2	frozen	PB1	PB	G1	16	gex	13	True
-TBd2	frozen	PB2	PB	G2	17	gex	13	True
-TBd2	frozen	LN1	LN	G3	18	gex	20	True
-TBd2	frozen	LN2	LN	G4	19	gex	64	True
-TBd1	frozen	PBa	PB	A1	20	gex	10	True
-TBd1	frozen	BMa	BM	A2	21	gex	10	True
-TBd1	frozen	LNa	LN	A3	22	gex	10	True
-TBd2	frozen	BMa	BM	A4	23	gex	10	True
-TBd2	frozen	SPa	SP	A5	24	gex	10	True
-TBd1	frozen	PBb	PB	A6	25	gex	10	True
-TBd1	frozen	BMb	BM	A7	26	gex	10	True
-TBd1	frozen	LNb	LN	A8	27	gex	10	True
-TBd2	frozen	BMb	BM	A9	28	gex	10	True
-TBd2	frozen	SPb	SP	A*	29	gex	10	True
-TBd6	fresh	LN	LN	C11	30	gex	10	False
-TBd6	fresh	BM	BM	C10	31	gex	10	False
-TBd6	fresh	PBMC	PB	C9	32	gex	10	False
-TBd6	fresh	SPL	SP	C12	33	gex	10	False
+	donor	sample_type	sample_descriptor	tissue	sample_index	library_uid	lib_type	expected_cells_thousands	resequenced	sample_uid
+0	TBd3	fresh	P50	PB	H1	1.0	gex	20.0	False	TBd3_fresh_P50
+1	TBd3	fresh	P6	PB	H2	2.0	gex	5.0	True	TBd3_fresh_P6
+2	TBd3	fresh	B200	BM	H3	3.0	gex	20.0	False	TBd3_fresh_B200
+3	TBd3	fresh	B20	BM	H4	4.0	gex	20.0	True	TBd3_fresh_B20
+4	TBd3	frozen	PBa	PB	H5	5.0	gex	10.0	True	TBd3_frozen_PBa
+5	TBd3	frozen	PBb	PB	H6	6.0	gex	10.0	True	TBd3_frozen_PBb
+6	TBd3	frozen	BMa	BM	H7	7.0	gex	16.0	True	TBd3_frozen_BMa
+7	TBd3	frozen	BMb	BM	H8	8.0	gex	16.0	True	TBd3_frozen_BMb
+8	TBd5	frozen	LN	LN	H9	9.0	gex	10.0	False	TBd5_frozen_LN
+9	TBd5	frozen	SP	SP	H10	10.0	gex	20.0	True	TBd5_frozen_SP
+10	TBd5	frozen	BM	BM	H11	11.0	gex	20.0	True	TBd5_frozen_BM
+11	TBd4	frozen	PBa	PB	E12	12.0	gex	10.0	True	TBd4_frozen_PBa
+12	TBd4	frozen	PBb	PB	F12	13.0	gex	10.0	True	TBd4_frozen_PBb
+13	TBd4	frozen	BMa	BM	G12	14.0	gex	10.0	True	TBd4_frozen_BMa
+14	TBd4	frozen	BMb	BM	H12	15.0	gex	10.0	True	TBd4_frozen_BMb
+15	TBd2	frozen	PB1	PB	G1	16.0	gex	13.0	True	TBd2_frozen_PB1
+16	TBd2	frozen	PB2	PB	G2	17.0	gex	13.0	True	TBd2_frozen_PB2
+17	TBd2	frozen	LN1	LN	G3	18.0	gex	20.0	True	TBd2_frozen_LN1
+18	TBd2	frozen	LN2	LN	G4	19.0	gex	64.0	True	TBd2_frozen_LN2
+19	TBd1	frozen	PBa	PB	A1	20.0	gex	10.0	True	TBd1_frozen_PBa
+20	TBd1	frozen	BMa	BM	A2	21.0	gex	10.0	True	TBd1_frozen_BMa
+21	TBd1	frozen	LNa	LN	A3	22.0	gex	10.0	True	TBd1_frozen_LNa
+22	TBd2	frozen	BMa	BM	A4	23.0	gex	10.0	True	TBd2_frozen_BMa
+23	TBd2	frozen	SPa	SP	A5	24.0	gex	10.0	True	TBd2_frozen_SPa
+24	TBd1	frozen	PBb	PB	A6	25.0	gex	10.0	True	TBd1_frozen_PBb
+25	TBd1	frozen	BMb	BM	A7	26.0	gex	10.0	True	TBd1_frozen_BMb
+26	TBd1	frozen	LNb	LN	A8	27.0	gex	10.0	True	TBd1_frozen_LNb
+27	TBd2	frozen	BMb	BM	A9	28.0	gex	10.0	True	TBd2_frozen_BMb
+28	TBd2	frozen	SPb	SP	A*	29.0	gex	10.0	True	TBd2_frozen_SPb
+29	TBd6	fresh	LN	LN	C11	30.0	gex	10.0	False	TBd6_fresh_LN
+30	TBd6	fresh	BM	BM	C10	31.0	gex	10.0	False	TBd6_fresh_BM
+31	TBd6	fresh	PBMC	PB	C9	32.0	gex	10.0	False	TBd6_fresh_PBMC
+32	TBd6	fresh	SPL	SP	C12	33.0	gex	10.0	False	TBd6_fresh_SPL
+0	TBd1	frozen	PBa	PB	B1		vdj	10.0		TBd1_frozen_PBa
+1	TBd1	frozen	BMa	PB	B2		vdj	10.0		TBd1_frozen_BMa
+2	TBd1	frozen	LNa	LN	B3		vdj	10.0		TBd1_frozen_LNa
+3	TBd1	frozen	PBb	PB	B4		vdj	10.0		TBd1_frozen_PBb
+4	TBd1	frozen	BMb	BM	B5		vdj	10.0		TBd1_frozen_BMb
+5	TBd1	frozen	LNb	LN	B6		vdj	10.0		TBd1_frozen_LNb
+6	TBd1	frozen	PBoverA	PB	B7		vdj	40.0		TBd1_frozen_PBoverA
+7	TBd1	frozen	BMoverA	BM	B8		vdj	40.0		TBd1_frozen_BMoverA
+8	TBd1	frozen	LNoverA	LN	B9		vdj	40.0		TBd1_frozen_LNoverA
+9	TBd1	frozen	PBoverB	PB	B10		vdj	40.0		TBd1_frozen_PBoverB
+10	TBd1	frozen	BMoverB	BM	B11		vdj	40.0		TBd1_frozen_BMoverB
+11	TBd1	frozen	LNoverB	LN	B12		vdj	40.0		TBd1_frozen_LNoverB
+12	TBd2	frozen	PB1	PB	D9		vdj	12.6		TBd2_frozen_PB1
+13	TBd2	frozen	PB2	PB	D10		vdj	12.6		TBd2_frozen_PB2
+14	TBd2	frozen	LN1	LN	D11		vdj	20.0		TBd2_frozen_LN1
+15	TBd2	frozen	LN2	LN	D12		vdj	64.0		TBd2_frozen_LN2
+16	TBd2	frozen	BMa	BM	E9		vdj	10.0		TBd2_frozen_BMa
+17	TBd2	frozen	SPa	SP	E10		vdj	10.0		TBd2_frozen_SPa
+18	TBd2	frozen	BMb	BM	E11		vdj	10.0		TBd2_frozen_BMb
+19	TBd2	frozen	SPb	SP	E12		vdj	10.0		TBd2_frozen_SPb
+20	TBd2	frozen	BMoverA	BM	H9		vdj	40.0		TBd2_frozen_BMoverA
+21	TBd2	frozen	BMoverB	BM	H10		vdj	40.0		TBd2_frozen_BMoverB
+22	TBd2	frozen	SPoverA	SP	H11		vdj	40.0		TBd2_frozen_SPoverA
+23	TBd2	frozen	SPoverB	SP	H12		vdj	40.0		TBd2_frozen_SPoverB
+24	TBd3	frozen	PBa	PB	C1		vdj	10.0		TBd3_frozen_PBa
+25	TBd3	frozen	PBb	PB	C2		vdj	10.0		TBd3_frozen_PBb
+26	TBd3	frozen	BMa	BM	C3		vdj	16.0		TBd3_frozen_BMa
+27	TBd3	frozen	BMb	BM	C4		vdj	16.0		TBd3_frozen_BMb
+28	TBd3	frozen	PBoverA	PB	C5		vdj	32.5		TBd3_frozen_PBoverA
+29	TBd3	frozen	PBoverB	PB	C6		vdj	32.5		TBd3_frozen_PBoverB
+30	TBd3	frozen	BMoverA	BM	C7		vdj	48.0		TBd3_frozen_BMoverA
+31	TBd3	frozen	BMoverB	BM	C8		vdj	48.0		TBd3_frozen_BMoverB
+32	TBd3	fresh	P50	PB	C9		vdj	20.0		TBd3_fresh_P50
+33	TBd3	fresh	P6	PB	C10		vdj	5.0		TBd3_fresh_P6
+34	TBd3	fresh	B200	BM	C11		vdj	20.0		TBd3_fresh_B200
+35	TBd3	fresh	B20	BM	C12		vdj	20.0		TBd3_fresh_B20
+36	TBd4	frozen	PBa	PB	G1		vdj	10.0		TBd4_frozen_PBa
+37	TBd4	frozen	PBb	PB	G2		vdj	10.0		TBd4_frozen_PBb
+38	TBd4	frozen	BMa	BM	G3		vdj	10.0		TBd4_frozen_BMa
+39	TBd4	frozen	BMb	BM	G4		vdj	10.0		TBd4_frozen_BMb
+40	TBd4	frozen	PBoverA	PB	G5		vdj	40.0		TBd4_frozen_PBoverA
+41	TBd4	frozen	PBoverB	PB	G6		vdj	40.0		TBd4_frozen_PBoverB
+42	TBd4	frozen	BMoverA	BM	G7		vdj	40.0		TBd4_frozen_BMoverA
+43	TBd4	frozen	BMoverB	BM	G8		vdj	40.0		TBd4_frozen_BMoverB
+44	TBd5	frozen	LNa	LN	D1		vdj	10.0		TBd5_frozen_LNa
+45	TBd5	frozen	SPa	SP	D2		vdj	10.0		TBd5_frozen_SPa
+46	TBd5	frozen	BMa	BM	D3		vdj	10.0		TBd5_frozen_BMa
+47	TBd5	frozen	LNb	LN	D4		vdj	10.0		TBd5_frozen_LNb
+48	TBd5	frozen	SPb	SP	D5		vdj	10.0		TBd5_frozen_SPb
+49	TBd5	frozen	BMb	BM	D6		vdj	10.0		TBd5_frozen_BMb
+50	TBd5	frozen	LNoverA	LN	A7		vdj	40.0		TBd5_frozen_LNoverA
+51	TBd5	frozen	BMoverA	BM	A8		vdj	40.0		TBd5_frozen_BMoverA
+52	TBd5	frozen	SPoverA	SP	A9		vdj	40.0		TBd5_frozen_SPoverA
+53	TBd5	frozen	LNoverB	LN	A10		vdj	40.0		TBd5_frozen_LNoverB
+54	TBd5	frozen	BMoverB	BM	A11		vdj	40.0		TBd5_frozen_BMoverB
+55	TBd5	frozen	SPoverB	SP	A12		vdj	40.0		TBd5_frozen_SPoverB
+56	TBd5	fresh	PB	PB	G9		vdj	50.0		TBd5_fresh_PB
+57	TBd5	fresh	SP	SP	G12		vdj	100.0		TBd5_fresh_SP
+58	TBd5	fresh	LN	LN	G11		vdj	100.0		TBd5_fresh_LN
+59	TBd5	fresh	BM1	BM	G10		vdj	100.0		TBd5_fresh_BM1
+60	TBd5	fresh	BM2	BM	F12		vdj	100.0		TBd5_fresh_BM2
+61	TBd6	fresh	PB	PB	H1		vdj	20.0		TBd6_fresh_PB
+62	TBd6	fresh	BM	BM	H2		vdj	20.0		TBd6_fresh_BM
+63	TBd6	fresh	LN	LN	H3		vdj	20.0		TBd6_fresh_LN
+64	TBd6	fresh	SP	SP	H4		vdj	20.0		TBd6_fresh_SP
+65	TBd6	fresh	PBover	PB	H5		vdj	70.0		TBd6_fresh_PBover
+66	TBd6	fresh	BMover	BM	H6		vdj	70.0		TBd6_fresh_BMover
+67	TBd6	fresh	LNover	LN	H7		vdj	70.0		TBd6_fresh_LNover
+68	TBd6	fresh	SPover	SP	H8		vdj	70.0		TBd6_fresh_SPover

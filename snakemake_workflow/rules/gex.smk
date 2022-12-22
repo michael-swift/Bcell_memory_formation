@@ -18,9 +18,9 @@ rule cellranger_count:
     input:
         config["fastq_dirs"],
     output:
-        "{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5",
+        "{base}/per_sample/cellranger/{sample_uid_gex}/outs/raw_feature_bc_matrix.h5",
     log:
-        "{base}/logs/{sample_uid}/cellranger.log",
+        "{base}/logs/{sample_uid_gex}/cellranger.log",
     params:
         name="count_cellranger",
         base=config["base"],
@@ -34,30 +34,30 @@ rule cellranger_count:
     shell:
         "mkdir -p {base}/per_sample/cellranger && "
         "cd {base}/per_sample/cellranger && "
-        "rm -rf {wildcards.sample_uid} && "
+        "rm -rf {wildcards.sample_uid_gex} && "
         "{params.cell_ranger}/cellranger count"
-        " --id={wildcards.sample_uid}"
+        " --id={wildcards.sample_uid_gex}"
         " --transcriptome={params.transcriptome}"
         " --fastqs={input[0]}"
-        " --sample={wildcards.sample_uid}"
+        " --sample={wildcards.sample_uid_gex}"
         " --localcores=20"
         " --nosecondary"
         " --no-bam > {log}"
 
 rule run_cellbender:
-    input:ancient("{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5")
+    input:ancient("{base}/per_sample/cellranger/{sample_uid_gex}/outs/raw_feature_bc_matrix.h5")
     output:
-        "{base}/per_sample/cellbender/{sample_uid}/background_removed.h5",
-        "{base}/per_sample/cellbender/{sample_uid}/background_removed_cell_barcodes.csv",
+        "{base}/per_sample/cellbender/{sample_uid_gex}/background_removed.h5",
+        "{base}/per_sample/cellbender/{sample_uid_gex}/background_removed_cell_barcodes.csv",
     conda:
         "cellbender2"
     log:
-        "{base}/logs/cellbender/{sample_uid}.log",
+        "{base}/logs/cellbender/{sample_uid_gex}.log",
     resources:
         time="4:00:00",
         partition="gpu",
     params:
-        expected_cells=lambda wildcards: samplesheet_lookup(wildcards.sample_uid, "expected_cells"),
+        expected_cells=lambda wildcards: samplesheet_lookup(wildcards.sample_uid_gex, "expected_cells"),
     shell:
         "cellbender remove-background"
         " --input {input}"
@@ -68,13 +68,13 @@ rule run_cellbender:
 
 rule convert_h5_to_h5ad:
     input:
-        cr=ancient("{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5"),
-        cb="{base}/per_sample/cellbender/{sample_uid}/background_removed.h5"
+        cr=ancient("{base}/per_sample/cellranger/{sample_uid_gex}/outs/raw_feature_bc_matrix.h5"),
+        cb="{base}/per_sample/cellbender/{sample_uid_gex}/background_removed.h5"
     output:
-        "{base}/per_sample/cellranger/{sample_uid}/TenX.h5ad",
-        "{base}/per_sample/cellbender/{sample_uid}/CellBender.h5ad"
+        "{base}/per_sample/cellranger/{sample_uid_gex}/TenX.h5ad",
+        "{base}/per_sample/cellbender/{sample_uid_gex}/CellBender.h5ad"
     log:
-        "{base}/logs/{sample_uid}/cb_cr_h5ads.log",
+        "{base}/logs/{sample_uid_gex}/cb_cr_h5ads.log",
     resources:
         mem_mb="32000",
         partition="quake,owners",
@@ -91,12 +91,12 @@ rule convert_h5_to_h5ad:
 
 rule combine_cellbender_cellranger:
     input:
-        "{base}/per_sample/cellranger/{sample_uid}/TenX.h5ad",
-        "{base}/per_sample/cellbender/{sample_uid}/CellBender.h5ad"
+        "{base}/per_sample/cellranger/{sample_uid_gex}/TenX.h5ad",
+        "{base}/per_sample/cellbender/{sample_uid_gex}/CellBender.h5ad"
     output:
-        "{base}/per_sample/cb_and_cr/{sample_uid}/combined.h5ad"
+        "{base}/per_sample/cb_and_cr/{sample_uid_gex}/combined.h5ad"
     log:
-        "{base}/logs/{sample_uid}/combine_cb_cr_h5ads.log",
+        "{base}/logs/{sample_uid_gex}/combine_cb_cr_h5ads.log",
     resources:
         mem_mb="32000",
         partition="quake,owners",
@@ -115,9 +115,9 @@ rule aggregate_h5ads:
     """ aggregate h5 from cellranger or h5ads scanpy """
     input:
         expand(
-            "{base}/per_sample/cb_and_cr/{sample_uid}/combined.h5ad",
+            "{base}/per_sample/cb_and_cr/{sample_uid_gex}/combined.h5ad",
             base=config["base"],
-            sample_uid=sample_uids,
+            sample_uid_gex=sample_uids_gex,
         ),
     output:
         "{base}/aggregated/aggr_gex_raw.h5ad",

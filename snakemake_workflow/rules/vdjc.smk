@@ -14,7 +14,7 @@ rule cellranger_vdj:
         mem_mb="120000",
         partition="quake,owners,normal",
         disk_mb="8000",
-        time="1-0",
+        time="0-12",
     threads: 20
     shell:
         "mkdir -p {params.base}/per_sample/cellranger_vdj && "
