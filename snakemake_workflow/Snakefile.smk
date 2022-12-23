@@ -38,8 +38,9 @@ os.makedirs(base, exist_ok=True)
 
 rule all:
     input:
-        expand("{base}/per_sample/cellranger_vdj/{sample_uid_vdj}/outs/web_summary.html", base = base, sample_uid_vdj = sample_uids_vdj),
+        #expand("{base}/per_sample/cellranger_vdj/{sample_uid_vdj}/outs/web_summary.html", base = base, sample_uid_vdj = sample_uids_vdj),
         "{}/analysis/scanpy/gex_object.h5ad.gz".format(base),
+        #expand("{base}/per_sample/fastqc/{sample_uid_vdj}/done.txt", base = base, sample_uid_vdj = sample_uids_vdj),
     params:
         name="all",
         partition="quake",
@@ -48,6 +49,7 @@ rule all:
 
 include: "rules/gex.smk"
 include: "rules/vdjc.smk"
+include: "rules/qc.smk"
 
 
 def samplesheet_lookup(idx, col):

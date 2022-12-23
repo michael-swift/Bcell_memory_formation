@@ -63,56 +63,33 @@ rule run_cellbender:
         " --fpr 0.01"
         " --cuda > {log}"
 
-rule convert_h5_to_h5ad:
+rule combine_cb_cr:
     input:
         cr="{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5",
         cb="{base}/per_sample/cellbender/{sample_uid}/background_removed.h5"
     output:
-        "{base}/per_sample/cellranger/{sample_uid}/TenX.h5ad",
-        "{base}/per_sample/cellbender/{sample_uid}/CellBender.h5ad"
+        "{base}/per_sample/cellranger_cellbender/{sample_uid}/combined.h5ad"
     log:
-        "{base}/logs/{sample_uid}/cb_cr_h5ads.log",
+        "{base}/logs/{sample_uid}/cb_cr_combined.log",
     resources:
         mem_mb="32000",
         partition="quake,owners",
         time="0-1",
     conda:
-        #"scanpy_latest"
-        config["workflow_dir"] + "/envs/scanpy.yaml"
+        "scanpy_latest"
+        #config["workflow_dir"] + "/envs/scanpy.yaml"
     params:
         min_genes=100,
-        min_counts=300,
+        min_counts=100,
         filter_cells=True,
     script:
-        config["workflow_dir"] + "/scripts/post_cellranger/h5_to_h5ad.py > {log}"
-
-rule combine_cellbender_cellranger:
-    input:
-        "{base}/per_sample/cellranger/{sample_uid}/TenX.h5ad",
-        "{base}/per_sample/cellbender/{sample_uid}/CellBender.h5ad"
-    output:
-        "{base}/per_sample/{sample_uid}/combined.h5ad"
-    log:
-        "{base}/logs/{sample_uid}/combine_cb_cr_h5ads.log",
-    resources:
-        mem_mb="32000",
-        partition="quake,owners",
-        time="0-1",
-    conda:
-        #"scanpy_latest"
-        config["workflow_dir"] + "/envs/scanpy.yaml"
-    params:
-        min_genes=100,
-        min_counts=300,
-        filter_cells=True,
-    script:
-        config["workflow_dir"] + "/scripts/post_cellranger/h5_to_h5ad.py > {log}"
+        config["workflow_dir"] + "/scripts/post_cellranger/combined_cr_cb.py"
 
 rule aggregate_h5ads:
     """ aggregate h5 from cellranger or h5ads scanpy """
     input:
         expand(
-            "{base}/per_sample/{sample_uid}/combined.h5ad",
+            "{base}/per_sample/cellranger_cellbender/{sample_uid}/combined.h5ad",
             base=config["base"],
             sample_uid=sample_uids,
         ),

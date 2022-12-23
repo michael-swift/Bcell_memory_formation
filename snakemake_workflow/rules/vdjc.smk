@@ -12,9 +12,9 @@ rule cellranger_vdj:
         inner_primers=config["inner_primers"]
     resources:
         mem_mb="120000",
-        partition="quake,owners,normal",
+        partition="quake,owners",
         disk_mb="8000",
-        time="0-12",
+        time="0-16",
     threads: 20
     shell:
         "mkdir -p {params.base}/per_sample/cellranger_vdj && "

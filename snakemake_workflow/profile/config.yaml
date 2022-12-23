@@ -17,6 +17,7 @@ default-resources:
   - time="03:00:00"
   - threads=1
 restart-times: 0
+rerun-triggers: mtime
 max-jobs-per-second: 10
 max-status-checks-per-second: 1
 local-cores: 1

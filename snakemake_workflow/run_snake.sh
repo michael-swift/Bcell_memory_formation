@@ -13,7 +13,7 @@ CLUSTER_CONFIG=config/slurm_config.yaml
 NJOBS=200
 WAIT=120
 
-source /home/groups/quake/mswift/miniconda3/etc/profile.d/conda.sh
+source /home/groups/quake/mswift/mambaforge/etc/profile.d/conda.sh
 conda activate snakemake
 mkdir -p snakemake_logs/slurm_logs/
 
