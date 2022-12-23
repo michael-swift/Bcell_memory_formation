@@ -21,14 +21,8 @@ mkdir -p snakemake_logs/slurm_logs/
 SBATCH_LOGFILE=snakemake_logs/cluster.$DATETIME.log
 SBATCH_LOGFILE_ERR=snakemake_logs/cluster.$DATETIME.log.err
 
-#Snakemake log file
-LOGFILE=snakemake_logs/snakamaka.$DATETIME.log
-LOGFILE_ERR=snakemake_logs/snakamaka.$DATETIME.log.err
-
 # for a specific cell / output
 TARGET=''
-
-
 if [ $# -eq 0 ]
   then
     # Dry run snakemake
@@ -37,6 +31,14 @@ if [ $# -eq 0 ]
 elif [ $1 = "unlock" ]
     then
         snakemake -s $SNAKEFILE $TARGET -F --rerun-incomplete --unlock --cores 1
+
+elif [ $1 = "unlock" ]
+    then
+        snakemake -s $SNAKEFILE $TARGET -F --rerun-incomplete --unlock --cores 1
+
+elif [ $1 = "touch" ]
+    then
+        snakemake -s $SNAKEFILE $TARGET -F --rerun-incomplete --unlock --touch --cores 1
     
 elif [ $1 = "snakemake" ]
     then

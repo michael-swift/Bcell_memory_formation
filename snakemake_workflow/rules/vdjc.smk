@@ -1,8 +1,8 @@
 rule cellranger_vdj:
     output:
-        "{base}/per_sample/cellranger_vdj/{sample_uid}/outs/web_summary.html",
+        "{base}/per_sample/cellranger_vdj/{sample_uid_vdj}/outs/web_summary.html",
     log:
-        "{base}/logs/{sample_uid}/cellranger.log",
+        "{base}/logs/{sample_uid_vdj}/cellranger.log",
     params:
         name="vdj_cellranger",
         base=config["base"],
@@ -19,7 +19,7 @@ rule cellranger_vdj:
     shell:
         "mkdir -p {params.base}/per_sample/cellranger_vdj && "
         "cd {params.base}/per_sample/cellranger_vdj && "
-        "rm -rf {wildcards.sample_uid} && "
-        "{params.cell_ranger}/cellranger vdj --id={wildcards.sample_uid} "
+        "rm -rf {wildcards.sample_uid_vdj} && "
+        "{params.cell_ranger}/cellranger vdj --id={wildcards.sample_uid_vdj} "
         "--reference={params.vdj_reference} --fastqs {params.fastq_dir} "
-        "--sample={wildcards.sample_uid} --localcores=20 > {log}"
+        "--sample={wildcards.sample_uid_vdj} --localcores=20 > {log}"
