@@ -38,8 +38,8 @@ os.makedirs(base, exist_ok=True)
 
 rule all:
     input:
-        expand("{base}/per_sample/cellranger_vdj/{sample_uid_vdj}/outs/web_summary.html", base = base, sample_uid_vdj = sample_uids_vdj),
-        "{}/analysis/scanpy/gex_object.h5ad.gz".format(base),
+        expand("{base}/aggregated/vtrees/pseudobulk/{donor}_v_trees.tsv", base = base, donor = donors),
+        #"{}/analysis/scanpy/gex_object.h5ad.gz".format(base),
     params:
         name="all",
         partition="quake",

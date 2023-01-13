@@ -19,10 +19,10 @@ samplesheets: ["samplesheets/samplesheet.tsv"]
 samplesheet_vdj: ["samplesheets/samplesheet_vdj.tsv"]
 # Software
 #---------------------------
-
+vdj_scripts: "scripts/vdj"
 cell_ranger: "/home/groups/quake/mswift/resources/cellranger-7.0.1"
 resources: "/home/groups/quake/mswift/5prime_10X_workflow/resources"
-
+grmlin: "/home/users/cvijovic/ig-germline-discovery/grmlin" 
 # references
 #------------
 vdj_ref_prefix: "vdj_human"

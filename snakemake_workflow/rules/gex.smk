@@ -25,7 +25,7 @@ rule cellranger_count:
         transcriptome=config["transcriptome"],
     resources:
         partition="quake,owners",
-        disk_mb="8000",
+        disk_mb=8000,
         time="1-12",
     threads: 20
     shell:

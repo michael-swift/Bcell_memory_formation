@@ -5,15 +5,15 @@ DATETIME=$(date "+%Y_%m_%d_%H_%M_%S")
 RESTART=0
 
 SNAKEFILE=Snakefile.smk
-EMAIL=mswift2@stanford.edu
+EMAIL=cvijovic@stanford.edu
 
-CLUSTER_CONFIG=config/slurm_config.yaml
+#CLUSTER_CONFIG=config/slurm_config.yaml
 
 #Snakemake config
 NJOBS=200
 WAIT=120
 
-source /home/groups/quake/mswift/miniconda3/etc/profile.d/conda.sh
+source /home/groups/quake/cvijovic/miniconda3/etc/profile.d/conda.sh
 conda activate snakemake
 mkdir -p snakemake_logs/slurm_logs/
 
@@ -40,31 +40,6 @@ elif [ $1 = "touch" ]
     then
         snakemake -s $SNAKEFILE $TARGET -F --rerun-incomplete --unlock --touch --cores 1
     
-elif [ $1 = "snakemake" ]
-    then
-  # Run snakemake
-    echo 'running snakemake'
-    snakemake \
-        -s $SNAKEFILE $TARGET \
-        --use-conda \
-        --cluster-config ${CLUSTER_CONFIG} \
-        --cluster "sbatch \
-                  --job-name={cluster.name} \
-                  --time {cluster.time} \
-                  --mem={cluster.mem_mb}M \
-                  --ntasks={cluster.ntasks} \
-                  --cpus-per-task={cluster.cpus-per-task} \
-                  --partition={cluster.partition} \
-                  --output={cluster.output} \
-                  --error={cluster.error}" \
-        --keep-target-files \
-        --rerun-incomplete \
-        -j $NJOBS \
-        -w $WAIT \
-        -k \
-        --restart-times $RESTART \
-        --keep-going
-
 elif [ $1 = "dry" ]
     then
   # Run snakemake
