@@ -14,7 +14,7 @@ NJOBS=200
 WAIT=120
 
 source /home/groups/quake/mswift/mambaforge/etc/profile.d/conda.sh
-conda activate snakemake
+conda activate scanpy_latest
 mkdir -p snakemake_logs/slurm_logs/
 
 #log file for process that calls snakemake
@@ -26,11 +26,7 @@ TARGET=''
 if [ $# -eq 0 ]
   then
     # Dry run snakemake
-    snakemake -s $SNAKEFILE $TARGET --use-conda --keep-target-files --rerun-incomplete -n -r --quiet --keep-going
-
-elif [ $1 = "unlock" ]
-    then
-        snakemake -s $SNAKEFILE $TARGET -F --rerun-incomplete --unlock --cores 1
+    snakemake -s $SNAKEFILE $TARGET --use-conda --keep-target-files --rerun-incomplete -n -r --quiet --keep-going --rerun-triggers mtime
 
 elif [ $1 = "unlock" ]
     then
@@ -40,31 +36,6 @@ elif [ $1 = "touch" ]
     then
         snakemake -s $SNAKEFILE $TARGET -F --rerun-incomplete --unlock --touch --cores 1
     
-elif [ $1 = "snakemake" ]
-    then
-  # Run snakemake
-    echo 'running snakemake'
-    snakemake \
-        -s $SNAKEFILE $TARGET \
-        --use-conda \
-        --cluster-config ${CLUSTER_CONFIG} \
-        --cluster "sbatch \
-                  --job-name={cluster.name} \
-                  --time {cluster.time} \
-                  --mem={cluster.mem_mb}M \
-                  --ntasks={cluster.ntasks} \
-                  --cpus-per-task={cluster.cpus-per-task} \
-                  --partition={cluster.partition} \
-                  --output={cluster.output} \
-                  --error={cluster.error}" \
-        --keep-target-files \
-        --rerun-incomplete \
-        -j $NJOBS \
-        -w $WAIT \
-        -k \
-        --restart-times $RESTART \
-        --keep-going
-
 elif [ $1 = "dry" ]
     then
   # Run snakemake
@@ -85,8 +56,8 @@ elif [ $1 = "sbatch" ]
         --cpus-per-task=1 \
         --mem=8000 \
         --mail-user=$EMAIL \
-        --time 2-0 \
-        -p quake,owners \
+        --time 4-0 \
+        -p quake \
         -o $SBATCH_LOGFILE \
         -e $SBATCH_LOGFILE_ERR \
         run_snake.sh profile

@@ -64,7 +64,6 @@ def cluster(adata, batch_correct=False, batch_key="tissue"):
 
 def add_samplesheet(file, adata):
     samplesheets = pd.read_table(file)
-
     samplesheets["sample_uid"] = (
         samplesheets["donor"]
         + "_"
@@ -74,7 +73,7 @@ def add_samplesheet(file, adata):
     )
 
     samplesheets.set_index("sample_uid", inplace=True)
-
+    samplesheets = samplesheets[samplesheets.libtype == 'gex']
     for column in samplesheets.columns:
         _dict = samplesheets[column].to_dict()
         adata.obs[column] = adata.obs.sample_uid.map(_dict)
@@ -123,6 +122,8 @@ adata.var.loc[adata.var.index.str.contains("IGHV|IGLV|IGKV"), 'highly_variable']
 
 # set raw as the normalized log counts
 adata.raw = adata
+
+# cluster data before celltypist
 adata = recluster(adata, batch_correct = False)
 print("annotating with celltypist")
 
@@ -143,11 +144,12 @@ else:
 
 # Get an `AnnData` with predicted labels embedded into the cell metadata columns.
 adata = predictions.to_adata()
-
+# this line allows to write h5ad, otherwise h5py throws errors
+adata.obs = adata.obs.astype(str, errors = "ignore")
 # write h5ads
 out_prefix = str(snakemake.output[0]).split('.')[0]
 for tissue in adata.obs.tissue.unique():
-    print('writing per {} h5ads'.format(tissue))
+    print('writing per tissue {} h5ads'.format(tissue))
     sub_adata = adata[adata.obs.tissue == tissue]
     sub_adata.write_h5ad("{}_{}.h5ad.gz".format(out_prefix, str(tissue)), compression = "gzip")
 

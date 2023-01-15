@@ -15,7 +15,7 @@ default-resources:
   - mem_mb=4000
   - gpus=0
   - time="03:00:00"
-  - threads=1
+  - threads=4
 restart-times: 0
 rerun-triggers: mtime
 max-jobs-per-second: 10
@@ -39,5 +39,11 @@ set-resources:
     - run_cellbender:partition=gpu
     - run_cellbender:gpus=1
     - cellranger_count:mem_mb=120000
+    - cellranger_count:partition=quake
+    - cellranger_count:time=96:00:00
+    - cellranger_count:threads=20
     - aggegrate_h5ads:mem_mb=210000
     - cellranger_vdj:mem_mb=120000
+    - star_solo_vdj:time=96:00:00
+    - star_solo_vdj:threads=12
+    - star_solo_vdj:partition=quake

@@ -15,23 +15,18 @@ rule cellranger_count:
     input:
         config["fastq_dirs"],
     output:
-        "{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5",
-    log:
-        "{base}/logs/{sample_uid}/cellranger.log",
+        touch("{base}/per_sample/cellranger/{sample_uid}.txt"),
     params:
         name="count_cellranger",
         base=config["base"],
         cell_ranger=config["cell_ranger"],
         transcriptome=config["transcriptome"],
     resources:
-        partition="quake,owners",
-        disk_mb="8000",
-        time="1-12",
+        partition="quake"
     threads: 20
     shell:
         "mkdir -p {base}/per_sample/cellranger && "
         "cd {base}/per_sample/cellranger && "
-        "rm -rf {wildcards.sample_uid} && "
         "{params.cell_ranger}/cellranger count"
         " --id={wildcards.sample_uid}"
         " --transcriptome={params.transcriptome}"
@@ -39,10 +34,14 @@ rule cellranger_count:
         " --sample={wildcards.sample_uid}"
         " --localcores=20"
         " --nosecondary"
-        " --no-bam > {log}"
 
-rule run_cellbender:
+rule touch_h5:
     input: rules.cellranger_count.output
+    output:touch("{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5")
+    
+    
+rule run_cellbender:
+    input: rules.touch_h5.output
     output:
         "{base}/per_sample/cellbender/{sample_uid}/background_removed.h5",
         "{base}/per_sample/cellbender/{sample_uid}/background_removed_cell_barcodes.csv",
@@ -61,7 +60,7 @@ rule run_cellbender:
         " --output {output[0]}"
         " --expected-cells {params.expected_cells}"
         " --fpr 0.01"
-        " --cuda > {log}"
+        " --cuda"
 
 rule combine_cb_cr:
     input:
@@ -75,9 +74,6 @@ rule combine_cb_cr:
         mem_mb="32000",
         partition="quake,owners",
         time="0-1",
-    conda:
-        "scanpy_latest"
-        #config["workflow_dir"] + "/envs/scanpy.yaml"
     params:
         min_genes=100,
         min_counts=100,

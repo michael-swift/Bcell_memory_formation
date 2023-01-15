@@ -3,11 +3,9 @@
 # path to sheet describing each cell
 library_info: "samplesheets/library_info.tsv"
 # output directory for processed data
-base: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline"
+base: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline_2"
 # specificed in multi_configs
-
-fastq_dirs: ["/oak/stanford/groups/quake/shared/swiftShare/ilm4_gex/Ivana_Cvijovic/", "/oak/stanford/groups/quake/shared/swiftShare/ilm6_gex/Ivana_Cvijovic/"]
-fastq_dirs: ["/oak/stanford/groups/quake/shared/swiftShare/all_gex_fastqs/"]
+fastq_dirs: ["/oak/stanford/groups/quake/shared/swiftShare/tb_gex_fastqs/"]
 vdj_fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/ilm7_vdj/"
 
 # human or mouse
@@ -21,6 +19,7 @@ samplesheet_vdj: ["samplesheets/samplesheet_vdj.tsv"]
 #---------------------------
 
 cell_ranger: "/home/groups/quake/mswift/resources/cellranger-7.0.1"
+cr_whitelist: "/home/groups/quake/mswift/resources/3M-february-2018.txt"
 resources: "/home/groups/quake/mswift/5prime_10X_workflow/resources"
 
 # references
@@ -46,3 +45,30 @@ scripts:
 path_to_grmlin:
 # params:
 decontX_mode: filtered
+
+# sequencing read length e.g. 100 for 2x100 paired-end sequencing
+# (used during STAR genome generation)
+read_length: 90
+
+# whether or not to include ERCCs in the genome fasta and gtf 
+include_ERCCs: False
+
+# STAR alignment: fasta and gtf files
+# (these should not need to be changed)
+fasta_url:
+  human: ftp://ftp.ensembl.org/pub/release-93/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz
+  mouse: ftp://ftp.ensembl.org/pub/release-93/fasta/mus_musculus/dna/Mus_musculus.GRCm38.dna.primary_assembly.fa.gz
+
+fasta_name:
+  human: Homo_sapiens.GRCh38.dna.primary_assembly
+  mouse: Mus_musculus.GRCm38.dna.primary_assembly
+
+gtf_url: 
+  human: ftp://ftp.ensembl.org/pub/release-93/gtf/homo_sapiens/Homo_sapiens.GRCh38.93.gtf.gz
+  mouse: ftp://ftp.ensembl.org/pub/release-93/gtf/mus_musculus/Mus_musculus.GRCm38.93.gtf.gz
+
+gtf_name:
+  human: Homo_sapiens.GRCh38.93
+  mouse: Mus_musculus.GRCm38.93 
+
+CR_whitelist: 

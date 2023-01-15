@@ -30,5 +30,5 @@ TBd2	frozen	BMb	BM	A9	28	gex	10	True
 TBd2	frozen	SPb	SP	A*	29	gex	10	True
 TBd6	fresh	LN	LN	C11	30	gex	10	False
 TBd6	fresh	BM	BM	C10	31	gex	10	False
-TBd6	fresh	PBMC	PB	C9	32	gex	10	False
-TBd6	fresh	SPL	SP	C12	33	gex	10	False
+TBd6	fresh	PB	PB	C9	32	gex	10	False
+TBd6	fresh	SP	SP	C12	33	gex	10	False
