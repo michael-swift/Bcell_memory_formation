@@ -99,7 +99,7 @@ rule combine_samples:
     log:
         "{base}/logs/{donor}_combined.log",
     resources:
-         mem_mb=131000,
+        mem_mb="131000",
     params:
         scripts=config["vdj_scripts"],
         samplesheet=config["samplesheet_vdj"],
@@ -126,7 +126,7 @@ rule call_germlines:
         grmlin=config["grmlin"],
         IGDBDIR=config["IGDBDIR"],
     resources:
-        mem_mb=131000,
+        mem_mb="131000",
         time="24:00:00",
     shell:
         "{params.grmlin}/grmlin "
@@ -137,27 +137,158 @@ rule call_germlines:
         "-max_sequences 500000 "
         "> {log}"
 
-rule cluster_lineages:
+# the checkpoint that shall trigger re-evaluation of the DAG
+checkpoint prepare_cdr3_groups_for_distance_evaluation:
     input:
         rules.call_germlines.output.preprocessed,
     output:
-        "{base}/aggregated/cluster_lineages/{donor}.tsv.gz",
+        groups=directory("{base}/aggregated/lineage_clustering/cdr3/{donor}/"),
+    wildcard_constraints:
+        donor="TBd[1-6]",
     log:
-        "{base}/logs/cluster_lineages/{donor}_cluster_lineages.log",
+        "{base}/logs/cluster_lineages/{donor}_prepare_for_clustering.log",
     conda:
         "../envs/pacbio.yaml"
     params:
         scripts=config["vdj_scripts"],
     resources:
-        mem_mb=131000,
+        mem_mb="64000",
         time="24:00:00",
     shell:
-        "python {params.scripts}/cluster_lineages_small_dataset.py "
+        """
+        mkdir -p {wildcards.base}/aggregated/lineage_clustering/cdr3/{wildcards.donor} 
+        
+        python {params.scripts}/prepare_distance_matrices.py \
+        {input} \
+        -outdir {wildcards.base}/aggregated/lineage_clustering/cdr3/{wildcards.donor} \
+        -samplename {wildcards.donor} \
+        2> {log}
+        
+        """
+
+rule fasta_to_hamming_distance_matrix:
+    input:
+        "{base}/aggregated/lineage_clustering/cdr3/{donor}/{group}.fasta",
+    output:
+        "{base}/aggregated/lineage_clustering/cdr3/{donor}/{group}.npy",
+    log:
+        "{base}/logs/cluster_lineages/matrix_calc/cdr3/{donor}_{group}.log",
+    conda:
+        "../envs/pacbio.yaml",
+    params:
+        scripts=config["vdj_scripts"],
+    resources:
+        mem_mb="128000",
+        time="24:00:00",
+    shell:
+        "python {params.scripts}/calc_matrix.py "
         "{input} "
-        "-outdir {wildcards.base}/aggregated/cluster_lineages "
+        "{output} "
+        "-hamming"
+
+rule fasta_to_levenshtein_distance_matrix:
+    input:
+        "{base}/aggregated/lineage_clustering/templated/{donor}/{group}_cdr3.fasta",
+    output:
+        "{base}/aggregated/lineage_clustering/templated/{donor}/{group}_templated.npy",
+    log:
+        "{base}/logs/cluster_lineages/matrix_calc/templated/{donor}_{group}.log",
+    conda:
+        "../envs/pacbio.yaml",
+    params:
+        scripts=config["vdj_scripts"],
+    resources:
+        mem_mb="128000",
+        time="24:00:00",
+    shell:
+        "python {params.scripts}/calc_matrix.py "
+        "{input} "
+        "{output} "
+
+def aggregate_cdr3_npy_files(wildcards):
+    checkpoint_output = checkpoints.prepare_cdr3_groups_for_distance_evaluation.get(**wildcards).output.groups
+    #small_groups = expand("{base}/aggregated/lineage_clustering/cdr3/{donor}/{group}_cdr3.npy",
+    #        base=wildcards.base,
+    #        donor=wildcards.donor,
+    #       group=glob_wildcards(os.path.join(checkpoint_output, "{group}_cdr3.npy")).group)
+    large_groups = expand("{base}/aggregated/lineage_clustering/cdr3/{donor}/{group}_cdr3.npy",
+            base=wildcards.base,
+            donor=wildcards.donor,
+           group=glob_wildcards(os.path.join(checkpoint_output, "{group}_cdr3.fasta")).group)
+    return large_groups
+
+def aggregate_templated_npy_files(wildcards):
+    checkpoint_output = checkpoints.cluster_cdr3s.get(**wildcards).output.clusters
+    #small_groups = expand("{base}/aggregated/lineage_clustering/templated/{donor}/{group}_templated.npy",
+     #       base=wildcards.base,
+     #       donor=wildcards.donor,
+     #      group=glob_wildcards(os.path.join(checkpoint_output, "{group}_templated.npy")).group)
+    large_groups = expand("{base}/aggregated/lineage_clustering/templated/{donor}/{group}_templated.npy",
+            base=wildcards.base,
+            donor=wildcards.donor,
+           group=glob_wildcards(os.path.join(checkpoint_output, "{group}_cdr3.fasta")).group)
+    return large_groups
+
+
+
+
+# an aggregation over all produced clusters
+checkpoint cluster_cdr3s:
+    input:
+        airr=rules.call_germlines.output.preprocessed,
+        npy=aggregate_cdr3_npy_files,
+    output:
+        airr="{base}/aggregated/lineage_clustering/templated/{donor}/{donor}_unique_vdjs_cdr3_clusters.tsv.gz",
+        clusters=directory("{base}/aggregated/lineage_clustering/templated/{donor}/")
+    wildcard_constraints:
+        donor="TBd[0-9]",
+    log:
+        "{base}/logs/cluster_cdr3s/{donor}_cluster_cdr3s.log",
+    conda:
+        "../envs/pacbio.yaml"
+    params:
+        scripts=config["vdj_scripts"],
+    resources:
+        mem_mb="131000",
+        time="24:00:00",
+    shell:
+        """
+        mkdir -p {output.clusters}
+        rm {output.clusters}/*
+
+        python {params.scripts}/cluster_sequences_based_on_cdr3_identity_uint8.py \
+        {input.airr} \
+        -outdir {wildcards.base}/aggregated/lineage_clustering/templated/{wildcards.donor} \
+        -matrixdir {wildcards.base}/aggregated/lineage_clustering/cdr3/{wildcards.donor} \
+        -samplename {wildcards.donor} \
+        2> {log}
+        
+        """
+
+rule cluster_templated_regions:
+    input:
+        airr=rules.call_germlines.output.preprocessed,
+        cdr3_cluster_table="{base}/aggregated/lineage_clustering/templated/{donor}/{donor}_unique_vdjs_cdr3_clusters.tsv.gz",
+        npy=aggregate_templated_npy_files,
+    output:
+        airr="{base}/aggregated/lineage_clustering/final_lineage_ids/{donor}.tsv.gz",
+    log:
+        "{base}/logs/cluster_templated/{donor}_cluster_templated.log",
+    conda:
+        "../envs/pacbio.yaml",
+    params:
+        scripts=config["vdj_scripts"],
+    resources:
+        mem_mb="131000",
+        time="12:00:00",
+    shell:
+        "python {params.scripts}/cluster_templated_regions_uint8.py "
+        "-airr {input.airr} "
+        "-cdr3clusters {input.cdr3_cluster_table} "
+        "-outdir {wildcards.base}/aggregated/lineage_clustering/final_lineage_ids/ "
+        "-matrixdir {wildcards.base}/aggregated/lineage_clustering/templated/{wildcards.donor} "
         "-samplename {wildcards.donor} "
         "2> {log}"
-
 
 rule create_germline_db:
     input:
@@ -180,7 +311,7 @@ rule create_germline_db:
 
 rule blast_to_germline:
     input:
-        seqs=rules.cluster_lineages.output,
+        seqs=rules.cluster_templated_regions.output,
         db=rules.create_germline_db.output,
     output:
         "{base}/aggregated/germline_db_vcall/initial/{donor}.tsv.gz",
@@ -189,7 +320,7 @@ rule blast_to_germline:
     log:
         "{base}/logs/blast_to_germline/{donor}_blast_to_germline.log",
     resources:
-        mem_mb=65000,
+        mem_mb="65000",
         time="12:00:00",
     conda:
         "../envs/pacbio.yaml"
@@ -229,14 +360,14 @@ rule polish_germlines:
 
 rule realign_to_polished_germline:
     input:
-        seqs=rules.cluster_lineages.output,
+        seqs=rules.cluster_templated_regions.output,
         db=rules.polish_germlines.output.db,
     output:
         "{base}/aggregated/germline_db_vcall/final/{donor}_combined_lineage_ids_vseq_germ_blast.tsv.gz",
     params:
         scripts=config["vdj_scripts"],
     resources:
-        mem_mb=65000,
+        mem_mb="65000",
         time="12:00:00",
     log:
         "{base}/logs/blast_to_germline/{donor}_blast_to_germline_polished.log",
@@ -260,7 +391,7 @@ rule align_v_sequences:
     params:
         scripts=config["vdj_scripts"],
     resources:
-        mem_mb=131000,
+        mem_mb="131000",
         time="2-00:00:00",
     log:
         "{base}/logs/trees/{donor}_pseudobulk_vmsa.log",
@@ -288,7 +419,7 @@ rule build_v_trees:
     log:
         "{base}/logs/trees/{donor}_fasttree.log",
     resources:
-        mem_mb=65000,
+        mem_mb="65000",
         time="12:00:00",
     conda:
         "../envs/presto.yaml"

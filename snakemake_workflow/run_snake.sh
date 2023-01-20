@@ -15,7 +15,7 @@ WAIT=120
 
 source /home/groups/quake/cvijovic/miniconda3/etc/profile.d/conda.sh
 conda activate snakemake
-mkdir -p snakemake_logs/slurm_logs/
+mkdir -p snakemake_logs/
 
 #log file for process that calls snakemake
 SBATCH_LOGFILE=snakemake_logs/cluster.$DATETIME.log

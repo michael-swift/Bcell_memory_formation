@@ -42,7 +42,6 @@ OUTDIR = args.outdir
 OUTNAME=args.outname
 MIN_DROPLET_FRACTION = args.min_droplet_fraction
 
-
 if OUTNAME == ".":
     OUTNAME=VDJC_SEQUENCE_TSV.split("/")[-1].split(".")[0]
 
@@ -99,30 +98,29 @@ df['cb'] = df['cb_corrected']
 sys.stderr.write("INFO: {} contigs have been discarded due to invalid cell barcodes\n".format(discarded_seq_ids))
 ####################################################
 
-
 sys.stderr.write('INFO: aggregating contigs belonging to same cell barcode...\n')
 
-cb_df = df.groupby(['sample_id','cb','locus']).agg(list)[['vdj_sequence', 'c_call_10X','umis','reads']]
+
+vdj_df = df.groupby(['sample_id', 'cb', 'locus', 'vdj_sequence', 'c_call_10X'])[['umis', 'reads']].agg(sum)
+cb_df = vdj_df.reset_index()..groupby(['sample_id','cb','locus']).agg(list)[['vdj_sequence', 'c_call_10X', 'umis', 'reads']]
 cb_df = cb_df.reset_index()
 
-cb_df['total_reads'] = cb_df.reads.map(lambda x: sum(x))
-cb_df['reads'] = cb_df.reads.apply(lambda x: np.asarray(x, dtype=int))
+for col in ['umis', 'reads']:
+    cb_df[f'total_{col}'] = cb_df[col].map(lambda x: sum(x))
+    cb_df[f'{col}'] = cb_df[col].apply(lambda x: np.asarray(x, dtype=int))
 
+print('INFO: Dropping contigs with fewer than 2 UMIs', file=sys.stderr)
 
-print('INFO: Dropping barcodes with fewer than 2 reads', file=sys.stderr)
+# cell barcode has to be associated with at least 2 UMIs
+cb_df = cb_df[cb_df.total_umis > 1]
 
-# cell barcode has to be associated with at least 2 reads
-cb_df = cb_df[cb_df.total_reads > 1]
-
-
-print('INFO: total number of valid cell barcodes with at least 2 reads:', file=sys.stderr)
+print('INFO: total number of valid contigs with at least 2 UMIs:', file=sys.stderr)
 print(cb_df.groupby('sample_id').size(), file=sys.stderr)
 
-cb_df = cb_df.sort_values(by='total_reads', ascending=False)
-
+cb_df = cb_df.sort_values(by='total_umis', ascending=False)
 
 ########################################################
-
+# continue here
 is_cell_dict = {}
 is_multiplet_dict = {}
 vdj_call_dict = {}
@@ -133,7 +131,9 @@ count = 0
 
 for it, row in cb_df.iterrows():
 
+
     unique_vdj_seqs = np.unique(np.asarray(row.vdj_sequence))
+    
     umi_support = sorted([(row.vdj_sequence.count(x),x) for x in unique_vdj_seqs])
 
     umis_per_seq = np.asarray([x for x, y in umi_support])
