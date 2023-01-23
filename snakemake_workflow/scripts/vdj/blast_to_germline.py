@@ -97,4 +97,4 @@ blastn_results = blastn_results.rename(columns = {"sequence_id" : "v_seq_id",
 df = df.merge(blastn_results, on = "v_seq_id", how = "outer")
 sys.stderr.write("[%ds] Done! Saving...\n" % (time.time() - start))
 df.to_csv('{}/{}.tsv.gz'.format(outdir,samplename), sep = '\t', index = False)
-sys.stderr.write("Output written to: {}/{}_vseq_germ_blast.tsv.gz \n".format(outdir, samplename))
+sys.stderr.write("Output written to: {}/{}.tsv.gz \n".format(outdir, samplename))

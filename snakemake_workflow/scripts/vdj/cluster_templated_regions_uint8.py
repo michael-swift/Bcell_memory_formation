@@ -55,12 +55,13 @@ unique_vdjs = pd.read_table(UNIQUE_VDJ_FILE)
 
 sys.stderr.write("Verifying that all distance matrices are available...\n")
 for cluster_id in unique_vdjs.cluster_id.unique():
-    BINARY_MATRIX_FILENAME = f'{MATRIXDIR}/{SAMPLENAME}_{cluster_id}_templated.npy'
-    if os.path.exists(BINARY_MATRIX_FILENAME):
-        pass
-    else:
-        sys.stderr.write(f"Cannot find the following file {BINARY_MATRIX_FILENAME}. Aborting...\n")
-        sys.exit(1)
+    for s in ['v', 'j']:
+        BINARY_MATRIX_FILENAME = f'{MATRIXDIR}/{SAMPLENAME}_{cluster_id}_templated_{s}.npy'
+        if os.path.exists(BINARY_MATRIX_FILENAME):
+            pass
+        else:
+            sys.stderr.write(f"Cannot find the following file {BINARY_MATRIX_FILENAME}. Aborting...\n")
+            sys.exit(1)
 
 sys.stderr.write(f"Clustering {unique_vdjs.shape[0]} unique variable sequences...\n")
 
@@ -74,8 +75,9 @@ unique_vdjs['lineage_id'] = -1
 for cluster_id in unique_vdjs.cluster_id.value_counts().index:
     subset = unique_vdjs[unique_vdjs['cluster_id'] == cluster_id]
 
-    BINARY_MATRIX_FILENAME = f'{MATRIXDIR}/{SAMPLENAME}_{cluster_id}_templated.npy'
-
+    V_BINARY_MATRIX_FILENAME = f'{MATRIXDIR}/{SAMPLENAME}_{cluster_id}_templated_v.npy'
+    J_BINARY_MATRIX_FILENAME = f'{MATRIXDIR}/{SAMPLENAME}_{cluster_id}_templated_j.npy'
+   
     templated_seqs = subset.templated_vj.values
     n = len(templated_seqs)
     subset_idx = subset.index
@@ -85,7 +87,13 @@ for cluster_id in unique_vdjs.cluster_id.value_counts().index:
     sys.stderr.write(
         f"Processing VDJ sequence subset: cluster_id={cluster_id}, n={n}\n")
 
-    Ds = np.load(BINARY_MATRIX_FILENAME, allow_pickle = False)
+    Ds = np.load(V_BINARY_MATRIX_FILENAME, allow_pickle = False)
+    DJs = np.load(J_BINARY_MATRIX_FILENAME, allow_pickle = False)
+    
+    R = np.uint8(255) * np.ones((n,n), np.uint8) - Ds
+    Ds = Ds + DJs
+    Ds[R<DJs] = np.uint8(255)
+
     n=Ds.shape[0]
     diag_indices = np.diag_indices(n)
     Ds[diag_indices] = np.uint8(255)
@@ -95,7 +103,7 @@ for cluster_id in unique_vdjs.cluster_id.value_counts().index:
 
     if n > 1:
         # report on memory usage when dealing with very large lineages
-        if n > 10000:
+        if n > 8000:
             matrix_size =  sys.getsizeof(Ds)/(1024)**3
             matrix_size = round(matrix_size*100)/100
             total_memory_usage = round(get_current_memory_usage()*100)/100

@@ -47,8 +47,10 @@ imgt_allele_df = imgt_allele_df.set_index("gene/allele_name")
 df=pd.read_table(FILENAME, usecols=['vdj_sequence','lineage_id','v_call',
                                     'v_sequence_alignment', 
                                     'v_germline_alignment', 
-                                    'v_db_call', 'lineage_id', 'cdr3_length', 'v_mismatch', 'tissue'])
+                                    'v_db_call', 'lineage_id', 'cdr3', 'v_mismatch', 'tissue'])
 germline_genes = df.v_db_call.unique()
+
+df['cdr3_length'] = df.cdr3.str.len()
 
 df.v_call = df.v_call.str.split(",").map(lambda x: x[0])
 df['imgt_db_mismatch'] = df.apply(lambda x: hamming(x.v_sequence_alignment, x.v_germline_alignment), axis=1)

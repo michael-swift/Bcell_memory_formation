@@ -188,18 +188,18 @@ rule fasta_to_hamming_distance_matrix:
 
 rule fasta_to_levenshtein_distance_matrix:
     input:
-        "{base}/aggregated/lineage_clustering/templated/{donor}/{group}_cdr3.fasta",
+        "{base}/aggregated/lineage_clustering/templated/{donor}/{group}_{seq_element}.fasta",
     output:
-        "{base}/aggregated/lineage_clustering/templated/{donor}/{group}_templated.npy",
+        "{base}/aggregated/lineage_clustering/templated/{donor}/{group}_{seq_element}.npy",
     log:
-        "{base}/logs/cluster_lineages/matrix_calc/templated/{donor}_{group}.log",
+        "{base}/logs/cluster_lineages/matrix_calc/templated/{donor}_{group}_{seq_element}.log",
     conda:
         "../envs/pacbio.yaml",
     params:
         scripts=config["vdj_scripts"],
     resources:
         mem_mb="128000",
-        time="24:00:00",
+        time="48:00:00",
     shell:
         "python {params.scripts}/calc_matrix.py "
         "{input} "
@@ -219,15 +219,15 @@ def aggregate_cdr3_npy_files(wildcards):
 
 def aggregate_templated_npy_files(wildcards):
     checkpoint_output = checkpoints.cluster_cdr3s.get(**wildcards).output.clusters
-    #small_groups = expand("{base}/aggregated/lineage_clustering/templated/{donor}/{group}_templated.npy",
-     #       base=wildcards.base,
-     #       donor=wildcards.donor,
-     #      group=glob_wildcards(os.path.join(checkpoint_output, "{group}_templated.npy")).group)
-    large_groups = expand("{base}/aggregated/lineage_clustering/templated/{donor}/{group}_templated.npy",
+    v_files = expand("{base}/aggregated/lineage_clustering/templated/{donor}/{group}_templated_v.npy",
             base=wildcards.base,
             donor=wildcards.donor,
-           group=glob_wildcards(os.path.join(checkpoint_output, "{group}_cdr3.fasta")).group)
-    return large_groups
+            group=glob_wildcards(os.path.join(checkpoint_output, "{group}_templated_v.fasta")).group)
+    j_files = expand("{base}/aggregated/lineage_clustering/templated/{donor}/{group}_templated_j.npy",
+            base=wildcards.base,
+            donor=wildcards.donor,
+           group=glob_wildcards(os.path.join(checkpoint_output, "{group}_templated_j.fasta")).group)
+    return v_files + j_files
 
 
 
@@ -363,7 +363,7 @@ rule realign_to_polished_germline:
         seqs=rules.cluster_templated_regions.output,
         db=rules.polish_germlines.output.db,
     output:
-        "{base}/aggregated/germline_db_vcall/final/{donor}_combined_lineage_ids_vseq_germ_blast.tsv.gz",
+        "{base}/aggregated/germline_db_vcall/final/{donor}.tsv.gz",
     params:
         scripts=config["vdj_scripts"],
     resources:

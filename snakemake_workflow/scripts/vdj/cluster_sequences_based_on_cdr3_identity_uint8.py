@@ -177,15 +177,15 @@ for cdr3_group in unique_vdjs.cdr3_group.unique():
 
 sys.stderr.write(f"Clustering CDR3s took {round(time.time() - start)} seconds\n")
 
+unique_vdjs['templated_v'] = unique_vdjs.apply(lambda x: x.vdj_sequence[0:int(x.v_templated_len)], axis=1)
+unique_vdjs['templated_j'] = unique_vdjs.apply(lambda x: x.vdj_sequence[-int(x.j_templated_len):], axis=1)
+
 unique_vdjs.to_csv(f"{OUTDIR}/{SAMPLENAME}_unique_vdjs_cdr3_clusters.tsv.gz", sep= '\t')
 
 LARGE_GROUP_CUTOFF=8*10**3
 
 sys.stderr.write("Preparing to cluster templated sequences within cdr3 clusters...\n")
 
-unique_vdjs['templated_v'] = unique_vdjs.apply(lambda x: x.vdj_sequence[0:int(x.v_templated_len)], axis=1)
-unique_vdjs['templated_j'] = unique_vdjs.apply(lambda x: x.vdj_sequence[-int(x.j_templated_len):], axis=1)
-unique_vdjs['templated_vj'] = unique_vdjs['templated_v'] + "+" + unique_vdjs['templated_j']
 cluster_sizes = unique_vdjs.cluster_id.value_counts()
 unique_vdjs['cluster_size'] = unique_vdjs.cluster_id.map(cluster_sizes)
 
@@ -194,7 +194,6 @@ large_groups = unique_vdjs['cluster_id'][
 small_groups = unique_vdjs['cluster_id'][
                     unique_vdjs['cluster_size'] <= LARGE_GROUP_CUTOFF].unique()
 
-
 start = time.time()
 
 sys.stderr.write(
@@ -202,50 +201,52 @@ sys.stderr.write(
 
 for cluster_id in large_groups:
     subset = unique_vdjs[unique_vdjs['cluster_id'] == cluster_id]
+    
+    for seq_element in ['templated_v', 'templated_j']:
+        BINARY_MATRIX_FILENAME = f'{OUTDIR}/{SAMPLENAME}_{cluster_id}_{seq_element}.npy'
 
-    BINARY_MATRIX_FILENAME = f'{OUTDIR}/{SAMPLENAME}_{cluster_id}_templated.npy'
+        templated_seqs = subset[seq_element].values
+        n = len(templated_seqs)
+        subset_idx = subset.index
 
-    templated_seqs = subset.templated_vj.values
-    n = len(templated_seqs)
-    subset_idx = subset.index
-
-    sys.stderr.write(
-        f"Processing VDJ sequence subset: cluster_id={cluster_id}, n={n}\n")
+        sys.stderr.write(
+            f"Processing VDJ sequence subset: cluster_id={cluster_id}, n={n}\n")
 
 
-    sys.stderr.write("\t writing sequences to disk for cluster execution...\n" )
-    FASTA_FILENAME = f'{OUTDIR}/{SAMPLENAME}_{cluster_id}_tremplated.fasta'
+        sys.stderr.write("\t writing sequences to disk for cluster execution...\n" )
+        FASTA_FILENAME = f'{OUTDIR}/{SAMPLENAME}_{cluster_id}_{seq_element}.fasta'
 
-    with open(FASTA_FILENAME, 'w') as writer:
-        items = [f">{it}\n{templated}" for it, templated in enumerate(templated_seqs)]
-        writer.write("\n".join(items))
+        with open(FASTA_FILENAME, 'w') as writer:
+            items = [f">{it}\n{templated}" for it, templated in enumerate(templated_seqs)]
+            writer.write("\n".join(items))
 
-    sys.stderr.write(f"\t sequences written to {FASTA_FILENAME}!\n" )
+        sys.stderr.write(f"\t sequences written to {FASTA_FILENAME}!\n" )
 
 for cluster_id in small_groups:
     subset = unique_vdjs[unique_vdjs['cluster_id'] == cluster_id]
+    
+    for seq_element in ['templated_v', 'templated_j']:
+        BINARY_MATRIX_FILENAME = f'{OUTDIR}/{SAMPLENAME}_{cluster_id}_{seq_element}.npy'
 
-    BINARY_MATRIX_FILENAME = f'{OUTDIR}/{SAMPLENAME}_{cluster_id}_templated.npy'
+        templated_seqs = subset[seq_element].values
+        n = len(templated_seqs)
+        subset_idx = subset.index
 
-    templated_seqs = subset.templated_vj.values
-    n = len(templated_seqs)
-    subset_idx = subset.index
+        sys.stderr.write(
+            f"Processing VDJ sequence subset: cluster_id={cluster_id}, n={n}\n")
 
-    sys.stderr.write(
-        f"Processing VDJ sequence subset: cluster_id={cluster_id}, n={n}\n")
+        sys.stderr.write("\t computing distance matrix locally...\n")
 
-    sys.stderr.write("\t computing distance matrix locally...\n")
+        D = np.zeros((n,n),np.uint8)
 
-    D = np.zeros((n,n),np.uint8)
+        for i in range(n):
+            for j in range(i):
+                d = distance(templated_seqs[i], templated_seqs[j])
+                d = np.uint8(min(d, 255))
+                D[i,j] = d
+                D[j,i] = d
 
-    for i in range(n):
-        for j in range(i):
-            d = distance(templated_seqs[i], templated_seqs[j])
-            d = np.uint8(min(d, 255))
-            D[i,j] = d
-            D[j,i] = d
-
-    np.save(BINARY_MATRIX_FILENAME, D, allow_pickle=False)
+        np.save(BINARY_MATRIX_FILENAME, D, allow_pickle=False)
 
     sys.stderr.write(f"\t\t this took {time.time() - start} seconds\n")
 

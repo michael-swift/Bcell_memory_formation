@@ -12,7 +12,7 @@ cluster:
 
 default-resources:
   - partition=normal,owners,quake
-  - mem_mb=4000
+  - mem_mb="4000"
   - gpus=0
   - time="03:00:00"
   - threads=1
