@@ -30,6 +30,8 @@ vdj_reference: "/home/groups/quake/mswift/5prime_10X_workflow/db/vdj_reference"
 inner_primers: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow/db/inner_primers.txt"
 10X_transcriptome: "https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-GRCh38-2020-A.tar.gz"
 transcriptome: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow/db/refdata-gex-GRCh38-2020-A"
+#10X cell barcode whitelist
+whitelist: "db/whitelists/737K-august-2016.txt"
 # the assembly pipeline uses the immcantation framework for IgBLAST
 # options: 'docker' or 'singularity'
 container_type: singularity
