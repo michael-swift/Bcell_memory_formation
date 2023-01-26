@@ -3,7 +3,7 @@
 # path to sheet describing each cell
 library_info: "samplesheets/library_info.tsv"
 # output directory for processed data
-base: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline_2"
+base: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline"
 # specificed in multi_configs
 fastq_dirs: ["/oak/stanford/groups/quake/shared/swiftShare/tb_gex_fastqs/"]
 vdj_fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/ilm7_vdj/"
@@ -71,4 +71,6 @@ gtf_name:
   human: Homo_sapiens.GRCh38.93
   mouse: Mus_musculus.GRCm38.93 
 
-CR_whitelist: 
+TICA_urls: 
+  global: https://cellgeni.cog.sanger.ac.uk/pan-immune/CountAdded_PIP_global_object_for_cellxgene.h5ad
+  b_cell: https://cellgeni.cog.sanger.ac.uk/pan-immune/TICA_B_BCR.h5ad

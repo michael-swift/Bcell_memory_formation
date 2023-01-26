@@ -27,7 +27,7 @@ rule filter_quality:
     log:
         "{base}/logs/{sample_uid}_filter-quality.log",
     params:
-        output_dir=config["outs_basedir"],
+        output_dir=config["base"],
     threads: 16,
     conda:
         "../envs/presto.yaml"
@@ -158,7 +158,6 @@ rule build_consensus:
         "--outdir {wildcards.base}/build_consensus/ "
         "--log {log.prestolog} "
         "> {log.runlog}"
-
 
 rule deduplicate_sample:
     input:

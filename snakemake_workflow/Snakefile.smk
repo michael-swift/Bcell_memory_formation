@@ -43,7 +43,7 @@ rule all:
     input:
         #expand("{base}/per_sample/cellranger_vdj/{sample_uid_vdj}/outs/web_summary.html", base = base, sample_uid_vdj = sample_uids_vdj),
         "{}/analysis/scanpy/gex_object.h5ad.gz".format(base),
-        expand("{base}/per_sample/fastqc/{sample_uid_vdj}/", base = base, sample_uid_vdj = sample_uids_vdj),
+        #expand("{base}/per_sample/fastqc/{sample_uid_vdj}/", base = base, sample_uid_vdj = sample_uids_vdj),
         #expand("{base}/per_sample/star_solo_vdj/{sample_uid_vdj}/Aligned.out.bam", base = base, sample_uid_vdj = sample_uids_vdj),
     params:
         name="all",
@@ -54,9 +54,9 @@ rule all:
 include: "rules/gex.smk"
 include: "rules/vdjc.smk"
 include: "rules/qc.smk"
-include: "rules/align.smk"
+include: "rules/get_resources.smk"
 
 def samplesheet_lookup(idx, col):
     return samplesheets.loc[idx, col]
 
-localrules:combine_cb_cr
+localrules:cellranger_count,touch_h5
