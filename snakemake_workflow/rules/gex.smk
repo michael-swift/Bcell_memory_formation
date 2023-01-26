@@ -10,8 +10,9 @@ def wildcard_input(wildcards):
 # Configuration
 #
 species = config["species"]
-
+"""
 rule cellranger_count:
+    # snakemake and cellranger don't play well together because hthey both want control of the directory, touching to work around
     input:
         config["fastq_dirs"],
     output:
@@ -34,8 +35,25 @@ rule cellranger_count:
         " --sample={wildcards.sample_uid}"
         " --localcores=20"
         " --nosecondary"
+"""
+rule cellranger_count:
+    input:
+        config["fastq_dirs"],
+    output:
+        touch("{base}/per_sample/cellranger/{sample_uid}.txt"),
+    params:
+        name="count_cellranger",
+        base=config["base"],
+        cell_ranger=config["cell_ranger"],
+        transcriptome=config["transcriptome"],
+    resources:
+        partition="quake"
+    threads: 20
+    shell:
+        "echo touching"
 
 rule touch_h5:
+    # touch h5 file output from cellranger to make snakemake aware of it
     input: rules.cellranger_count.output
     output:touch("{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5")
     
