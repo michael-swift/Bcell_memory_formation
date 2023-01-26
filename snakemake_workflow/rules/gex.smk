@@ -15,7 +15,7 @@ rule cellranger_count:
     input:
         config["fastq_dirs"],
     output:
-        touch("{base}/per_sample/cellranger/{sample_uid}.txt"),
+        touch("{base}/per_sample/cellranger/{sample_uid}.done"),
     params:
         name="count_cellranger",
         base=config["base"],
@@ -36,9 +36,9 @@ rule cellranger_count:
         " --nosecondary"
 
 rule touch_h5:
-    input: rules.cellranger_count.output
-    output:touch("{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5")
-    
+    input: "{base}/per_sample/cellranger/{sample_uid}.done"
+    output:"{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5"
+    shell:"touch {output}"
     
 rule run_cellbender:
     input: rules.touch_h5.output

@@ -31,7 +31,7 @@ def perform_qc(adata, filter_cells=True):
         save="prefilter",
     )
     if filter_cells == True:
-        sc.pp.filter_cells(adata, min_counts=2000)
+        sc.pp.filter_cells(adata, min_counts=1500)
         sc.pp.filter_cells(adata, min_genes=500)
         sc.pp.filter_cells(adata, max_genes=12000)
         sc.pp.filter_cells(adata, max_counts=150000)
@@ -112,8 +112,8 @@ print("transforming gene expression")
 adata.layers['umi_counts'] = adata.X.copy()
 print("normalize per 10K counts")
 sc.pp.normalize_total(adata, target_sum=1e4)
-print("log1p")
-sc.pp.log1p(adata, chunk_size=10000)
+print("log base 2")
+sc.pp.log1p(adata, chunk_size=10000, base = 2)
 print("top highly variable genes")
 sc.pp.highly_variable_genes(adata, n_top_genes=3000, batch_key = "tissue")
 
