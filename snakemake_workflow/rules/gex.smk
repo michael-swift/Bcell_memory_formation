@@ -64,8 +64,8 @@ rule run_cellbender:
 
 rule combine_cb_cr:
     input:
-        cr="{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5",
-        cb="{base}/per_sample/cellbender/{sample_uid}/background_removed.h5"
+        cr=ancient("{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5"),
+        cb=ancient("{base}/per_sample/cellbender/{sample_uid}/background_removed.h5")
     output:
         "{base}/per_sample/cellranger_cellbender/{sample_uid}/combined.h5ad"
     log:
@@ -75,8 +75,8 @@ rule combine_cb_cr:
         partition="quake,owners",
         time="0-1",
     params:
-        min_genes=100,
-        min_counts=100,
+        min_genes=200,
+        min_counts=400,
         filter_cells=True,
     script:
         config["workflow_dir"] + "/scripts/post_cellranger/combined_cr_cb.py"
@@ -88,7 +88,7 @@ rule aggregate_h5ads:
             "{base}/per_sample/cellranger_cellbender/{sample_uid}/combined.h5ad",
             base=config["base"],
             sample_uid=sample_uids,
-        ),
+        ), ancient("{base}/downloads/CountAdded_PIP_global_object_for_cellxgene.h5ad")
     output:
         "{base}/aggregated/aggr_gex_raw.h5ad",
     log:
@@ -100,8 +100,8 @@ rule aggregate_h5ads:
     conda:
         config["workflow_dir"] + "/envs/scanpy.yaml"
     params:
-        min_genes=10,
-        min_counts=300,
+        min_genes=400,
+        min_counts=400,
         filter_cells=True,
     script:
         config["workflow_dir"] + "/scripts/post_cellranger/aggregate_h5ads.py"

@@ -1,21 +1,24 @@
 import os
 
+
 rule get_genome_fasta_and_gtf:
     """ Get genome and GTF from ensembl """
     output:
-        fasta='%s/resources/star/%s.ERCC.fa' % (workflow.basedir, config['fasta_name'][config['species']]),
-        gtf='%s/resources/star/%s.ERCC.gtf' % (workflow.basedir, config['fasta_name'][config['species']])
+        fasta="%s/resources/star/%s.ERCC.fa"
+        % (workflow.basedir, config["fasta_name"][config["species"]]),
+        gtf="%s/resources/star/%s.ERCC.gtf"
+        % (workflow.basedir, config["fasta_name"][config["species"]]),
     threads: 1
     params:
         name="wget_files",
-        partition=config['partition'],
-        fasta_url=config['fasta_url'][config['species']],
-        fasta_name=config['fasta_name'][config['species']],
-        gtf_url=config['gtf_url'][config['species']],
-        gtf_name=config['gtf_name'][config['species']],
-        include_ERCCs='true' if config['include_ERCCs'] else 'false'
+        partition=config["partition"],
+        fasta_url=config["fasta_url"][config["species"]],
+        fasta_name=config["fasta_name"][config["species"]],
+        gtf_url=config["gtf_url"][config["species"]],
+        gtf_name=config["gtf_name"][config["species"]],
+        include_ERCCs="true" if config["include_ERCCs"] else "false",
     resources:
-        mem_mb=5000
+        mem_mb=5000,
     shell:
         "fa=resources/star/{params.fasta_name}.fa.gz && "
         "gtf=resources/star/{params.gtf_name}.gtf.gz && "
@@ -37,24 +40,25 @@ rule star_genome_generate:
     input:
         fasta=rules.get_genome_fasta_and_gtf.output.fasta,
         gtf=rules.get_genome_fasta_and_gtf.output.gtf,
-        sjadditional='{}/resources/star/IGHC_IGHJ_splices_{}.txt'.format(workflow.basedir,
-                                                                         config['species'])
+        sjadditional="{}/resources/star/IGHC_IGHJ_splices_{}.txt".format(
+            workflow.basedir, config["species"]
+        ),
     output:
-        '%s/resources/star/star_genome_%s/Genome' % (workflow.basedir,
-                                                     config['species'])
+        "%s/resources/star/star_genome_%s/Genome"
+        % (workflow.basedir, config["species"]),
     threads: 12
     params:
-        name='star_genome_gen',
-
-        star_read_len=int(config['read_length']) - 1
+        name="star_genome_gen",
+        star_read_len=int(config["read_length"]) - 1,
     resources:
         mem_mb=60000,
-        partition='quake,owners'
-    conda: config["workflow_dir"] + "/envs/single-cell.yaml"
+        partition="quake,owners",
+    conda:
+        config["workflow_dir"] + "/envs/single-cell.yaml"
     shell:
         "genomedir=$(dirname {output}) && "
         "mkdir -p $genomedir && "
-        "cd $(dirname $genomedir) && " 
+        "cd $(dirname $genomedir) && "
         "STAR --runMode genomeGenerate "
         "--genomeDir $genomedir "
         "--genomeFastaFiles {input.fasta} "
@@ -62,6 +66,27 @@ rule star_genome_generate:
         "--sjdbOverhang {params.star_read_len} "
         "--sjdbFileChrStartEnd {input.sjadditional} "
         "--runThreadN {threads}"
+
+
+rule pull_TICA_data:
+    """ Get TICA data from tissueimmunecellatlas.org """
+    output:
+        output_dir=directory("{base}/downloads/"),
+        global_counts_data="{base}/downloads/CountAdded_PIP_global_object_for_cellxgene.h5ad",
+        GEX_BCR_data="{base}/downloads/TICA_B_BCR.h5ad",
+    threads: 1
+    params:
+        name="wget_files",
+        partition=config["partition"],
+        global_url=config["TICA_urls"]["global"],
+        bcell_url=config["TICA_urls"]["b_cell"],
+    resources:
+        mem_mb=5000,
+    shell:
+        "mkdir -p {output[0]} && "
+        "cd {output[0]} && "
+        "wget {params.global_url} && "
+        "wget {params.bcell_url}"
 
 
 rule star_solo_vdj:
@@ -111,4 +136,3 @@ rule star_solo_vdj:
             " --soloUMIlen 10"
             " --soloFeatures SJ"
             " --soloCBwhitelist {params.cr_whitelist}"
- 
