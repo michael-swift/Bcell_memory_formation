@@ -10,7 +10,7 @@ def wildcard_input(wildcards):
 # Configuration
 #
 species = config["species"]
-"""
+
 rule cellranger_count:
     # snakemake and cellranger don't play well together because hthey both want control of the directory, touching to work around
     input:
@@ -35,25 +35,9 @@ rule cellranger_count:
         " --sample={wildcards.sample_uid}"
         " --localcores=20"
         " --nosecondary"
-"""
-rule cellranger_count:
-    input:
-        config["fastq_dirs"],
-    output:
-        touch("{base}/per_sample/cellranger/{sample_uid}.txt"),
-    params:
-        name="count_cellranger",
-        base=config["base"],
-        cell_ranger=config["cell_ranger"],
-        transcriptome=config["transcriptome"],
-    resources:
-        partition="quake"
-    threads: 20
-    shell:
-        "echo touching"
 
 rule touch_h5:
-    input: "{base}/per_sample/cellranger/{sample_uid}.done"
+    input: rules.cellranger_count.output
     output:"{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5"
     shell:"touch {output}"
     
@@ -105,7 +89,7 @@ rule aggregate_h5ads:
             "{base}/per_sample/cellranger_cellbender/{sample_uid}/combined.h5ad",
             base=config["base"],
             sample_uid=sample_uids,
-        ), ancient("{base}/downloads/CountAdded_PIP_global_object_for_cellxgene.h5ad")
+        ),"{base}/downloads/CountAdded_PIP_global_object_for_cellxgene.h5ad"
     output:
         "{base}/aggregated/aggr_gex_raw.h5ad",
     log:

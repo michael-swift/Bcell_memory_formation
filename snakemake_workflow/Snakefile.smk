@@ -59,4 +59,4 @@ include: "rules/get_resources.smk"
 def samplesheet_lookup(idx, col):
     return samplesheets.loc[idx, col]
 
-localrules:cellranger_count,touch_h5
+localrules:touch_h5

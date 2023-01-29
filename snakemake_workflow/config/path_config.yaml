@@ -3,7 +3,7 @@
 # path to sheet describing each cell
 library_info: "samplesheets/library_info.tsv"
 # output directory for processed data
-base: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline"
+base: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline_2"
 # specificed in multi_configs
 fastq_dirs: ["/oak/stanford/groups/quake/shared/swiftShare/tb_gex_fastqs/"]
 vdj_fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/ilm7_vdj/"
