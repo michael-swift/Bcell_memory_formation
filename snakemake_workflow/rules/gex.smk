@@ -25,6 +25,7 @@ rule cellranger_count:
     shell:
         "mkdir -p {base}/per_sample/cellranger/ && "
         "cd {base}/per_sample/cellranger/ && "
+        "rm {wildcards.sample_uid}/_lock && "
         "{params.cell_ranger}/cellranger count"
         " --id={wildcards.sample_uid}"
         " --transcriptome={params.transcriptome}"
