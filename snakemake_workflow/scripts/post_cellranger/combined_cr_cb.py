@@ -9,7 +9,7 @@ min_genes_per_CB = int(snakemake.params.min_genes)
 min_counts_per_CB = int(snakemake.params.min_counts)
 
 # read 10X Genomics raw file
-adata = sc.read_10x_h5(cellranger)
+adata = sc.read_10x_h5(cellranger[1])
 adata_cb = sc.read_10x_h5(cellbender)
 
 adata.obs['sample_uid'] = sample_uid

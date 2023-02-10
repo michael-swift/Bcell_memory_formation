@@ -12,37 +12,30 @@ def wildcard_input(wildcards):
 species = config["species"]
 
 rule cellranger_count:
-    # snakemake and cellranger don't play well together because hthey both want control of the directory, touching to work around
+    #snakemake and cellranger don't play well together because they both want control of the directory, touching to work around
     input:
-        config["fastq_dirs"],
+        config["gex_fastq_dirs"],
     output:
-        touch("{base}/per_sample/cellranger/{sample_uid}.done"),
+        "{base}/per_sample/cellranger/sample_stamps/{sample_uid}.done"
     params:
         name="count_cellranger",
         base=config["base"],
         cell_ranger=config["cell_ranger"],
         transcriptome=config["transcriptome"],
-    resources:
-        partition="quake"
-    threads: 20
     shell:
-        "mkdir -p {base}/per_sample/cellranger && "
-        "cd {base}/per_sample/cellranger && "
+        "mkdir -p {base}/per_sample/cellranger/ && "
+        "cd {base}/per_sample/cellranger/ && "
         "{params.cell_ranger}/cellranger count"
         " --id={wildcards.sample_uid}"
         " --transcriptome={params.transcriptome}"
-        " --fastqs={input[0]}"
+        " --fastqs={input}"
         " --sample={wildcards.sample_uid}"
         " --localcores=20"
         " --nosecondary"
+        " --no-bam && touch {output}"
 
-rule touch_h5:
-    input: rules.cellranger_count.output
-    output:"{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5"
-    shell:"touch {output}"
-    
 rule run_cellbender:
-    input: rules.touch_h5.output
+    input:rules.cellranger_count.output
     output:
         "{base}/per_sample/cellbender/{sample_uid}/background_removed.h5",
         "{base}/per_sample/cellbender/{sample_uid}/background_removed_cell_barcodes.csv",
@@ -55,9 +48,10 @@ rule run_cellbender:
         partition="gpu",
     params:
         expected_cells=lambda wildcards: samplesheet_lookup(wildcards.sample_uid, "expected_cells"),
+        cellranger_count_file = lambda wildcards: "{base}/per_sample/{sample_uid}/outs/raw_feature_bc_matrix.h5".format(sample_uid = wildcards.sample_uid, base = config["base"])
     shell:
         "cellbender remove-background"
-        " --input {input}"
+        " --input {params.cellranger_count_file}"
         " --output {output[0]}"
         " --expected-cells {params.expected_cells}"
         " --fpr 0.01"
@@ -65,8 +59,8 @@ rule run_cellbender:
 
 rule combine_cb_cr:
     input:
-        cr=ancient("{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5"),
-        cb=ancient("{base}/per_sample/cellbender/{sample_uid}/background_removed.h5")
+        cr=rules.cellranger_count.output,
+        cb="{base}/per_sample/cellbender/{sample_uid}/background_removed.h5"
     output:
         "{base}/per_sample/cellranger_cellbender/{sample_uid}/combined.h5ad"
     log:
@@ -101,8 +95,8 @@ rule aggregate_h5ads:
     conda:
         config["workflow_dir"] + "/envs/scanpy.yaml"
     params:
-        min_genes=400,
-        min_counts=400,
+        min_genes=300,
+        min_counts=300,
         filter_cells=True,
     script:
         config["workflow_dir"] + "/scripts/post_cellranger/aggregate_h5ads.py"

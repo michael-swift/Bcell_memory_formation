@@ -31,11 +31,11 @@ def perform_qc(adata, filter_cells=True):
         save="prefilter",
     )
     if filter_cells == True:
-        sc.pp.filter_cells(adata, min_counts=1500)
-        sc.pp.filter_cells(adata, min_genes=500)
+        sc.pp.filter_cells(adata, min_counts=1000)
+        sc.pp.filter_cells(adata, min_genes=300)
         sc.pp.filter_cells(adata, max_genes=12000)
-        sc.pp.filter_cells(adata, max_counts=150000)
-    adata = adata[adata.obs["pct_counts_mt"] < 12]
+        sc.pp.filter_cells(adata, max_counts=300000)
+    adata = adata[adata.obs["pct_counts_mt"] < 20]
     # plot results of filtering
     sc.pl.violin(
         adata,
@@ -141,7 +141,6 @@ if majority_voting:
     sc.tl.umap(adata)
 else:
     predictions = celltypist.annotate(adata, model = "Immune_All_Low.pkl")
-
 # Get an `AnnData` with predicted labels embedded into the cell metadata columns.
 adata = predictions.to_adata()
 # this line allows to write h5ad, otherwise h5py throws errors

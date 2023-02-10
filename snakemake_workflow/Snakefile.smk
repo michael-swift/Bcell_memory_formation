@@ -25,7 +25,7 @@ samplesheets["species"] = "human"
 donors = list(set(samplesheets[samplesheets.species == "human"].donor.to_list()))
 
 # filter samplesheet:
-#samplesheets = samplesheets[samplesheets.sample_uid.str.contains('TBd5_frozen_LN')]
+#samplesheets = samplesheets[samplesheets.sample_uid.str.contains('TBd4_frozen_PB')]
 #samplesheets = samplesheets.iloc[:2]
 samplesheets_gex = samplesheets[samplesheets.lib_type == 'gex']
 samplesheets_gex.set_index("sample_uid", inplace=True)
@@ -59,4 +59,4 @@ include: "rules/get_resources.smk"
 def samplesheet_lookup(idx, col):
     return samplesheets.loc[idx, col]
 
-localrules:touch_h5
+#localrules:touch_h5
