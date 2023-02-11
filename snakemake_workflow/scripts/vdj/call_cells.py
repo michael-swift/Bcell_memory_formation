@@ -57,12 +57,14 @@ sys.stderr.write(f"Constructing whitelist trie took {elapsed}s\n")
 
 df = pd.read_table(VDJC_SEQUENCE_TSV,
                     usecols=['barcode',
+                             'locus',
                              'sequence_id',
-                             'sample_id',
-                             'library_uid',
+                             'sample_uid',
                              'vdj_sequence',
-                             'c_call_10X',
-                             'sequence'])
+                             'c_gene_10X',
+                             'sequence',
+                              'umis',
+                              'reads'])
 
 df['cb'] = df['barcode'].map(lambda x : x.split("-")[0])
 
@@ -105,15 +107,15 @@ df['cb'] = df['cb_corrected']
 
 sys.stderr.write('aggregating contigs belonging to same cell barcode...\n')
 
-vdjc_df = df.groupby(['sample_id',
+vdjc_df = df.groupby(['sample_uid',
                       'cb',
                       'locus',
                       'vdj_sequence',
-                      'c_call_10X'])[['umis', 'reads']].agg(sum)
-cb_df = vdjc_df.reset_index().groupby(['sample_id',
+                      'c_gene_10X'])[['umis', 'reads']].agg(sum)
+cb_df = vdjc_df.reset_index().groupby(['sample_uid',
                                        'cb',
                                        'locus'])[['vdj_sequence',
-                                                  'c_call_10X',
+                                                  'c_gene_10X',
                                                   'umis',
                                                   'reads']].agg(list)
 cb_df = cb_df.reset_index()
@@ -121,7 +123,7 @@ cb_df = cb_df.reset_index()
 for col in ['umis', 'reads']:
     cb_df[f'total_{col}'] = cb_df[col].map(lambda x: sum(x))
     cb_df[f'{col}'] = cb_df[col].apply(lambda x: np.array(x, dtype=int))
-for col in ['vdj_sequence', 'c_call_10X']:
+for col in ['vdj_sequence', 'c_gene_10X']:
     cb_df[col] = cb_df[col].apply(lambda x: np.array(x))
 
 print('INFO: Dropping contigs with fewer than 2 UMIs', file=sys.stderr)
@@ -130,7 +132,7 @@ print('INFO: Dropping contigs with fewer than 2 UMIs', file=sys.stderr)
 cb_df = cb_df[cb_df.total_umis > 1]
 
 print('INFO: total number of valid contigs with at least 2 UMIs:', file=sys.stderr)
-print(cb_df.groupby('sample_id').size(), file=sys.stderr)
+print(cb_df.groupby('sample_uid').size(), file=sys.stderr)
 
 cb_df = cb_df.sort_values(by='total_umis', ascending=False)
 
@@ -145,7 +147,7 @@ components = []
 for it, row in cb_df.iterrows():
 
     unique_vdj_seqs = np.unique(np.asarray(row.vdj_sequence))
-    umi_support = [(sum(row.umis[np.vdj_sequence == x]),x) for x in unique_vdj_seqs]
+    umi_support = [(sum(row.umis[row.vdj_sequence == x]),x) for x in unique_vdj_seqs]
     umi_support = sorted(umi_support)
 
     umis_per_seq = np.asarray([x for x, y in umi_support])
@@ -234,17 +236,17 @@ cb_df['multiplet'] = cb_df.vdj_calls.str.len()
 
 
 print("total droplets per sample:", file=sys.stderr)
-print(cb_df.groupby('sample_id')['is_cell'].agg(sum), file=sys.stderr)
+print(cb_df.groupby('sample_uid')['is_cell'].agg(sum), file=sys.stderr)
 
 print("total cells per sample:", file=sys.stderr)
-print(cb_df.groupby('sample_id')['multiplet'].agg(sum), file=sys.stderr)
+print(cb_df.groupby('sample_uid')['multiplet'].agg(sum), file=sys.stderr)
 
 print("Multiplet distribution:", file=sys.stderr)
 
-multiplet_distribution = cb_df.groupby(['sample_id','multiplet']).size().reset_index()
+multiplet_distribution = cb_df.groupby(['sample_uid','multiplet']).size().reset_index()
 
 multiplet_distribution = multiplet_distribution.pivot(index='multiplet',
-                                                      columns='sample_id',
+                                                      columns='sample_uid',
                                                       values=0)
 
 multiplet_distribution = multiplet_distribution/ multiplet_distribution.sum(axis=0)
@@ -254,12 +256,12 @@ print(multiplet_distribution, file=sys.stderr)
 #collect info from ambient droplets
 ambient_droplets = deepcopy(cb_df[(~cb_df['is_cell'].astype(bool))])
 ambient_droplets['vdj_c_umi_r'] = ambient_droplets.apply(lambda x: [(x.vdj_sequence[i],
-                                                                  x.c_call_10X[i],
+                                                                  x.c_gene_10X[i],
                                                                   str(x.umis[i]),
                                                                   str(x.reads[i])) for i in range(len(x.reads))
                                                                  ], axis=1)
 
-ambient_droplets['droplet_id'] = ambient_droplets['sample_id'] + "+" + ambient_droplets['cb']
+ambient_droplets['droplet_id'] = ambient_droplets['sample_uid'] + "+" + ambient_droplets['cb'] + "+" + ambient_droplets['locus']
 ambient_droplets = ambient_droplets[['droplet_id', 'vdj_c_umi_r']]
 ambient_droplets = ambient_droplets.explode('vdj_c_umi_r')
 
@@ -284,11 +286,11 @@ coencapsulated_ambient_rna = []
 
 for it, row in called_cells.iterrows():
     # first record ambient RNA
-    droplet_id = row.sample_id + "+" + row.cb
+    droplet_id = row.sample_uid + "+" + row.cb + "+" + row.locus
 
     ambient_vdj_info = [(row.vdj_sequence[it2],
-                         row.c_call_10X[it2],
-                         row.umi[it2],
+                         row.c_gene_10X[it2],
+                         row.umis[it2],
                          row.reads[it2])
 
                         for it2 in range(len(row.vdj_sequence))
@@ -299,7 +301,7 @@ for it, row in called_cells.iterrows():
                                  'vdj_c_umi_r':ambient_vdj_info}))
 
     corrected_vdj_info = [(corrected_vdj_dict[it][row.vdj_sequence[it2]],
-                           row.c_call_10X[it2],
+                           row.c_gene_10X[it2],
                            row.umis[it2],
                            row.reads[it2])
 
@@ -314,8 +316,8 @@ for it, row in called_cells.iterrows():
 
     #find consensus C gene call
     for vdj, c_call, umis, reads in corrected_vdj_info:
-        cell_dict[vdj][c_call] = (cell_dict[vdj].get(c_call,0) + int(umis),
-                                  cell_dict[vdj].get(c_call,0) + int(reads))
+        cell_dict[vdj][c_call] = (cell_dict[vdj].get(c_call, (0,0))[0] + int(umis),
+                                  cell_dict[vdj].get(c_call, (0,0))[1] + int(reads))
 
     for vdj, umis_per_c_call in cell_dict.items():
         cell_umi_count_dict[it].update({vdj:{}})
@@ -368,7 +370,7 @@ called_cells['vdjc_info'] = called_cells.apply(lambda x: [(y,
                                                            x.n_reads[y])
                                                             for y in x.vdj_calls], axis=1)
 
-called_cells = called_cells[['sample_id', 'cb', 'vdjc_info']]
+called_cells = called_cells[['sample_uid', 'cb', 'locus', 'vdjc_info']]
 called_cells = called_cells.explode('vdjc_info')
 called_cells['vdj_call'] = called_cells.vdjc_info.map(lambda x: x[0])
 called_cells['c_call'] = called_cells.vdjc_info.map(lambda x: x[1])
@@ -389,11 +391,11 @@ ambient_droplets['c_call'] = ambient_droplets.vdj_c_umi_r.map(lambda x: x[1])
 ambient_droplets['umis'] = ambient_droplets.vdj_c_umi_r.map(lambda x: int(x[2]))
 ambient_droplets['reads'] = ambient_droplets.vdj_c_umi_r.map(lambda x: int(x[3]))
 
-ambient_droplets['sample_id'] = ambient_droplets.droplet_id.map(lambda x: x.split("+")[0])
+ambient_droplets['sample_uid'] = ambient_droplets.droplet_id.map(lambda x: x.split("+")[0])
 ambient_droplets['cb'] = ambient_droplets.droplet_id.map(lambda x: x.split("+")[1])
+ambient_droplets['locus'] = ambient_droplets.droplet_id.map(lambda x: x.split("+")[2])
 
-
-ambient_vdjs = ambient_droplets.groupby(['vdj_sequence', 'c_call', 'sample_id', 'locus']).agg(list)
+ambient_vdjs = ambient_droplets.groupby(['vdj_sequence', 'c_call', 'sample_uid', 'locus']).agg(list)
 ambient_vdjs = ambient_vdjs.reset_index()
 
 ambient_vdjs['n_droplets'] = ambient_vdjs.cb.map(lambda x: len(set(x)))
@@ -401,7 +403,7 @@ ambient_vdjs['n_umis'] = ambient_vdjs.umis.map(lambda x: sum(x))
 ambient_vdjs['n_reads'] = ambient_vdjs.reads.map(lambda x: sum(x))
 
 ambient_vdjs['cb'] = ambient_vdjs.cb.str.join(",")
-ambient_vdjs['umis_per_droplet'] = ambient_vdjs.umis.str.map(lambda x: ",".join([str(y) for y in x]))
+ambient_vdjs['umis_per_droplet'] = ambient_vdjs.umis.map(lambda x: ",".join([str(y) for y in x]))
 ambient_vdjs['reads_per_droplet'] = ambient_vdjs.reads.map(lambda x: ",".join([str(y) for y in x]))
 
 

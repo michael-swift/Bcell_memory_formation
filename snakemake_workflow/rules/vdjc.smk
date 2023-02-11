@@ -391,7 +391,7 @@ rule align_v_sequences:
     params:
         scripts=config["vdj_scripts"],
     resources:
-        mem_mb="131000",
+        mem_mb="262000",
         time="2-00:00:00",
     log:
         "{base}/logs/trees/{donor}_pseudobulk_vmsa.log",
@@ -401,8 +401,8 @@ rule align_v_sequences:
     shell:
         "python {params.scripts}/align_v_sequences.py "
         "{input.seqs} "
-        "-outdir {wildcards.base}/aggregated/vtrees "
-        "-scratchdir {wildcards.base}/aggregated/vtrees "
+        "-outdir {wildcards.base}/aggregated/vtrees/pseudobulk "
+        "-scratchdir {wildcards.base}/aggregated/vtrees/pseudobulk "
         "-samplename {wildcards.donor} "
         "-germline_db {input.db} "
         "-threads {threads} "

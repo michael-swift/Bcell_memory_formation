@@ -39,7 +39,7 @@ os.makedirs(base, exist_ok=True)
 rule all:
     input:
         expand("{base}/aggregated/lineage_clustering/final_lineage_ids/{donor}.tsv.gz", base=base, donor=donors),
-        expand("{base}/aggregated/vtrees/pseudobulk/{donor}_v_trees.tsv", base = base, donor = donors),
+        expand("{base}/aggregated/vtrees/{which}/{donor}_v_trees.tsv", base = base, which = ['cells'], donor = donors),
         expand("{base}/aggregated/cell_calls/{donor}_called_cells_vdj_annotated.tsv.gz", base = base, donor = donors)
         #"{}/analysis/scanpy/gex_object.h5ad.gz".format(base),
     params:
