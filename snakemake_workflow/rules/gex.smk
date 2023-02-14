@@ -50,7 +50,7 @@ rule cp_cellranger:
         name="cp_cellranger",
         base=config["base"],
     shell:
-        "cp -rf {base}/per_sample/cellranger/{sample_uid} {base}/per_sample/cellranger_temp/{sample_uid}"
+        "cp -rf {wildcards.base}/per_sample/cellranger/{wildcards.sample_uid} {wildcards.base}/per_sample/cellranger_temp/{wildcards.sample_uid}"
 
 rule run_cellbender:
     input:
