@@ -12,19 +12,19 @@ SNAKEFILE=Snakefile.smk
 NJOBS=200
 WAIT=120
 
-if [ $LOGNAME = "mswift2"]
+if [ $USER = "mswift2" ]
     then
     source /home/groups/quake/mswift/mambaforge/etc/profile.d/conda.sh
     conda activate scanpy_latest
     mkdir -p snakemake_logs/slurm_logs/
-elif [ $LOGNAME = "cvijovic"]
+elif [ $USER = "cvijovic" ]
     then
     source /home/groups/quake/cvijovic/miniconda3/etc/profile.d/conda.sh
     conda activate snakemake
-    mkdir snakemake_logs/
+    mkdir -p snakemake_logs/
 else
-    mkdir snakemake_logs/
-    print("unknown user; will not explicitly activate conda")
+    mkdir -p snakemake_logs/
+    echo "unknown user; will not explicitly activate conda"
 fi
 
 #log file for process that calls snakemake

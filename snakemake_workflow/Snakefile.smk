@@ -31,7 +31,7 @@ samplesheets["species"] = "human"
 donors = list(set(samplesheets[samplesheets.species == "human"].donor.to_list()))
 
 # filter samplesheet:
-samplesheets = samplesheets[samplesheets.sample_uid.str.contains('TBd4_frozen_PB')]
+#samplesheets = samplesheets[samplesheets.sample_uid.str.contains('TBd4_frozen_PB')]
 # samplesheets = samplesheets.iloc[:2]
 samplesheets_gex = samplesheets[samplesheets.lib_type == "gex"]
 samplesheets_gex.set_index("sample_uid", inplace=True)
@@ -42,7 +42,8 @@ samplesheets = samplesheets_gex
 sample_uids = samplesheets.index.to_list()
 print(sample_uids)
 # make processsed data dir
-os.makedirs(base, exist_ok=True)
+for k in base.keys():
+    os.makedirs(base[k], exist_ok=True)
 
 
 rule all:
