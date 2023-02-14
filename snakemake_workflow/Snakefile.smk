@@ -41,10 +41,13 @@ os.makedirs(base, exist_ok=True)
 
 rule all:
     input:
-        #expand("{base}/per_sample/cellranger_vdj/{sample_uid_vdj}/outs/web_summary.html", base = base, sample_uid_vdj = sample_uids_vdj),
-        "{}/analysis/scanpy/gex_object.h5ad.gz".format(base),
-        #expand("{base}/per_sample/fastqc/{sample_uid_vdj}/", base = base, sample_uid_vdj = sample_uids_vdj),
-        #expand("{base}/per_sample/star_solo_vdj/{sample_uid_vdj}/Aligned.out.bam", base = base, sample_uid_vdj = sample_uids_vdj),
+        #expand("{base}/per_sample/cellranger_vdj/{sample_uid_vdj}/outs/web_summary.html", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
+        "{}/analysis/scanpy/gex_object.h5ad.gz".format(base['gex']),
+        #expand("{base}/per_sample/fastqc/{sample_uid_vdj}/", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
+        #expand("{base}/per_sample/star_solo_vdj/{sample_uid_vdj}/Aligned.out.bam", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
+        expand("{base}/aggregated/lineage_clustering/final_lineage_ids/{donor}.tsv.gz", base=base['vdj'], donor=donors),
+        expand("{base}/aggregated/vtrees/{which}/{donor}_v_trees.tsv", base = base['vdj'], which = ['cells'], donor = donors),
+        expand("{base}/aggregated/cell_calls/{donor}_called_cells_vdj_annotated.tsv.gz", base = base['vdj'], donor = donors)
     params:
         name="all",
         partition="quake",
@@ -55,8 +58,7 @@ include: "rules/gex.smk"
 include: "rules/vdjc.smk"
 include: "rules/qc.smk"
 include: "rules/get_resources.smk"
+include: "rules/cell_calling.smk"
 
 def samplesheet_lookup(idx, col):
     return samplesheets.loc[idx, col]
-
-#localrules:touch_h5
