@@ -12,7 +12,9 @@ def wildcard_input(wildcards):
 species = config["species"]
 
 rule cellranger_count:
-    #snakemake and cellranger don't play well together because they both want control of the directory, touching to work around
+    # snakemake and cellranger don't play well together because they both want control of the directory
+    # touching .done file  to work around
+    # unfortunately I want to refer to CellRanger Generated Files later in the workflow
     input:
         config["gex_fastq_dirs"],
     output:
@@ -22,16 +24,17 @@ rule cellranger_count:
         base=config["base"],
         cell_ranger=config["cell_ranger"],
         transcriptome=config["transcriptome"],
+        local_cores = 20
     shell:
         "mkdir -p {base}/per_sample/cellranger/ && "
         "cd {base}/per_sample/cellranger/ && "
-        "rm {wildcards.sample_uid}/_lock && "
+        "rm -f {wildcards.sample_uid}/_lock && "
         "{params.cell_ranger}/cellranger count"
         " --id={wildcards.sample_uid}"
         " --transcriptome={params.transcriptome}"
         " --fastqs={input}"
+        " --localcores={params.local_cores}"
         " --sample={wildcards.sample_uid}"
-        " --localcores=20"
         " --nosecondary"
         " --no-bam && touch {output}"
 

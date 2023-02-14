@@ -30,10 +30,10 @@
 28	TBd2	frozen	SPb	SP	A*	29.0	gex	10	True	TBd2_frozen_SPb	SPb	TBd2_frozen_SPb
 29	TBd6	fresh	LN	LN	C11	30.0	gex	10	False	TBd6_fresh_LN	LN	TBd6_fresh_LN
 30	TBd6	fresh	BM	BM	C10	31.0	gex	10	False	TBd6_fresh_BM	BM	TBd6_fresh_BM
-31	TBd6	fresh	PBMC	PB	C9	32.0	gex	10	False	TBd6_fresh_PB	PBMC	TBd6_fresh_PBMC
-32	TBd6	fresh	SPL	SP	C12	33.0	gex	10	False	TBd6_fresh_SP	SPL	TBd6_fresh_SPL
+31	TBd6	fresh	PB	PB	C9	32.0	gex	10	False	TBd6_fresh_PB	PBMC	TBd6_fresh_PBMC
+32	TBd6	fresh	SP	SP	C12	33.0	gex	10	False	TBd6_fresh_SP	SPL	TBd6_fresh_SPL
 0	TBd1	frozen	PBa	PB	B1		vdj	10		TBd1_frozen_PBa	PBa	TBd1_frozen_PBa
-1	TBd1	frozen	BMa	PB	B2		vdj	10		TBd1_frozen_BMa	BMa	TBd1_frozen_BMa
+1	TBd1	frozen	BMa	BM	B2		vdj	10		TBd1_frozen_BMa	BMa	TBd1_frozen_BMa
 2	TBd1	frozen	LNa	LN	B3		vdj	10		TBd1_frozen_LNa	LNa	TBd1_frozen_LNa
 3	TBd1	frozen	PBb	PB	B4		vdj	10		TBd1_frozen_PBb	PBb	TBd1_frozen_PBb
 4	TBd1	frozen	BMb	BM	B5		vdj	10		TBd1_frozen_BMb	BMb	TBd1_frozen_BMb
