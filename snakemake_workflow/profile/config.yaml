@@ -13,7 +13,7 @@ cluster:
 
 default-resources:
   - partition=normal,owners,quake
-  - mem_mb=4000
+  - mem_mb="4000"
   - gpus=0
   - time="03:00:00"
   - threads=4
@@ -48,4 +48,7 @@ set-resources:
     - star_solo_vdj:time=24:00:00
     - star_solo_vdj:mem_mb=64000
     - star_solo_vdj:threads=12
-    - star_solo_vdj:partition=quake,owners
+    - star_solo_vdj:partition=quake
+    - igblast:mem_mb=65000
+    - igblast:time=24:00:00
+    - igblast:threads=20

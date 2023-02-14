@@ -3,7 +3,10 @@
 # path to sheet describing each cell
 library_info: "samplesheets/library_info.tsv"
 # output directory for processed data
-base: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline_2"
+
+base: 
+  gex: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline_2"
+  vdj: "/oak/stanford/groups/quake/shared/swiftShare/tb_vdj_pipeline"
 # specificed in multi_configs
 gex_fastq_dirs: ["/oak/stanford/groups/quake/shared/swiftShare/tb_gex_fastqs"]
 vdj_fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/ilm7_vdj/"
@@ -14,14 +17,14 @@ species: human
 partition: "quake,owners"
 workflow_dir: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow" 
 samplesheets: ["samplesheets/samplesheet.tsv"]
-samplesheet_vdj: ["samplesheets/samplesheet_vdj.tsv"]
+samplesheet_vdj: ["samplesheets/extended_samplesheet_vdj.tsv"]
 # Software
 #---------------------------
-
+vdj_scripts: "scripts/vdj"
 cell_ranger: "/home/groups/quake/mswift/resources/cellranger-7.0.1"
 cr_whitelist: "/home/groups/quake/mswift/resources/3M-february-2018.txt"
 resources: "/home/groups/quake/mswift/5prime_10X_workflow/resources"
-
+grmlin: "/home/users/cvijovic/ig-germline-discovery/grmlin" 
 # references
 #------------
 vdj_ref_prefix: "vdj_human"
@@ -29,6 +32,8 @@ vdj_reference: "/home/groups/quake/mswift/5prime_10X_workflow/db/vdj_reference"
 inner_primers: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow/db/inner_primers.txt"
 10X_transcriptome: "https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-GRCh38-2020-A.tar.gz"
 transcriptome: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow/db/refdata-gex-GRCh38-2020-A"
+#10X cell barcode whitelist
+whitelist: "db/whitelists/737K-august-2016.txt"
 # the assembly pipeline uses the immcantation framework for IgBLAST
 # options: 'docker' or 'singularity'
 container_type: singularity
