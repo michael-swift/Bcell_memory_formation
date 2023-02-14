@@ -102,37 +102,39 @@ rule star_solo_vdj:
     input:
         rules.star_genome_generate.output,
         get_r1_fqgz_using_wildcards,
-        get_r2_fqgz_using_wildcards
+        get_r2_fqgz_using_wildcards,
     output:
-        '{base}/per_sample/star_solo_vdj/{sample_uid_vdj}/Aligned.out.bam'
+        "{base}/per_sample/star_solo_vdj/{sample_uid_vdj}/Aligned.out.bam",
     params:
-        name='star',
-        partition=config['partition'],
-        cr_whitelist=config['cr_whitelist']
+        name="star",
+        partition=config["partition"],
+        cr_whitelist=config["cr_whitelist"],
     resources:
         mem_mb=60000,
     threads: 12
-    conda: config["workflow_dir"] + "/envs/single-cell.yaml"
-    shell:  "wdir=$(dirname {output}) && "
-            "echo $wdir && "
-            "mkdir -p $wdir && "
-            "STAR "
-            "--genomeDir $(dirname {input[0]}) "
-            "--readFilesIn {input[1]} {input[2]} "
-            "--readFilesCommand gunzip -c "
-            "--outSAMmapqUnique 60 "
-            "--outFilterMismatchNmax 999 "
-            "--outFilterMismatchNoverReadLmax 0.1 "
-            "--twopassMode Basic "
-            "--runThreadN {threads} "
-            "--outSAMtype BAM Unsorted "
-            "--outFileNamePrefix $wdir/"
-            " --soloBarcodeMate 1"
-            " --clip5pNbases 39 0"
-            " --soloType CB_UMI_Simple"
-            " --soloCBstart 1"
-            " --soloCBlen 16"
-            " --soloUMIstart 17"
-            " --soloUMIlen 10"
-            " --soloFeatures SJ"
-            " --soloCBwhitelist {params.cr_whitelist}"
+    conda:
+        config["workflow_dir"] + "/envs/single-cell.yaml"
+    shell:
+        "wdir=$(dirname {output}) && "
+        "echo $wdir && "
+        "mkdir -p $wdir && "
+        "STAR "
+        "--genomeDir $(dirname {input[0]}) "
+        "--readFilesIn {input[1]} {input[2]} "
+        "--readFilesCommand gunzip -c "
+        "--outSAMmapqUnique 60 "
+        "--outFilterMismatchNmax 999 "
+        "--outFilterMismatchNoverReadLmax 0.1 "
+        "--twopassMode Basic "
+        "--runThreadN {threads} "
+        "--outSAMtype BAM Unsorted "
+        "--outFileNamePrefix $wdir/"
+        " --soloBarcodeMate 1"
+        " --clip5pNbases 39 0"
+        " --soloType CB_UMI_Simple"
+        " --soloCBstart 1"
+        " --soloCBlen 16"
+        " --soloUMIstart 17"
+        " --soloUMIlen 10"
+        " --soloFeatures SJ"
+        " --soloCBwhitelist {params.cr_whitelist}"

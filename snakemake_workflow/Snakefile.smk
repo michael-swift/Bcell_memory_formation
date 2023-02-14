@@ -4,7 +4,11 @@ import glob
 from collections import defaultdict
 
 shell.prefix("set +euo pipefail;")
+
+
 configfile: "config/path_config.yaml"
+
+
 base = config["base"]
 library_info = config["library_info"]
 libuid_to_datadirs = pd.read_table(library_info, sep="    ", engine="python")
@@ -20,16 +24,18 @@ samplesheets = pd.concat(
 )
 
 # Parse Samplesheet
-samplesheets['expected_cells'] = samplesheets['expected_cells_thousands'].astype(int) * 1000
+samplesheets["expected_cells"] = (
+    samplesheets["expected_cells_thousands"].astype(int) * 1000
+)
 samplesheets["species"] = "human"
 donors = list(set(samplesheets[samplesheets.species == "human"].donor.to_list()))
 
 # filter samplesheet:
-#samplesheets = samplesheets[samplesheets.sample_uid.str.contains('TBd4_frozen_PB')]
-#samplesheets = samplesheets.iloc[:2]
-samplesheets_gex = samplesheets[samplesheets.lib_type == 'gex']
+samplesheets = samplesheets[samplesheets.sample_uid.str.contains('TBd4_frozen_PB')]
+# samplesheets = samplesheets.iloc[:2]
+samplesheets_gex = samplesheets[samplesheets.lib_type == "gex"]
 samplesheets_gex.set_index("sample_uid", inplace=True)
-samplesheets_vdj = samplesheets[samplesheets.lib_type == 'vdj']
+samplesheets_vdj = samplesheets[samplesheets.lib_type == "vdj"]
 # set wildcards
 sample_uids_vdj = samplesheets_vdj.sample_uid.to_list()
 samplesheets = samplesheets_gex
@@ -56,7 +62,7 @@ include: "rules/vdjc.smk"
 include: "rules/qc.smk"
 include: "rules/get_resources.smk"
 
+
 def samplesheet_lookup(idx, col):
     return samplesheets.loc[idx, col]
-
-#localrules:touch_h5
+# localrules:touch_h5

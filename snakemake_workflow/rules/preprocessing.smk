@@ -4,7 +4,7 @@ def get_fastq(wildcards):
     # get sample_index based and sample_uid
     sample_index = samplesheets.loc[sample_uid]["sample_index"]
     # map libuid to actual sherlock path
-    libuid=int(samplesheets.loc[sample_uid,"library_uid"])
+    libuid = int(samplesheets.loc[sample_uid, "library_uid"])
     data_path = libuid_to_datadirs[libuid]
     fastq = (
         data_path
@@ -13,9 +13,11 @@ def get_fastq(wildcards):
     )
     return fastq
 
+
 def get_lib_type(wildcards):
-	sample_uid = wildcards.sample_uid
-	return samplesheets.loc[sample_uid,"lib_type"]
+    sample_uid = wildcards.sample_uid
+    return samplesheets.loc[sample_uid, "lib_type"]
+
 
 rule filter_quality:
     input:
@@ -28,7 +30,7 @@ rule filter_quality:
         "{base}/logs/{sample_uid}_filter-quality.log",
     params:
         output_dir=config["base"],
-    threads: 16,
+    threads: 16
     conda:
         "../envs/presto.yaml"
     shell:
@@ -41,7 +43,7 @@ rule filter_quality:
         --outdir {params.output_dir}/filter_quality \
         --outname {wildcards.sample_uid} \
         --log {output.logfile} \
-	--nproc {threads} \
+    --nproc {threads} \
         > {log}
 
         gzip {base}/filter_quality/{wildcards.sample_uid}_quality-pass.fastq
@@ -78,15 +80,18 @@ rule parse_reads:
     params:
         scripts=config["scripts"],
         read_config=config["read_config"],
-        lib_type=get_lib_type,	
-	minibulk=lambda wildcards: "--minibulk " if "minibulk" in wildcards.sample_uid else "",
+        lib_type=get_lib_type,
+        minibulk=lambda wildcards: "--minibulk "
+        if "minibulk" in wildcards.sample_uid
+        else "",
     shell:
         "python {params.scripts}/parse_reads_stringent_10X.py {input} "
         "-config {params.read_config} "
         "-outdir {wildcards.base}/parse_reads "
         "--{params.lib_type} "
-	"{params.minibulk}"
+        "{params.minibulk}"
         "2> {log}"
+
 
 rule call_cb_whitelist:
     input:
@@ -94,7 +99,7 @@ rule call_cb_whitelist:
     output:
         "{base}/whitelists/{sample_uid}_cb_whitelist.txt",
     conda:
-        "../envs/umi_tools.yaml",
+        "../envs/umi_tools.yaml"
     log:
         "{base}/logs/{sample_uid}_cb_whitelist.log",
     shell:
@@ -105,6 +110,7 @@ rule call_cb_whitelist:
         "--plot-prefix={wildcards.base}/plots/{wildcards.sample_uid} "
         "-L {log} "
         "> {output} "
+
 
 rule align_umi_groups:
     input:
@@ -140,7 +146,7 @@ rule build_consensus:
         fastq="{base}/build_consensus/{sample_uid}_consensus-pass.fastq",
     log:
         prestolog="{base}/prestologs/{sample_uid}_build-consensus.log",
-        runlog="{base}/logs/{sample_uid}_build-consensus.log"
+        runlog="{base}/logs/{sample_uid}_build-consensus.log",
     threads: 8
     conda:
         "../envs/presto.yaml"
@@ -159,12 +165,13 @@ rule build_consensus:
         "--log {log.prestolog} "
         "> {log.runlog}"
 
+
 rule deduplicate_sample:
     input:
         "{base}/build_consensus/{sample_uid}_consensus-pass.fastq",
     output:
         "{base}/deduplicate_sample/{sample_uid}_consensus-pass_deduplicated.fasta",
-        "{base}/deduplicate_sample/{sample_uid}_consensus-pass_seq_ids_barcodes.tsv"
+        "{base}/deduplicate_sample/{sample_uid}_consensus-pass_seq_ids_barcodes.tsv",
     log:
         "{base}/logs/{sample_uid}_deduplicate.log",
     conda:
