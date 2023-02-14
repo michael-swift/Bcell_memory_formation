@@ -2,9 +2,10 @@ cluster:
   mkdir -p logs/{rule} &&
   sbatch
     --job-name={rule}
-    --time={resources.time}    
+    --time={resources.time}
+    --ntasks=1    
     --partition={resources.partition}
-    --cpus-per-task={threads}
+    --cpus-per-task={resources.threads}
     --mem={resources.mem_mb}
     --output=logs/{rule}/{rule}-%j.out
     --error=logs/{rule}/{rule}-%j.err
@@ -41,12 +42,13 @@ set-resources:
     - cellranger_count:mem_mb=64000
     - cellranger_count:partition=quake,owners,normal
     - cellranger_count:time=48:00:00
-    - cellranger_count:threads=20
+    - cellranger_count:threads=16
     - aggegrate_h5ads:mem_mb=210000
     - cellranger_vdj:mem_mb=120000
+    - star_solo_vdj:time=24:00:00
+    - star_solo_vdj:mem_mb=64000
+    - star_solo_vdj:threads=12
+    - star_solo_vdj:partition=quake
     - igblast:mem_mb=65000
     - igblast:time=24:00:00
     - igblast:threads=20
-    - star_solo_vdj:time=96:00:00
-    - star_solo_vdj:threads=12
-    - star_solo_vdj:partition=quake

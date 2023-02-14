@@ -3,7 +3,10 @@
 # path to sheet describing each cell
 library_info: "samplesheets/library_info.tsv"
 # output directory for processed data
-base: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline_2"
+
+base: 
+  gex: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline_2"
+  vdj: "/oak/stanford/groups/quake/shared/swiftShare/tb_vdj_pipeline"
 # specificed in multi_configs
 gex_fastq_dirs: ["/oak/stanford/groups/quake/shared/swiftShare/tb_gex_fastqs"]
 vdj_fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/ilm7_vdj/"
@@ -14,7 +17,7 @@ species: human
 partition: "quake,owners"
 workflow_dir: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow" 
 samplesheets: ["samplesheets/samplesheet.tsv"]
-samplesheet_vdj: ["samplesheets/samplesheet_vdj.tsv"]
+samplesheet_vdj: ["samplesheets/extended_samplesheet_vdj.tsv"]
 # Software
 #---------------------------
 vdj_scripts: "scripts/vdj"
@@ -47,6 +50,7 @@ scripts:
 path_to_grmlin:
 # params:
 decontX_mode: filtered
+
 # sequencing read length e.g. 100 for 2x100 paired-end sequencing
 # (used during STAR genome generation)
 read_length: 90
@@ -75,4 +79,3 @@ gtf_name:
 TICA_urls: 
   global: https://cellgeni.cog.sanger.ac.uk/pan-immune/CountAdded_PIP_global_object_for_cellxgene.h5ad
   b_cell: https://cellgeni.cog.sanger.ac.uk/pan-immune/TICA_B_BCR.h5ad
-

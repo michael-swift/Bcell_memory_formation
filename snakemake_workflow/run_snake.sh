@@ -5,7 +5,6 @@ DATETIME=$(date "+%Y_%m_%d_%H_%M_%S")
 RESTART=0
 
 SNAKEFILE=Snakefile.smk
-EMAIL=cvijovic@stanford.edu
 
 #CLUSTER_CONFIG=config/slurm_config.yaml
 
@@ -13,9 +12,20 @@ EMAIL=cvijovic@stanford.edu
 NJOBS=200
 WAIT=120
 
-source /home/groups/quake/mswift/mambaforge/etc/profile.d/conda.sh
-conda activate scanpy_latest
-mkdir -p snakemake_logs/slurm_logs/
+if [ $USER = "mswift2" ]
+    then
+    source /home/groups/quake/mswift/mambaforge/etc/profile.d/conda.sh
+    conda activate scanpy_latest
+    mkdir -p snakemake_logs/slurm_logs/
+elif [ $USER = "cvijovic" ]
+    then
+    source /home/groups/quake/cvijovic/miniconda3/etc/profile.d/conda.sh
+    conda activate snakemake
+    mkdir -p snakemake_logs/
+else
+    mkdir -p snakemake_logs/
+    echo "unknown user; will not explicitly activate conda"
+fi
 
 #log file for process that calls snakemake
 SBATCH_LOGFILE=snakemake_logs/cluster.$DATETIME.log

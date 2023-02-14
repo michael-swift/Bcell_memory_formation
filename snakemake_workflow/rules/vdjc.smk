@@ -13,7 +13,7 @@ rule cellranger_vdj:
         inner_primers=config["inner_primers"]
     resources:
         mem_mb="120000",
-        partition="quake,owners,normal",
+        partition="quake,owners",
         disk_mb="8000",
         time="0-16",
     threads: 20
@@ -391,7 +391,7 @@ rule align_v_sequences:
     params:
         scripts=config["vdj_scripts"],
     resources:
-        mem_mb="131000",
+        mem_mb="262000",
         time="2-00:00:00",
     log:
         "{base}/logs/trees/{donor}_pseudobulk_vmsa.log",
@@ -401,8 +401,8 @@ rule align_v_sequences:
     shell:
         "python {params.scripts}/align_v_sequences.py "
         "{input.seqs} "
-        "-outdir {wildcards.base}/aggregated/vtrees "
-        "-scratchdir {wildcards.base}/aggregated/vtrees "
+        "-outdir {wildcards.base}/aggregated/vtrees/pseudobulk "
+        "-scratchdir {wildcards.base}/aggregated/vtrees/pseudobulk "
         "-samplename {wildcards.donor} "
         "-germline_db {input.db} "
         "-threads {threads} "
@@ -430,4 +430,3 @@ rule build_v_trees:
         "-scratchdir {wildcards.base}/aggregated/vtrees/pseudobulk "
         "-samplename {wildcards.donor} "
         "2> {log}"
-

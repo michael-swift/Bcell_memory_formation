@@ -24,7 +24,6 @@ def load_and_filter(filename, min_genes=min_genes, min_counts=min_counts):
     return adata
 
 adata_list = []
-
 # construct aggregated object
 for i, file_name in enumerate(files):
     adata_list.append(load_and_filter(file_name))

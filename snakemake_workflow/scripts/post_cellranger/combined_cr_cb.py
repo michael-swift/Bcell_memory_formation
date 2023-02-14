@@ -13,7 +13,8 @@ adata = sc.read_10x_h5(cellranger[1])
 adata_cb = sc.read_10x_h5(cellbender)
 
 adata.obs['sample_uid'] = sample_uid
-adata.layers['background_removed'] = adata_cb.X
+adata.layers['cellbender_counts'] = adata_cb.X
+adata.layers['counts'] = adata.X
 
 # filter out really low droplets
 if snakemake.params.filter_cells:
