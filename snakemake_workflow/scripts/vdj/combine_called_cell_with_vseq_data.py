@@ -56,18 +56,13 @@ amplicon_df = amplicon_df.drop([x for x in amplicon_df.columns if x.endswith("_b
 
 # drop 10X barcode and contig_id columns because their nomenclature is inconsistent with our cell call dataframe
 amplicon_df = amplicon_df.drop(['barcode', 'contig_id'], axis=1)
-
+# drop 10X annotations, since these may be different for the same amplicon
+tenX_annotations=[x for x in amplicon_df.columns if (x.endswith("10X") or x.startswith("10X"))]
+amplicon_df = amplicon_df.drop(tenX_annotations, axis=1)
 amplicon_df = amplicon_df.drop_duplicates(ignore_index=True)
+
 amplicon_df['j_call'] = amplicon_df['j_call'].map(lambda x : x.split('*')[0])
 amplicon_df = amplicon_df.drop_duplicates(ignore_index=True)
-
-# aggregate 10X annotations, since these may be different for the same amplicon
-tenX_annotations=[x for x in amplicon_df.columns if x.endswith("10X")]
-for x in tenX_annotations:
-    df[x] = df[x].astype(str)
-
-other_annotations = [x for x in amplicon_df.columns if not (x.endswith("10X"))]
-amplicon_df = amplicon_df.groupby(other_annotations)[tenX_annotations].agg(",".join).reset_index()
 
 # merge and write
 called_cell_df = called_cell_df.merge(amplicon_df, on=['sample_uid', 'vdj_sequence', 'locus'], how='left')
