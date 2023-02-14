@@ -13,9 +13,9 @@ EMAIL=cvijovic@stanford.edu
 NJOBS=200
 WAIT=120
 
-source /home/groups/quake/cvijovic/miniconda3/etc/profile.d/conda.sh
-conda activate snakemake
-mkdir -p snakemake_logs/
+source /home/groups/quake/mswift/mambaforge/etc/profile.d/conda.sh
+conda activate scanpy_latest
+mkdir -p snakemake_logs/slurm_logs/
 
 #log file for process that calls snakemake
 SBATCH_LOGFILE=snakemake_logs/cluster.$DATETIME.log
@@ -26,11 +26,7 @@ TARGET=''
 if [ $# -eq 0 ]
   then
     # Dry run snakemake
-    snakemake -s $SNAKEFILE $TARGET --use-conda --keep-target-files --rerun-incomplete -n -r --quiet --keep-going
-
-elif [ $1 = "unlock" ]
-    then
-        snakemake -s $SNAKEFILE $TARGET -F --rerun-incomplete --unlock --cores 1
+    snakemake -s $SNAKEFILE $TARGET --use-conda --keep-target-files --rerun-incomplete -n -r --quiet --keep-going --rerun-triggers mtime
 
 elif [ $1 = "unlock" ]
     then
@@ -60,8 +56,8 @@ elif [ $1 = "sbatch" ]
         --cpus-per-task=1 \
         --mem=8000 \
         --mail-user=$EMAIL \
-        --time 2-0 \
-        -p quake,owners \
+        --time 4-0 \
+        -p quake \
         -o $SBATCH_LOGFILE \
         -e $SBATCH_LOGFILE_ERR \
         run_snake.sh profile

@@ -12,12 +12,11 @@ def wildcard_input(wildcards):
 species = config["species"]
 
 rule cellranger_count:
+    #snakemake and cellranger don't play well together because they both want control of the directory, touching to work around
     input:
-        config["fastq_dirs"],
+        config["gex_fastq_dirs"],
     output:
-        "{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5",
-    log:
-        "{base}/logs/{sample_uid}/cellranger.log",
+        "{base}/per_sample/cellranger/sample_stamps/{sample_uid}.done"
     params:
         name="count_cellranger",
         base=config["base"],
@@ -29,20 +28,20 @@ rule cellranger_count:
         time="1-12",
     threads: 20
     shell:
-        "mkdir -p {base}/per_sample/cellranger && "
-        "cd {base}/per_sample/cellranger && "
-        "rm -rf {wildcards.sample_uid} && "
+        "mkdir -p {base}/per_sample/cellranger/ && "
+        "cd {base}/per_sample/cellranger/ && "
+        "rm {wildcards.sample_uid}/_lock && "
         "{params.cell_ranger}/cellranger count"
         " --id={wildcards.sample_uid}"
         " --transcriptome={params.transcriptome}"
-        " --fastqs={input[0]}"
+        " --fastqs={input}"
         " --sample={wildcards.sample_uid}"
         " --localcores=20"
         " --nosecondary"
-        " --no-bam > {log}"
+        " --no-bam && touch {output}"
 
 rule run_cellbender:
-    input: rules.cellranger_count.output
+    input:rules.cellranger_count.output
     output:
         "{base}/per_sample/cellbender/{sample_uid}/background_removed.h5",
         "{base}/per_sample/cellbender/{sample_uid}/background_removed_cell_barcodes.csv",
@@ -55,67 +54,42 @@ rule run_cellbender:
         partition="gpu",
     params:
         expected_cells=lambda wildcards: samplesheet_lookup(wildcards.sample_uid, "expected_cells"),
+        cellranger_count_file = lambda wildcards: "{base}/per_sample/{sample_uid}/outs/raw_feature_bc_matrix.h5".format(sample_uid = wildcards.sample_uid, base = config["base"])
     shell:
         "cellbender remove-background"
-        " --input {input}"
+        " --input {params.cellranger_count_file}"
         " --output {output[0]}"
         " --expected-cells {params.expected_cells}"
         " --fpr 0.01"
-        " --cuda > {log}"
+        " --cuda"
 
-rule convert_h5_to_h5ad:
+rule combine_cb_cr:
     input:
-        cr="{base}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5",
+        cr=rules.cellranger_count.output,
         cb="{base}/per_sample/cellbender/{sample_uid}/background_removed.h5"
     output:
-        "{base}/per_sample/cellranger/{sample_uid}/TenX.h5ad",
-        "{base}/per_sample/cellbender/{sample_uid}/CellBender.h5ad"
+        "{base}/per_sample/cellranger_cellbender/{sample_uid}/combined.h5ad"
     log:
-        "{base}/logs/{sample_uid}/cb_cr_h5ads.log",
+        "{base}/logs/{sample_uid}/cb_cr_combined.log",
     resources:
         mem_mb="32000",
         partition="quake,owners",
         time="0-1",
-    conda:
-        #"scanpy_latest"
-        config["workflow_dir"] + "/envs/scanpy.yaml"
     params:
-        min_genes=100,
-        min_counts=300,
+        min_genes=200,
+        min_counts=400,
         filter_cells=True,
     script:
-        config["workflow_dir"] + "/scripts/post_cellranger/h5_to_h5ad.py > {log}"
-
-rule combine_cellbender_cellranger:
-    input:
-        "{base}/per_sample/cellranger/{sample_uid}/TenX.h5ad",
-        "{base}/per_sample/cellbender/{sample_uid}/CellBender.h5ad"
-    output:
-        "{base}/per_sample/{sample_uid}/combined.h5ad"
-    log:
-        "{base}/logs/{sample_uid}/combine_cb_cr_h5ads.log",
-    resources:
-        mem_mb="32000",
-        partition="quake,owners",
-        time="0-1",
-    conda:
-        #"scanpy_latest"
-        config["workflow_dir"] + "/envs/scanpy.yaml"
-    params:
-        min_genes=100,
-        min_counts=300,
-        filter_cells=True,
-    script:
-        config["workflow_dir"] + "/scripts/post_cellranger/h5_to_h5ad.py > {log}"
+        config["workflow_dir"] + "/scripts/post_cellranger/combined_cr_cb.py"
 
 rule aggregate_h5ads:
     """ aggregate h5 from cellranger or h5ads scanpy """
     input:
         expand(
-            "{base}/per_sample/{sample_uid}/combined.h5ad",
+            "{base}/per_sample/cellranger_cellbender/{sample_uid}/combined.h5ad",
             base=config["base"],
             sample_uid=sample_uids,
-        ),
+        ),"{base}/downloads/CountAdded_PIP_global_object_for_cellxgene.h5ad"
     output:
         "{base}/aggregated/aggr_gex_raw.h5ad",
     log:
@@ -127,7 +101,7 @@ rule aggregate_h5ads:
     conda:
         config["workflow_dir"] + "/envs/scanpy.yaml"
     params:
-        min_genes=10,
+        min_genes=300,
         min_counts=300,
         filter_cells=True,
     script:

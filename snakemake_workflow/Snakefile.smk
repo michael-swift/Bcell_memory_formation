@@ -20,11 +20,13 @@ samplesheets = pd.concat(
 )
 
 # Parse Samplesheet
-samplesheets['expected_cells'] = samplesheets['expected_cells_thousands'].astype(float) * 1000
+samplesheets['expected_cells'] = samplesheets['expected_cells_thousands'].astype(int) * 1000
 samplesheets["species"] = "human"
 donors = list(set(samplesheets[samplesheets.species == "human"].donor.to_list()))
 
-
+# filter samplesheet:
+#samplesheets = samplesheets[samplesheets.sample_uid.str.contains('TBd4_frozen_PB')]
+#samplesheets = samplesheets.iloc[:2]
 samplesheets_gex = samplesheets[samplesheets.lib_type == 'gex']
 samplesheets_gex.set_index("sample_uid", inplace=True)
 samplesheets_vdj = samplesheets[samplesheets.lib_type == 'vdj']
@@ -32,6 +34,7 @@ samplesheets_vdj = samplesheets[samplesheets.lib_type == 'vdj']
 sample_uids_vdj = samplesheets_vdj.sample_uid.to_list()
 samplesheets = samplesheets_gex
 sample_uids = samplesheets.index.to_list()
+print(sample_uids)
 # make processsed data dir
 os.makedirs(base, exist_ok=True)
 
@@ -42,6 +45,11 @@ rule all:
         expand("{base}/aggregated/vtrees/pseudobulk/{donor}_v_trees.tsv", base = base, donor = donors),
         expand("{base}/aggregated/cell_calls/{donor}_called_cells_vdj_annotated.tsv.gz", base = base, donor = donors)
         #"{}/analysis/scanpy/gex_object.h5ad.gz".format(base),
+        #expand("{base}/per_sample/cellranger_vdj/{sample_uid_vdj}/outs/web_summary.html", base = base, sample_uid_vdj = sample_uids_vdj),
+        "{}/analysis/scanpy/gex_object.h5ad.gz".format(base),
+        #expand("{base}/per_sample/fastqc/{sample_uid_vdj}/", base = base, sample_uid_vdj = sample_uids_vdj),
+        #expand("{base}/per_sample/star_solo_vdj/{sample_uid_vdj}/Aligned.out.bam", base = base, sample_uid_vdj = sample_uids_vdj),
+
     params:
         name="all",
         partition="quake",
@@ -51,8 +59,11 @@ rule all:
 include: "rules/gex.smk"
 include: "rules/vdjc.smk"
 include: "rules/cell_calling.smk"
+include: "rules/qc.smk"
+include: "rules/get_resources.smk"
+
 
 def samplesheet_lookup(idx, col):
     return samplesheets.loc[idx, col]
 
-#localrules:preprocess_scanpy
+#localrules:touch_h5

@@ -31,11 +31,11 @@ def perform_qc(adata, filter_cells=True):
         save="prefilter",
     )
     if filter_cells == True:
-        sc.pp.filter_cells(adata, min_counts=2000)
-        sc.pp.filter_cells(adata, min_genes=500)
+        sc.pp.filter_cells(adata, min_counts=1000)
+        sc.pp.filter_cells(adata, min_genes=300)
         sc.pp.filter_cells(adata, max_genes=12000)
-        sc.pp.filter_cells(adata, max_counts=150000)
-    adata = adata[adata.obs["pct_counts_mt"] < 12]
+        sc.pp.filter_cells(adata, max_counts=300000)
+    adata = adata[adata.obs["pct_counts_mt"] < 20]
     # plot results of filtering
     sc.pl.violin(
         adata,
@@ -64,7 +64,6 @@ def cluster(adata, batch_correct=False, batch_key="tissue"):
 
 def add_samplesheet(file, adata):
     samplesheets = pd.read_table(file)
-
     samplesheets["sample_uid"] = (
         samplesheets["donor"]
         + "_"
@@ -74,7 +73,7 @@ def add_samplesheet(file, adata):
     )
 
     samplesheets.set_index("sample_uid", inplace=True)
-
+    samplesheets = samplesheets[samplesheets.libtype == 'gex']
     for column in samplesheets.columns:
         _dict = samplesheets[column].to_dict()
         adata.obs[column] = adata.obs.sample_uid.map(_dict)
@@ -113,8 +112,8 @@ print("transforming gene expression")
 adata.layers['umi_counts'] = adata.X.copy()
 print("normalize per 10K counts")
 sc.pp.normalize_total(adata, target_sum=1e4)
-print("log1p")
-sc.pp.log1p(adata, chunk_size=10000)
+print("log base 2")
+sc.pp.log1p(adata, chunk_size=10000, base = 2)
 print("top highly variable genes")
 sc.pp.highly_variable_genes(adata, n_top_genes=3000, batch_key = "tissue")
 
@@ -123,6 +122,8 @@ adata.var.loc[adata.var.index.str.contains("IGHV|IGLV|IGKV"), 'highly_variable']
 
 # set raw as the normalized log counts
 adata.raw = adata
+
+# cluster data before celltypist
 adata = recluster(adata, batch_correct = False)
 print("annotating with celltypist")
 
@@ -140,14 +141,14 @@ if majority_voting:
     sc.tl.umap(adata)
 else:
     predictions = celltypist.annotate(adata, model = "Immune_All_Low.pkl")
-
 # Get an `AnnData` with predicted labels embedded into the cell metadata columns.
 adata = predictions.to_adata()
-
+# this line allows to write h5ad, otherwise h5py throws errors
+adata.obs = adata.obs.astype(str, errors = "ignore")
 # write h5ads
 out_prefix = str(snakemake.output[0]).split('.')[0]
 for tissue in adata.obs.tissue.unique():
-    print('writing per {} h5ads'.format(tissue))
+    print('writing per tissue {} h5ads'.format(tissue))
     sub_adata = adata[adata.obs.tissue == tissue]
     sub_adata.write_h5ad("{}_{}.h5ad.gz".format(out_prefix, str(tissue)), compression = "gzip")
 

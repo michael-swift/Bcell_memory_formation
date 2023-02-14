@@ -14,8 +14,8 @@ rule cellranger_vdj:
     resources:
         mem_mb="120000",
         partition="quake,owners,normal",
-        disk_mb=8000,
-        time="0-12",
+        disk_mb="8000",
+        time="0-16",
     threads: 20
     shell:
         "mkdir -p {params.base}/per_sample/cellranger_vdj && "
@@ -430,3 +430,4 @@ rule build_v_trees:
         "-scratchdir {wildcards.base}/aggregated/vtrees/pseudobulk "
         "-samplename {wildcards.donor} "
         "2> {log}"
+
