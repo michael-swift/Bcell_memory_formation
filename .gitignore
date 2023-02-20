@@ -12,3 +12,9 @@ snakemake_workflow/db/*
 data*
 analysis/notebooks/.ipynb_checkpoints/*
 Analysis/notebooks/*
+*.h5ad
+*.png
+*.pdf
+*.svg
+*.tab
+*.gz
