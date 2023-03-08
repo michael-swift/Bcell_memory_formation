@@ -89,6 +89,35 @@ rule pull_TICA_data:
         "wget {params.bcell_url}"
 
 
+rule add_TICA_metadata:
+    """ add tissue column for integration with our data"""
+    input:
+        rules.pull_TICA_data.output.global_counts_data,
+    output:
+        mod_global_counts_data="{base}/downloads/TissueAdded_CountAdded_PIP_global_object_for_cellxgene.h5ad.gz",
+    threads: 1
+    params:
+        name="modify_TICA",
+        partition=config["partition"],
+    resources:
+        mem_mb=32000,
+    run:
+        import scanpy as sc
+
+        TICA_to_Bursa = TICA_to_Bursa = {
+            "BLD": "PB",
+            "BMA": "BM",
+            "SPL": "SP",
+            "ILN": "LN",
+            "MLN": "LN",
+        }
+        adata = sc.read_h5ad(input[0])
+        adata.obs.loc[:, "tissue"] = adata.obs.Organ.map(
+            lambda x: TICA_to_Bursa.get(x, x)
+        )
+        adata.write_h5ad(output[0], compression="gzip")
+
+
 rule star_solo_vdj:
     """ Map reads to genome using STAR
         Notes:

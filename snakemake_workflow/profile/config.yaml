@@ -13,11 +13,13 @@ cluster:
 
 default-resources:
   - partition=normal,owners,quake
-  - mem_mb="4000"
+  - mem_mb=4000
   - gpus=0
-  - time="03:00:00"
+  - time="02:00:00"
   - threads=4
-restart-times: 0
+  - disk_mb=16000
+  - tmpdir="/scratch/groups/quake/mswift"
+restart-times: 3
 rerun-triggers: mtime
 max-jobs-per-second: 10
 max-status-checks-per-second: 1
@@ -32,23 +34,25 @@ use-conda: True
 use-singularity: True
 snakefile: Snakefile.smk
 set-resources:
-    - preprocess_scanpy:mem_mb=210000
-    - preprocess_scanpy:time=01:00:00
+    - preprocess_scanpy:mem_mb=120000
+    - preprocess_scanpy:time="01:00:00"
     - preprocess_scanpy:partition=quake,owners
     - run_cellbender:mem_mb=16000
-    - run_cellbender:time=4:00:00
+    - run_cellbender:time="4:00:00"
     - run_cellbender:partition=gpu
     - run_cellbender:gpus=1
-    - cellranger_count:mem_mb=64000
-    - cellranger_count:partition=quake,owners,normal
-    - cellranger_count:time=48:00:00
-    - cellranger_count:threads=16
-    - aggegrate_h5ads:mem_mb=210000
+    - cellranger_count:mem_mb=128000
+    - cellranger_count:partition=quake,owners
+    - cellranger_count:time="24:00:00"
+    - cellranger_count:threads=20
+    - cellranger_count:disk_mb=1000000
+    - aggregate_h5ads:mem_mb=210000
+    - annotate_by_tissue:mem_mb=64000
     - cellranger_vdj:mem_mb=120000
-    - star_solo_vdj:time=24:00:00
+    - star_solo_vdj:time="24:00:00"
     - star_solo_vdj:mem_mb=64000
     - star_solo_vdj:threads=12
     - star_solo_vdj:partition=quake
     - igblast:mem_mb=65000
-    - igblast:time=24:00:00
+    - igblast:time="24:00:00"
     - igblast:threads=20

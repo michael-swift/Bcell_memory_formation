@@ -19,58 +19,58 @@ rule cellranger_count:
     input:
         config["gex_fastq_dirs"],
     output:
-        "{base}/per_sample/cellranger/sample_stamps/{sample_uid}.done",
+        "{base_gex}/per_sample/cellranger/sample_stamps/{sample_uid}.done",
     params:
         name="count_cellranger",
-        base=config["base"],
+        base=config["base"]["gex"],
         cell_ranger=config["cell_ranger"],
         transcriptome=config["transcriptome"],
-        local_cores=20,
     shell:
-        "mkdir -p {base}/per_sample/cellranger/ && "
-        "cd {base}/per_sample/cellranger/ && "
+        "mkdir -p {wildcards.base_gex}/per_sample/cellranger/ && "
+        "cd {wildcards.base_gex}/per_sample/cellranger/ && "
         "rm -f {wildcards.sample_uid}/_lock && "
         "{params.cell_ranger}/cellranger count"
         " --id={wildcards.sample_uid}"
         " --transcriptome={params.transcriptome}"
         " --fastqs={input}"
-        " --localcores={params.local_cores}"
         " --sample={wildcards.sample_uid}"
         " --nosecondary"
         " --no-bam && touch {output}"
 
+
 rule cp_cellranger:
     # snakemake and cellranger don't play well together because they both want control of the directory
     # touching .done file  to work around
-    # unfortunately I want to refer to CellRanger Generated Files later in the workflow
-    input: rules.cellranger_count.output
+    # unfortunately I want to refer to CellRanger Generated Files later in the workflow so I'm temporarily copying them
+    input:
+        rules.cellranger_count.output,
     output:
-        "{base}/per_sample/cellranger_temp/{sample_uid}/outs/raw_feature_barcode_matrix.h5"
+        temp(
+            "{base_gex}/per_sample/cellranger_temp/{sample_uid}/outs/raw_feature_bc_matrix.h5"
+        ),
     params:
         name="cp_cellranger",
-        base=config["base"],
+        base=config["base"]["gex"],
     shell:
-        "cp -rf {base}/per_sample/cellranger/{sample_uid} {base}/per_sample/cellranger_temp/{sample_uid}"
+        "cp -rf {wildcards.base_gex}/per_sample/cellranger/{wildcards.sample_uid} {wildcards.base_gex}/per_sample/cellranger_temp/"
+
 
 rule run_cellbender:
     input:
         rules.cp_cellranger.output,
     output:
-        "{base}/per_sample/cellbender/{sample_uid}/background_removed.h5",
-        "{base}/per_sample/cellbender/{sample_uid}/background_removed_cell_barcodes.csv",
+        "{base_gex}/per_sample/cellbender/{sample_uid}/background_removed.h5",
+        "{base_gex}/per_sample/cellbender/{sample_uid}/background_removed_cell_barcodes.csv",
     conda:
         "cellbender2"
     log:
-        "{base}/logs/cellbender/{sample_uid}.log",
+        "{base_gex}/logs/cellbender/{sample_uid}.log",
     resources:
         time="4:00:00",
         partition="gpu",
     params:
         expected_cells=lambda wildcards: samplesheet_lookup(
             wildcards.sample_uid, "expected_cells"
-        ),
-        cellranger_count_file=lambda wildcards: "{base}/per_sample/{sample_uid}/outs/raw_feature_bc_matrix.h5".format(
-            sample_uid=wildcards.sample_uid, base=config["base"]
         ),
     shell:
         "cellbender remove-background"
@@ -80,69 +80,92 @@ rule run_cellbender:
         " --fpr 0.01"
         " --cuda"
 
-
 rule combine_cb_cr:
     input:
-        cr=rules.cellranger_count.output,
-        cb="{base}/per_sample/cellbender/{sample_uid}/background_removed.h5",
+        cr=rules.cp_cellranger.output,
+        cb=ancient("{base_gex}/per_sample/cellbender/{sample_uid}/background_removed.h5"),
     output:
-        "{base}/per_sample/cellranger_cellbender/{sample_uid}/combined.h5ad",
+        "{base_gex}/per_sample/cellranger_cellbender/{sample_uid}/combined.h5ad.gz",
     log:
-        "{base}/logs/{sample_uid}/cb_cr_combined.log",
+        "{base_gex}/logs/{sample_uid}/cb_cr_combined.log",
     resources:
         mem_mb="32000",
         partition="quake,owners",
         time="0-1",
     params:
-        min_genes=200,
-        min_counts=400,
+        min_genes=1,
+        min_counts=1,
         filter_cells=True,
     script:
         config["workflow_dir"] + "/scripts/post_cellranger/combined_cr_cb.py"
-
-
 rule aggregate_h5ads:
     """ aggregate h5 from cellranger or h5ads scanpy """
     input:
         expand(
-            "{base}/per_sample/cellranger_cellbender/{sample_uid}/combined.h5ad",
-            base=config["base"],
+            "{base_gex}/per_sample/cellranger_cellbender/{sample_uid}/combined.h5ad.gz",
+            base_gex=config["base"]["gex"],
             sample_uid=sample_uids,
         ),
-        "{base}/downloads/CountAdded_PIP_global_object_for_cellxgene.h5ad",
+        "{base_gex}/downloads/TissueAdded_CountAdded_PIP_global_object_for_cellxgene.h5ad.gz",
     output:
-        "{base}/aggregated/aggr_gex_raw.h5ad",
+        "{base_gex}/aggregated/aggr_gex_raw.h5ad.gz",
     log:
-        "{base}/logs/aggregation.log",
-    resources:
-        mem_mb="210000",
-        partition="quake,owners",
-        time="0-1",
+        "{base_gex}/logs/aggregation.log",
     conda:
         config["workflow_dir"] + "/envs/scanpy.yaml"
     params:
-        min_genes=300,
-        min_counts=300,
+        min_genes=10,
+        min_counts=50,
         filter_cells=True,
     script:
         config["workflow_dir"] + "/scripts/post_cellranger/aggregate_h5ads.py"
 
-
-rule preprocess_scanpy:
-    """ performs some preprocessing and qc as well as celltypist labeling, adds samplesheet info to object"""
+rule annotate_by_tissue:
+    """ performs preprocessing and qc as well as celltypist labeling, cell cycle assignment, doublet calling, adds samplesheet info to object"""
     input:
-        "{base}/aggregated/aggr_gex_raw.h5ad",
+        "{base_gex}/aggregated/aggr_gex_raw.h5ad.gz",
         config["samplesheets"],
     output:
-        "{base}/analysis/scanpy/gex_object.h5ad.gz",
+        "{base_gex}/annotate/tissue_objs/{tissue}_gex_object.h5ad.gz",
+        "{base_gex}/annotate/tissue_objs/{tissue}_gex_labels.tab.gz",
     resources:
         partition="quake,owners",
-        mem_mb="210000",
     params:
-        outdir="{base}/analysis/scanpy/h5ad_by_sample_uid",
+        cell_cycle_genes="{}/resources/cell_cycle/cell_cycle_genes.tab".format(
+            config["workflow_dir"]
+        ),
     log:
-        "{base}/logs/scanpy/preprocess.log",
+        "{base_gex}/logs/annotate/{tissue}/annotate_by_tissue.log",
     conda:
         config["workflow_dir"] + "/envs/scanpy.yaml"
     script:
-        config["workflow_dir"] + "/scripts/post_cellranger/scanpy_pp.py"
+        config["workflow_dir"] + "/scripts/post_cellranger/annotate.py"
+
+
+rule aggregate_scanpy:
+    input:
+        h5ads=expand(
+            "{base_gex}/annotate/tissue_objs/{tissue}_gex_object.h5ad.gz",
+            base_gex=base['gex'],
+            tissue=tissues,
+        ),
+        obs_dfs=expand(
+            "{base_gex}/annotate/tissue_objs/{tissue}_gex_labels.tab.gz",
+            base_gex=base['gex'],
+            tissue=tissues,
+        ),
+    output:
+        full_h5ad="{base_gex}/annotate/gex_object.h5ad.gz",
+        gex_labels="{base_gex}/annotate/gex_labels.tab.gz",
+    resources:
+        partition="quake,owners",
+    params:
+        cell_cycle_genes="{}/resources/cell_cycle/cell_cycle_genes.tab".format(
+            config["workflow_dir"]
+        ),
+    log:
+        "{base_gex}/logs/annotate/obj_preprocess.log",
+    conda:
+        config["workflow_dir"] + "/envs/scanpy.yaml"
+    script:
+        config["workflow_dir"] + "/scripts/post_cellranger/aggregate_annotated.py"

@@ -7,7 +7,7 @@
 5	TBd3	frozen	PBb	PB	H6	6.0	gex	10	True	TBd3_frozen_PBb	PBb	TBd3_frozen_PBb
 6	TBd3	frozen	BMa	BM	H7	7.0	gex	16	True	TBd3_frozen_BMa	BMa	TBd3_frozen_BMa
 7	TBd3	frozen	BMb	BM	H8	8.0	gex	16	True	TBd3_frozen_BMb	BMb	TBd3_frozen_BMb
-8	TBd5	frozen	LN	LN	H9	9.0	gex	10	False	TBd5_frozen_LN	LN	TBd5_frozen_LN
+8	TBd5	frozen	LN	LN	H9	9.0	gex	8	False	TBd5_frozen_LN	LN	TBd5_frozen_LN
 9	TBd5	frozen	SP	SP	H10	10.0	gex	20	True	TBd5_frozen_SP	SP	TBd5_frozen_SP
 10	TBd5	frozen	BM	BM	H11	11.0	gex	20	True	TBd5_frozen_BM	BM	TBd5_frozen_BM
 11	TBd4	frozen	PBa	PB	E12	12.0	gex	10	True	TBd4_frozen_PBa	PBa	TBd4_frozen_PBa
