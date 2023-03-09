@@ -11,7 +11,6 @@ def wildcard_input(wildcards):
 #
 species = config["species"]
 
-
 rule cellranger_count:
     # snakemake and cellranger don't play well together because they both want control of the directory
     # touching .done file  to work around
@@ -19,7 +18,8 @@ rule cellranger_count:
     input:
         config["gex_fastq_dirs"],
     output:
-        "{base_gex}/per_sample/cellranger/sample_stamps/{sample_uid}.done",
+        "{base_gex}/per_sample/cellranger/sample_stamps/{sample_uid}.done","{base_gex}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5"
+
     params:
         name="count_cellranger",
         base=config["base"]["gex"],
@@ -37,27 +37,8 @@ rule cellranger_count:
         " --nosecondary"
         " --no-bam && touch {output}"
 
-
-rule cp_cellranger:
-    # snakemake and cellranger don't play well together because they both want control of the directory
-    # touching .done file  to work around
-    # unfortunately I want to refer to CellRanger Generated Files later in the workflow so I'm temporarily copying them
-    input:
-        rules.cellranger_count.output,
-    output:
-        temp(
-            "{base_gex}/per_sample/cellranger_temp/{sample_uid}/outs/raw_feature_bc_matrix.h5"
-        ),
-    params:
-        name="cp_cellranger",
-        base=config["base"]["gex"],
-    shell:
-        "cp -rf {wildcards.base_gex}/per_sample/cellranger/{wildcards.sample_uid} {wildcards.base_gex}/per_sample/cellranger_temp/"
-
-
 rule run_cellbender:
-    input:
-        rules.cp_cellranger.output,
+    input:ancient("{base_gex}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5")
     output:
         "{base_gex}/per_sample/cellbender/{sample_uid}/background_removed.h5",
         "{base_gex}/per_sample/cellbender/{sample_uid}/background_removed_cell_barcodes.csv",
@@ -82,7 +63,7 @@ rule run_cellbender:
 
 rule combine_cb_cr:
     input:
-        cr=rules.cp_cellranger.output,
+        cr=ancient("{base_gex}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5"),
         cb=ancient("{base_gex}/per_sample/cellbender/{sample_uid}/background_removed.h5"),
     output:
         "{base_gex}/per_sample/cellranger_cellbender/{sample_uid}/combined.h5ad.gz",
@@ -98,6 +79,7 @@ rule combine_cb_cr:
         filter_cells=True,
     script:
         config["workflow_dir"] + "/scripts/post_cellranger/combined_cr_cb.py"
+
 rule aggregate_h5ads:
     """ aggregate h5 from cellranger or h5ads scanpy """
     input:
@@ -126,8 +108,9 @@ rule annotate_by_tissue:
         "{base_gex}/aggregated/aggr_gex_raw.h5ad.gz",
         config["samplesheets"],
     output:
-        "{base_gex}/annotate/tissue_objs/{tissue}_gex_object.h5ad.gz",
-        "{base_gex}/annotate/tissue_objs/{tissue}_gex_labels.tab.gz",
+        tissue_dir=directory("{base_gex}/annotate/tissue_objs/{tissue}/"),
+        tissue_obj="{base_gex}/annotate/tissue_objs/{tissue}/annotated_processed.h5ad.gz",
+        labels="{base_gex}/annotate/tissue_objs/{tissue}/gex_labels.tab",
     resources:
         partition="quake,owners",
     params:
@@ -141,16 +124,15 @@ rule annotate_by_tissue:
     script:
         config["workflow_dir"] + "/scripts/post_cellranger/annotate.py"
 
-
 rule aggregate_scanpy:
     input:
         h5ads=expand(
-            "{base_gex}/annotate/tissue_objs/{tissue}_gex_object.h5ad.gz",
+            "{base_gex}/annotate/tissue_objs/{tissue}/annotated_processed.h5ad.gz",
             base_gex=base['gex'],
             tissue=tissues,
         ),
         obs_dfs=expand(
-            "{base_gex}/annotate/tissue_objs/{tissue}_gex_labels.tab.gz",
+            "{base_gex}/annotate/tissue_objs/{tissue}/gex_labels.tab",
             base_gex=base['gex'],
             tissue=tissues,
         ),

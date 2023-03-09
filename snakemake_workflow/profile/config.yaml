@@ -17,7 +17,7 @@ default-resources:
   - gpus=0
   - time="02:00:00"
   - threads=4
-  - disk_mb=16000
+  - disk_mb=128000
   - tmpdir="/scratch/groups/quake/mswift"
 restart-times: 3
 rerun-triggers: mtime

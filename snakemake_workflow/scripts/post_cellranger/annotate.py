@@ -340,9 +340,9 @@ def run_gex_label_routine(adata, tissue):
 ###############################
 
 h5ad, samplesheet = snakemake.input
-cell_cycle_genes = snakemake.params.cell_cycle_genes
 tissue_dir = snakemake.output.tissue_dir
 tissues = snakemake.wildcards.tissues
+cell_cycle_genes = snakemake.params.cell_cycle_genes
 adata = sc.read_h5ad(h5ad)
 adata.var_names_make_unique()
 adata.obs_names_make_unique()
@@ -387,11 +387,11 @@ print(adata.shape)
 adata_tissue = run_gex_label_routine(adata, tissue)
 # write obs matrix for vdj integration
 adata_tissue.write_h5ad(
-    "{}/{}_annotated_processed.h5ad.gz".format(tissue_dir, tissue),
+    "{}/annotated_processed.h5ad.gz".format(tissue_dir),
     compression="gzip",
 )
 df = adata_tissue.obs[gex_labels_to_write]
-df.to_csv("{}/{}_gex_labels.tab".format(tissue_dir, tissue), sep="\t")
+df.to_csv("{}/gex_labels.tab".format(tissue_dir), sep="\t")
 # perform garbage collection:
 del adata_tissue
 gc.collect()
