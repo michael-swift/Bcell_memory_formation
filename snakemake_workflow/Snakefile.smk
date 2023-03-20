@@ -31,7 +31,7 @@ donors = list(set(samplesheets[samplesheets.species == "human"].donor.to_list())
 
 # filter samplesheet:
 # samplesheets = samplesheets[~samplesheets.sample_uid.str.contains('TBd6_fresh_LN|TBd6_fresh_BM|TBd6_fresh_SP|TBd3_fresh_B20')]
-# samplesheets = samplesheets.iloc[:2]
+#samplesheets = samplesheets.iloc[:2]
 samplesheets_gex = samplesheets[samplesheets.lib_type == "gex"]
 samplesheets_gex.set_index("sample_uid", inplace=True)
 samplesheets_vdj = samplesheets[samplesheets.lib_type == "vdj"]
@@ -48,7 +48,7 @@ for k in base.keys():
 rule all:
     input:
         #expand("{base}/per_sample/cellranger_vdj/{sample_uid_vdj}/outs/web_summary.html", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
-        expand("{base_gex}/annotate/gex_object.h5ad.gz", base_gex = base['gex']),
+        expand("{base_gex}/annotate/scvi/bcells.h5ad.gz", base_gex = base['gex']),
         #expand("{base}/per_sample/fastqc/{sample_uid_vdj}/", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
         #expand("{base}/per_sample/star_solo_vdj/{sample_uid_vdj}/Aligned.out.bam", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
         #expand("{base}/aggregated/lineage_clustering/final_lineage_ids/{donor}.tsv.gz", base=base['vdj'], donor=donors),
@@ -67,6 +67,6 @@ include: "rules/qc.smk"
 include: "rules/get_resources.smk"
 include: "rules/cell_calling.smk"
 
-
+#localrules:combine_cb_cr
 def samplesheet_lookup(idx, col):
     return samplesheets.loc[idx, col]

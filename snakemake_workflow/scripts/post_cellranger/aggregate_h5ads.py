@@ -30,6 +30,7 @@ for i, file_name in enumerate(files):
     print(i, " anndatas concatenated")
 
 adata = ad.concat(adata_list)
+
 print(str(snakemake.output))
 adata.write_h5ad(str(snakemake.output))
 print("Done!!")

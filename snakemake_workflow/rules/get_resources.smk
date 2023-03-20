@@ -94,7 +94,7 @@ rule add_TICA_metadata:
     input:
         rules.pull_TICA_data.output.global_counts_data,
     output:
-        mod_global_counts_data="{base}/downloads/TissueAdded_CountAdded_PIP_global_object_for_cellxgene.h5ad.gz",
+        mod_global_counts_data="{base}/downloads/mod_PIP_global_object_for_cellxgene.h5ad.gz",
     threads: 1
     params:
         name="modify_TICA",
@@ -115,6 +115,11 @@ rule add_TICA_metadata:
         adata.obs.loc[:, "tissue"] = adata.obs.Organ.map(
             lambda x: TICA_to_Bursa.get(x, x)
         )
+        adata.obs.loc[:,"sample_uid"] = adata.obs.Organ.astype(str) + "_" + adata.obs.Donor.astype(str)
+        adata.obs.loc[:,'donor'] = adata.obs.Donor
+        # these are not real cellbender counts rn
+        adata.X = adata.layers['counts']
+        adata.layers['cellbender_counts'] = adata.X
         adata.write_h5ad(output[0], compression="gzip")
 
 

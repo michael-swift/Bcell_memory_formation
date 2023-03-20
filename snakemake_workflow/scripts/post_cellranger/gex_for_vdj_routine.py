@@ -55,12 +55,7 @@ def setup_figure_outs(tissue):
     return output_dir, output_formats, output_suffix
 
 def run_gex_label_routine(data_path, tissues):
-    for tissue in tissues:
-        output_dir, output_formats, output_suffix = setup_figure_outs(tissue=tissue)
-        def save_figure(fig, name, output_dir=output_dir, output_suffix=output_suffix, output_formats=output_formats, savefig_args=savefig_args):
-            for output_format in output_formats:
-                fig.savefig(output_dir + "/" + name + output_suffix + output_format, **savefig_args)
-        if tissue in file:
+    if tissue in file:
                 adata = sc.read_h5ad(file)
                 # remove IGH and IGL variable genes from highly variable genes for clustering analysis 
                 adata.var.loc[adata.var.index.str.contains("IGH|IGL|IGK|FOS|JUN|HSP|RPL"), 'highly_variable'] = False
