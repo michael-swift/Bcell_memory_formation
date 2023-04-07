@@ -28,32 +28,42 @@ if subsample == "True":
 # setup batch column
 adata.obs['donor_tissue'] = adata.obs["donor"].astype(str) + "_" + adata.obs["tissue"].astype(str)
 #setup model
-scvi.model.SCVI.setup_anndata(adata, layer="counts", batch_key="donor_tissue", categorical_covariate_keys = ['corr_cycling'])
+scvi.model.SCVI.setup_anndata(adata, layer="counts", batch_key="donor_tissue")
 print(f'training model')
-vae = scvi.model.SCVI(adata, n_layers=2, n_latent=30, gene_likelihood="nb")
+vae = scvi.model.SCVI(adata, n_layers=2, n_latent=30, gene_likelihood="nb", categorical_covariate_keys=["sample_type", "sex", "corr_cycling"])
 # train
-vae.train(max_epochs=150)
+vae.train(max_epochs=25)
 # get latent rep
 Z_hat = vae.get_latent_representation()
 # calculate umap using latent representation
-adata.obsm["X_scVI_cat"] = Z_hat
-sc.pp.neighbors(adata, use_rep="X_scVI_cat", n_neighbors=20)
+adata.obsm["X_scVI"] = Z_hat
+sc.pp.neighbors(adata, use_rep="X_scVI", n_neighbors=20)
 sc.tl.umap(adata, min_dist=0.3)
-sc.tl.leiden(adata, key_added="leiden_scVI_cat", resolution=0.8)
+sc.tl.leiden(adata, key_added="leiden_scVI", resolution=0.8)
 vae.save(out_dir)
-add_continuous = True
-if add_continuous:
-# additionaly good covariates could be XIST and FOS/JUN
-    scvi.model.SCVI.setup_anndata(adata, layer="counts", batch_key="donor_tissue",continuous_covariate_keys = ['correlation_cycling'])
+add_continuous_covariates = True
+if add_continuous_covariates:
+    # then copy the expression of each nuisance gene into adata.obs where the key
+    # is the gene name
+    for g in nuisance_genes:
+        adata.obs.loc[:,g] =  sc.get.obs_df(adata, keys = g, layer = 'counts').values
+    # finally, remove the nuisance genes from the anndata
+    gene_subset = [g for g in adata.var_names if g not in nuisance_genes]
+    print(gene_subset)
+    adata = adata[:,gene_subset].copy()
+    print(adata.shape, "shape of adata after removing nuisance genes")
+    scvi.model.SCVI.setup_anndata(adata, layer="counts", batch_key="donor_tissue", continuous_covariate_keys=nuisance_genes)
+    print(f'training model with additional covariates')
     vae = scvi.model.SCVI(adata, n_layers=2, n_latent=30, gene_likelihood="nb")
     # train
-    vae.train(max_epochs=150)
+    vae.train(max_epochs=20)
     # get latent rep
     Z_hat = vae.get_latent_representation()
     # calculate umap using latent representation
-    adata.obsm["X_scVI_cont"] = Z_hat
-    sc.pp.neighbors(adata, use_rep="X_scVI_cont", n_neighbors=20)
+    adata.obsm["X_scVI_cov"] = Z_hat
+    sc.pp.neighbors(adata, use_rep="X_scVI_cov", n_neighbors=20)
     sc.tl.umap(adata, min_dist=0.3)
-    sc.tl.leiden(adata, key_added="leiden_scVI_cont", resolution=0.8)
-    
+    sc.tl.leiden(adata, key_added="leiden_scVI_cov", resolution=0.8)
+
+vae.save(out_dir)
 adata.write_h5ad(outfile)

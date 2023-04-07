@@ -47,7 +47,7 @@ set-resources:
     - cellranger_count:threads=20
     - cellranger_count:disk_mb=1000000
     - aggregate_h5ads:mem_mb=210000
-    - aggregate_annotated:mem_mb=210000
+    - aggregate_annotated:mem_mb=120000
     - annotate_by_tissue:mem_mb=120000
     - cellranger_vdj:mem_mb=120000
     - star_solo_vdj:time="24:00:00"
@@ -58,7 +58,7 @@ set-resources:
     - igblast:time="24:00:00"
     - igblast:threads=20
     - scvi_global:gpus=1
-    - scvi_global:mem_mb=65000
+    - scvi_global:mem_mb=128000
     - scvi_global:time="8:00:00"
     - bcell_subset:time="2:00:00"
     - bcell_subset:mem_mb=64000
