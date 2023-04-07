@@ -29,6 +29,7 @@ samplesheets["expected_cells"] = (
 )
 samplesheets["species"] = "human"
 donors = list(set(samplesheets[samplesheets.species == "human"].donor.to_list()))
+#print(samplesheets)
 
 # filter samplesheet:
 #samplesheets = samplesheets[samplesheets.sample_uid.str.contains('TBd4_frozen_PB')]
@@ -40,16 +41,15 @@ samplesheets_vdj = samplesheets[samplesheets.lib_type == "vdj"]
 sample_uids_vdj = samplesheets_vdj.sample_uid.to_list()
 samplesheets = samplesheets_gex
 sample_uids = samplesheets.index.to_list()
-print(sample_uids)
+#print(sample_uids)
 # make processsed data dir
 for k in base.keys():
     os.makedirs(base[k], exist_ok=True)
 
-
 rule all:
     input:
         #expand("{base}/per_sample/cellranger_vdj/{sample_uid_vdj}/outs/web_summary.html", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
-        "{}/analysis/scanpy/gex_object.h5ad.gz".format(base['gex']),
+        #"{}/analysis/scanpy/gex_object.h5ad.gz".format(base['gex']),
         #expand("{base}/per_sample/fastqc/{sample_uid_vdj}/", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
         #expand("{base}/per_sample/star_solo_vdj/{sample_uid_vdj}/Aligned.out.bam", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
         expand("{base}/aggregated/lineage_clustering/final_lineage_ids/{donor}.tsv.gz", base=base['vdj'], donor=donors),

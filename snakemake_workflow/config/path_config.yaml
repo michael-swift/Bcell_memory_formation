@@ -6,18 +6,19 @@ library_info: "samplesheets/library_info.tsv"
 
 base: 
   gex: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline_2"
-  vdj: "/oak/stanford/groups/quake/shared/swiftShare/tb_vdj_pipeline"
+  vdj: "/oak/stanford/groups/quake/shared/swiftShare/tb_vdj_pipeline_TBd1_redo"
 # specificed in multi_configs
 gex_fastq_dirs: ["/oak/stanford/groups/quake/shared/swiftShare/tb_gex_fastqs"]
-vdj_fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/ilm7_vdj/"
+# vdj_fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/ilm7_vdj/"
+vdj_fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/tb_vdj_fastqs_TBd1_reseq/fastq_cellranger/AAAYVNGHV/"
 
 # human or mouse
 species: human
 # partition (for cluster computing)
 partition: "quake,owners"
 workflow_dir: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow" 
-samplesheets: ["samplesheets/samplesheet.tsv"]
-samplesheet_vdj: ["samplesheets/extended_samplesheet_vdj.tsv"]
+samplesheets: ["samplesheets/samplesheet_TBd1_redo.tsv"]
+samplesheet_vdj: ["samplesheets/extended_samplesheet_vdj_TBd1_redo.tsv"]
 # Software
 #---------------------------
 vdj_scripts: "scripts/vdj"
@@ -25,7 +26,8 @@ cell_ranger: "/home/groups/quake/mswift/resources/cellranger-7.0.1"
 cr_whitelist: "/home/groups/quake/mswift/resources/3M-february-2018.txt"
 resources: "/home/groups/quake/mswift/5prime_10X_workflow/resources"
 grmlin: "/home/users/cvijovic/ig-germline-discovery/grmlin" 
-# references
+#
+#references
 #------------
 vdj_ref_prefix: "vdj_human"
 vdj_reference: "/home/groups/quake/mswift/5prime_10X_workflow/db/vdj_reference"

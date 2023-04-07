@@ -6,17 +6,18 @@ rule cellranger_vdj:
         "{base}/logs/{sample_uid_vdj}/cellranger.log",
     params:
         name="vdj_cellranger",
-        base=config["base"],
+        base=config["base"]['vdj'],
         cell_ranger=config["cell_ranger"],
         vdj_reference=config["vdj_reference"],
         fastq_dir=config["vdj_fastq_dir"],
         inner_primers=config["inner_primers"]
     resources:
-        mem_mb="120000",
-        partition="quake,owners",
-        disk_mb="8000",
-        time="0-16",
-    threads: 20
+        mem_mb="128000",
+        partition="quake",
+        disk_mb=64000,
+        time="3-00",
+        threads=20,
+    threads: 20,
     shell:
         "mkdir -p {params.base}/per_sample/cellranger_vdj && "
         "cd {params.base}/per_sample/cellranger_vdj && "
@@ -32,8 +33,8 @@ rule igblast:
         "{base}/per_sample/vdj_preprocess/{sample_uid_vdj}/igblast.tsv",
     conda:
         "../envs/pacbio.yaml",
-    threads:
-        16,
+    resources:
+        threads=16,
     params:
         organism="human",
         IGDBDIR=config["IGDBDIR"],
@@ -54,7 +55,7 @@ rule igblast:
                 -outfmt 19 \
                 -query {input} \
                 -out {output} \
-                -num_threads {threads}
+                -num_threads {resources.threads}
         """
 
 rule filter_and_annotate:
@@ -83,10 +84,6 @@ rule filter_and_annotate:
 def aggregate_input(wildcards):
     samplelist = ["{}/per_sample/vdj_preprocess/{}/igblast_filtered_annotated.tsv.gz".format(wildcards.base, sample_uid_vdj) for sample_uid_vdj in samplesheets_vdj[(samplesheets_vdj.donor == wildcards.donor)].sample_uid]
     return samplelist
-
-def get_cb_umi_maps(wildcards):
-    maplist = ["{}/whitelisted/{}_seq_ids_barcodes_whitelisted.tsv".format( config["outs_basedir"], sid) for sid in samplesheets[(samplesheets.donor==wildcards.donor) & (samplesheets.primer_set == wildcards.primer_set)].index]
-    return maplist
 
 
 rule combine_samples:
@@ -121,8 +118,8 @@ rule call_germlines:
     conda:
         "../envs/grmlin.yaml"
     params:
-        organism=lambda wildcards: samplesheets[
-                samplesheets.donor == str(wildcards.donor)]["species"].values[0],
+        organism=lambda wildcards: samplesheets_vdj[
+                samplesheets_vdj.donor == str(wildcards.donor)]["species"].values[0],
         grmlin=config["grmlin"],
         IGDBDIR=config["IGDBDIR"],
     resources:
@@ -393,11 +390,12 @@ rule align_v_sequences:
     resources:
         mem_mb="262000",
         time="2-00:00:00",
+        threads=20,
+    threads: 20,
     log:
         "{base}/logs/trees/{donor}_pseudobulk_vmsa.log",
     conda:
         "../envs/presto.yaml"
-    threads: 20
     shell:
         "python {params.scripts}/align_v_sequences.py "
         "{input.seqs} "
@@ -405,7 +403,7 @@ rule align_v_sequences:
         "-scratchdir {wildcards.base}/aggregated/vtrees/pseudobulk "
         "-samplename {wildcards.donor} "
         "-germline_db {input.db} "
-        "-threads {threads} "
+        "-threads {resources.threads} "
         "2> {log}"
 
 

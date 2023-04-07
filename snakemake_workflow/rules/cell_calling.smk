@@ -51,26 +51,31 @@ rule align_cell_v_sequences:
         db=rules.polish_germlines.output.db,
     output:
         msa="{base}/aggregated/vtrees/cells/{donor}_vmsa.tsv.gz",
-        scratch=temp("{base}/aggregated/vtrees/cells/{donor}_scratch/aln.fasta"),
+        scratch=directory("{base}/aggregated/vtrees/cells/{donor}_scratch"),
     params:
         scripts=config["vdj_scripts"],
     resources:
-        mem_mb="262000",
-        time="2-00:00:00",
+        mem_mb="64000",
+        time="1-00:00:00",
+        threads=20,
     log:
         "{base}/logs/trees/{donor}_cell_vmsa.log",
     conda:
         "../envs/presto.yaml"
     threads: 20
     shell:
-        "python {params.scripts}/align_v_sequences.py "
-        "{input.seqs} "
-        "-outdir {wildcards.base}/aggregated/vtrees/cells "
-        "-scratchdir {wildcards.base}/aggregated/vtrees/cells/{wildcards.donor}_scratch "
-        "-samplename {wildcards.donor} "
-        "-germline_db {input.db} "
-        "-threads {threads} "
-        "2> {log}"
+        """
+        mkdir -p {wildcards.base}/aggregated/vtrees/cells/{wildcards.donor}_scratch
+
+        python {params.scripts}/align_v_sequences.py \
+        {input.seqs} \
+        -outdir {wildcards.base}/aggregated/vtrees/cells \
+        -scratchdir {wildcards.base}/aggregated/vtrees/cells/{wildcards.donor}_scratch \
+        -samplename {wildcards.donor} \
+        -germline_db {input.db} \
+        -threads {threads} \
+        2> {log}
+        """
 
 
 rule build_cell_v_trees:
@@ -91,6 +96,6 @@ rule build_cell_v_trees:
         "python {params.scripts}/build_v_trees.py "
         "{input} "
         "-outdir {wildcards.base}/aggregated/vtrees/cells "
-        "-scratchdir {wildcards.base}/aggregated/vtrees/cells "
+        "-scratchdir {wildcards.base}/aggregated/vtrees/cells/{wildcards.donor}_scratch "
         "-samplename {wildcards.donor} "
         "2> {log}"
