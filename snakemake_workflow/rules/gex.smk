@@ -52,8 +52,7 @@ rule cp_cellranger:
         name="cp_cellranger",
         base=config["base"]["gex"],
     shell:
-        "cp -rf {wildcards.base_gex}/per_sample/cellranger/{wildcards.sample_uid} {wildcards.base_gex}/per_sample/cellranger_temp/"
-
+        "cp -rf {wildcards.base}/per_sample/cellranger/{wildcards.sample_uid} {wildcards.base}/per_sample/cellranger_temp/{wildcards.sample_uid}"
 
 rule run_cellbender:
     input:

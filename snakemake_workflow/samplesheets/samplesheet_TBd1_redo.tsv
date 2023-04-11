@@ -1,0 +1,9 @@
+	donor	sample_type	sample_descriptor	tissue	sample_index	library_uid	lib_type	expected_cells_thousands	resequenced	sample_uid	sample_descriptor_old	sample_gid
+0	TBd1	frozen	PBa_redo	PB	E1		vdj	10		TBd1_frozen_PBa_redo	PBa_redo	TBd1_frozen_PBa_redo
+1	TBd1	frozen	BMa_redo	BM	E5		vdj	10		TBd1_frozen_BMa_redo	BMa_redo	TBd1_frozen_BMa_redo
+2	TBd1	frozen	PBb_redo	PB	E2		vdj	10		TBd1_frozen_PBb_redo	PBb_redo	TBd1_frozen_PBb_redo
+3	TBd1	frozen	BMb_redo	BM	E6		vdj	10		TBd1_frozen_BMb_redo	BMb_redo	TBd1_frozen_BMb_redo
+4	TBd1	frozen	PBoverA_redo	PB	E3		vdj	40		TBd1_frozen_PBoverA_redo	PBoverA_redo	TBd1_frozen_PBoverA_redo
+5	TBd1	frozen	BMoverA_redo	BM	E7		vdj	40		TBd1_frozen_BMoverA_redo	BMoverA_redo	TBd1_frozen_BMoverA_redo
+6	TBd1	frozen	PBoverB_redo	PB	E4		vdj	40		TBd1_frozen_PBoverB_redo	PBoverB_redo	TBd1_frozen_PBoverB_redo
+7	TBd1	frozen	BMoverB_redo	BM	E8		vdj	40		TBd1_frozen_BMoverB_redo	BMoverB_redo	TBd1_frozen_BMoverB_redo

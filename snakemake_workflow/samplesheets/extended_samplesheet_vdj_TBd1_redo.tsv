@@ -1,0 +1,9 @@
+sample_uid	donor	sample_type	sample_descriptor_old	tissue	BA CONC (ng/uL)	sample_index	LIB QUALITY (0-3)	LIB CONC (ng/uL)	LIB MOLARITY (nM)	LIB AVG LEN (bp)	Pool weight	expect cells (k)	lib_type	sample_descriptor	library_uid	sample_gid
+TBd1_frozen_BMa_redo	TBd1	frozen	BMa_redo	BM	0	E5	3	0	0	0	0	10.0	vdj	BMa_redo		TBd1_frozen_BMa_redo
+TBd1_frozen_BMb_redo	TBd1	frozen	BMb_redo	BM	0	E6	3	0	0	0	0	10.0	vdj	BMb_redo		TBd1_frozen_BMb_redo
+TBd1_frozen_BMoverA_redo	TBd1	frozen	BMoverA_redo	BM	0	E7	3	0	0	0	0	40.0	vdj	BMoverA_redo		TBd1_frozen_BMoverA_redo
+TBd1_frozen_BMoverB_redo	TBd1	frozen	BMoverB_redo	BM	0	E8	3	0	0	0	0	40.0	vdj	BMoverB_redo		TBd1_frozen_BMoverB_redo
+TBd1_frozen_PBa_redo	TBd1	frozen	PBa_redo	PB	0	E1	3	0	0	0	0	10.0	vdj	PBa		TBd1_frozen_PBa_redo
+TBd1_frozen_PBb_redo	TBd1	frozen	PBb_redo	PB	0	E2	3	0	0	0	0	10.0	vdj	PBb		TBd1_frozen_PBb_redo
+TBd1_frozen_PBoverA_redo	TBd1	frozen	PBoverA_redo	PB	0	E3	3	0	0	0	0	40.0	vdj	PBoverA_redo		TBd1_frozen_PBoverA_redo
+TBd1_frozen_PBoverB_redo	TBd1	frozen	PBoverB_redo	PB	0	E4	3	0	0	0	0	40.0	vdj	PBoverB_redo		TBd1_frozen_PBoverB_redo
