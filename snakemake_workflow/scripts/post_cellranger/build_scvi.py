@@ -4,6 +4,7 @@ import pandas as pd
 import scvi
 import argparse
 import scanpy as sc
+
 # read h5ad
 parser = argparse.ArgumentParser(description='run scvi')
 parser.add_argument('input_file', help="h5ad anndata")
@@ -20,31 +21,30 @@ covariate_genes = args.covariate_genes
 subsample = args.subsample
 print(type(subsample))
 covariate_genes_df = pd.read_table(covariate_genes, index_col=0)
-nuisance_genes = covariate_genes_df['cc'].to_list() + ["XIST", "FOS", "JUN"]
+nuisance_genes = ["XIST", "FOS", "JUN"]
 print("loading data")
 adata = sc.read_h5ad(FILENAME)
+
+layer = 'cellbender_counts'
 if subsample == "True":
     sc.pp.subsample(adata, n_obs=50000)
 # setup batch column
 adata.obs['donor_tissue'] = adata.obs["donor"].astype(str) + "_" + adata.obs["tissue"].astype(str)
-#setup model
-scvi.model.SCVI.setup_anndata(adata, layer="counts", batch_key="donor_tissue", categorical_covariate_keys = ['corr_cycling'])
-print(f'training model')
+
+#setup vanilla model:
+scvi.model.SCVI.setup_anndata(adata, layer=layer, batch_key="donor_tissue")
 vae = scvi.model.SCVI(adata, n_layers=2, n_latent=30, gene_likelihood="nb")
 # train
 vae.train(max_epochs=150)
 # get latent rep
 Z_hat = vae.get_latent_representation()
 # calculate umap using latent representation
-adata.obsm["X_scVI_cat"] = Z_hat
-sc.pp.neighbors(adata, use_rep="X_scVI_cat", n_neighbors=20)
-sc.tl.umap(adata, min_dist=0.3)
-sc.tl.leiden(adata, key_added="leiden_scVI_cat", resolution=0.8)
-vae.save(out_dir)
+adata.obsm["X_scVI"] = Z_hat
+
 add_continuous = True
 if add_continuous:
 # additionaly good covariates could be XIST and FOS/JUN
-    scvi.model.SCVI.setup_anndata(adata, layer="counts", batch_key="donor_tissue",continuous_covariate_keys = ['correlation_cycling'])
+    scvi.model.SCVI.setup_anndata(adata, layer=layer, batch_key="donor_tissue", continuous_covariate_keys = ['correlation_cycling'])
     vae = scvi.model.SCVI(adata, n_layers=2, n_latent=30, gene_likelihood="nb")
     # train
     vae.train(max_epochs=150)
@@ -52,8 +52,18 @@ if add_continuous:
     Z_hat = vae.get_latent_representation()
     # calculate umap using latent representation
     adata.obsm["X_scVI_cont"] = Z_hat
-    sc.pp.neighbors(adata, use_rep="X_scVI_cont", n_neighbors=20)
-    sc.tl.umap(adata, min_dist=0.3)
-    sc.tl.leiden(adata, key_added="leiden_scVI_cont", resolution=0.8)
-    
+    vae.save(out_dir)
+
+if add_cellbender_model:
+    #setup vanilla model:
+    layer = 'cellbender_counts'
+    scvi.model.SCVI.setup_anndata(adata, layer=layer, batch_key="donor_tissue")
+    vae = scvi.model.SCVI(adata, n_layers=2, n_latent=30, gene_likelihood="nb")
+    # train
+    vae.train(max_epochs=150)
+    # get latent rep
+    Z_hat = vae.get_latent_representation()
+    # calculate umap using latent representation
+    adata.obsm["X_scVI_cellbender"] = Z_hat
+
 adata.write_h5ad(outfile)

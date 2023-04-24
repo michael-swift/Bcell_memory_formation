@@ -1,7 +1,3 @@
-def expected_cells_adj(wildcards, attempt):
-    return 10000 / attempt
-
-
 def wildcard_input(wildcards):
     return
 
@@ -58,10 +54,14 @@ rule run_cellbender:
         expected_cells=lambda wildcards: samplesheet_lookup(
             wildcards.sample_uid, "expected_cells"
         ),
+        total_droplets=lambda wildcards: samplesheet_lookup(
+            wildcards.sample_uid, "expected_cells"
+        ) * 3
     shell:
         "cellbender remove-background"
         " --input {input}"
         " --output {output[0]}"
+        " --total-droplets-included {params.total_droplets}"
         " --expected-cells {params.expected_cells}"
         " --fpr 0.01"
         " --cuda"
@@ -71,9 +71,8 @@ rule combine_cb_cr:
         cr=ancient(
             "{base_gex}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5"
         ),
-        cb=ancient(
-            "{base_gex}/per_sample/cellbender/{sample_uid}/background_removed.h5"
-        ),
+        cb=ancient("{base_gex}/per_sample/cellbender/{sample_uid}/background_removed.h5")
+        ,
     output:
         "{base_gex}/per_sample/cellranger_cellbender/{sample_uid}/combined.h5ad.gz",
     log:
@@ -114,13 +113,13 @@ rule aggregate_h5ads:
         config["workflow_dir"] + "/scripts/post_cellranger/aggregate_h5ads.py"
 
 
-rule annotate_by_tissue:
+rule pre_annotate_by_tissue:
     """ performs preprocessing and qc as well as celltypist labeling, cell cycle assignment, doublet calling, adds samplesheet info to object"""
     input:
         "{base_gex}/aggregated/aggr_gex_raw.h5ad.gz",
     output:
-        fig_dir=directory("{base_gex}/annotate/figures_{tissue}/"),
-        tissue_obj="{base_gex}/annotate/tissue_objs/{tissue}/annotated_processed.h5ad.gz",
+        fig_dir=directory("{base_gex}/pre_annotate/figures_{tissue}/"),
+        tissue_obj="{base_gex}/pre_annotate/tissue_objs/{tissue}/pre_annotated_processed.h5ad.gz",
     resources:
         partition="quake,owners",
     params:
@@ -128,43 +127,62 @@ rule annotate_by_tissue:
             config["workflow_dir"]
         ),
     log:
-        "{base_gex}/logs/annotate/{tissue}/annotate_by_tissue.log",
+        "{base_gex}/logs/pre_annotate/{tissue}/pre_annotate_by_tissue.log",
     conda:
         config["workflow_dir"] + "/envs/scanpy.yaml"
     script:
-        config["workflow_dir"] + "/scripts/post_cellranger/annotate.py"
+        config["workflow_dir"] + "/scripts/post_cellranger/pre_annotate.py"
 
 
-rule aggregate_annotated:
+rule aggregate_pre_annotated:
     input:
         h5ads=expand(
-            "{base_gex}/annotate/tissue_objs/{tissue}/annotated_processed.h5ad.gz",
+            "{base_gex}/pre_annotate/tissue_objs/{tissue}/pre_annotated_processed.h5ad.gz",
             base_gex=base["gex"],
             tissue=tissues,
         ),
     output:
-        full_h5ad="{base_gex}/annotate/gex_object.h5ad.gz",
-        adata_obs="{base_gex}/annotate/adata.obs.tab.gz",
+        full_h5ad="{base_gex}/pre_annotate/gex_object.h5ad.gz",
+        adata_obs="{base_gex}/pre_annotate/adata.obs.tab.gz",
     resources:
         partition="quake,owners",
     log:
-        "{base_gex}/logs/annotate/obj_preprocess.log",
+        "{base_gex}/logs/pre_annotate/obj_preprocess.log",
     conda:
         config["workflow_dir"] + "/envs/scanpy.yaml"
     script:
-        config["workflow_dir"] + "/scripts/post_cellranger/aggregate_annotated.py"
+        config["workflow_dir"] + "/scripts/post_cellranger/aggregate_pre_annotated.py"
 
-
-rule scvi_global:
+rule remove_nonb:
     input:
-        full_h5ad="{base_gex}/annotate/gex_object.h5ad.gz",
+        full_h5ad="{base_gex}/pre_annotate/gex_object.h5ad.gz",
     output:
-        model=directory("{base_gex}/annotate/scvi/model/covariates/"),
-        adata="{base_gex}/annotate/scvi/gex_object.h5ad.gz",
+        bcells="{base_gex}/pre_annotate/bcells.h5ad.gz",
     resources:
         partition="quake,owners",
     log:
-        "{base_gex}/logs/annotate/scvi.obj_preprocess.log",
+        "{base_gex}/logs/pre_annotate/removenonb_preprocess.log",
+    params:
+        scripts=config["workflow_dir"] + "/scripts/post_cellranger/",
+    run:
+        import scanpy as sc
+        adata = sc.read_h5ad(str(input))
+        bcells = adata[adata.obs.probable_hq_single_b_cell.astype(str) == "True"]
+        bcells.obs.loc[:,"atlas"] = adata.obs.donor.str.contains("TBd")
+        bool_mapper = {True: "Tabula_Bursa", False: "TICA"}
+        bcells.obs.loc[:, "atlas"] = bcells.obs["atlas"].map(bool_mapper)
+        bcells.write_h5ad(output.bcells, compression="gzip")
+
+rule scvi_bcells:
+    input:
+        bcell_h5ad="{base_gex}/pre_annotate/bcells.h5ad.gz",
+    output:
+        model=directory("{base_gex}/pre_annotate/scvi/model/covariates/"),
+        adata="{base_gex}/pre_annotate/scvi/bcells.h5ad.gz",
+    resources:
+        partition="quake,owners",
+    log:
+        "{base_gex}/logs/pre_annotate/scvi.obj_preprocess.log",
     params:
         scripts=config["workflow_dir"] + "/scripts/post_cellranger/",
         cell_cycle_genes="{}/resources/cell_cycle/cell_cycle_genes.tab".format(
@@ -175,22 +193,27 @@ rule scvi_global:
     shell:
         "python {params.scripts}build_scvi.py {input} -output_file {output.adata} -output_model {output.model} -covariate_genes {params.cell_cycle_genes} -subsample {params.subsample}"
 
-rule bcell_subset:
+rule subset_bcells:
     input:
-        "{base_gex}/annotate/scvi/gex_object.h5ad.gz",
+        adata="{base_gex}/pre_annotate/scvi/bcells.h5ad.gz"
     output:
-        bcells="{base_gex}/annotate/scvi/bcells.h5ad.gz",
+        asc="{base_gex}/annotate/asc.h5ad.gz",
+        mb="{base_gex}/annotate/mb.h5ad.gz",
+        nb_other="{base_gex}/annotate/nb_other.h5ad.gz",
     resources:
         partition="quake,owners",
     log:
-        "{base_gex}/logs/annotate/scvi.obj_preprocess.log",
+        "{base_gex}/logs/pre_annotate/subset_bcells_preprocess.log",
     params:
         scripts=config["workflow_dir"] + "/scripts/post_cellranger/",
     run:
         import scanpy as sc
         adata = sc.read_h5ad(str(input))
-        bcells = adata[adata.obs.probable_hq_single_b_cell.astype(str) == "True"]
-        sc.pp.neighbors(bcells, use_rep="X_scVI_cont", n_neighbors=20)
-        sc.tl.umap(bcells, min_dist=0.3)
-        sc.tl.leiden(bcells, key_added="leiden_scVI_cont", resolution=0.8)
-        bcells.write_h5ad(output.bcells, compression="gzip")
+        adata = adata[adata.obs.Immune_All_Low_conf_score > 0.95]
+        mb = adata[adata.obs.Immune_All_Low_predicted_labels.str.contains("Memory|Age")]
+        mb.write_h5ad(output.mb, compression="gzip")
+        asc = adata[adata.obs.Immune_All_Low_predicted_labels.str.contains("Plasma")]
+        asc.write_h5ad(output.asc, compression="gzip")
+        nb_other = adata[~adata.obs.Immune_All_Low_predicted_labels.str.contains("Plasma|Memory|Age")]
+        nb_other.write_h5ad(output.nb_other, compression="gzip")
+        

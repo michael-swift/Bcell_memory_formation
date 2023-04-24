@@ -48,7 +48,7 @@ for k in base.keys():
 rule all:
     input:
         #expand("{base}/per_sample/cellranger_vdj/{sample_uid_vdj}/outs/web_summary.html", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
-        expand("{base_gex}/annotate/scvi/bcells.h5ad.gz", base_gex = base['gex']),
+        expand("{base_gex}/annotate/asc.h5ad.gz", base_gex = base['gex']),
         #expand("{base}/per_sample/fastqc/{sample_uid_vdj}/", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
         #expand("{base}/per_sample/star_solo_vdj/{sample_uid_vdj}/Aligned.out.bam", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
         #expand("{base}/aggregated/lineage_clustering/final_lineage_ids/{donor}.tsv.gz", base=base['vdj'], donor=donors),

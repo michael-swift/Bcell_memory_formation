@@ -313,7 +313,7 @@ del adata_full
 gc.collect()
 print("shape of adata post filter", adata.shape)
 
-adata.X = adata.layers['counts']
+adata.X = adata.layers['cellbender_counts']
 adata.var_names_make_unique()
 adata.obs_names_make_unique()
 print(adata.obs.groupby('donor').tissue.value_counts())

@@ -38,7 +38,7 @@ set-resources:
     - preprocess_scanpy:time="01:00:00"
     - preprocess_scanpy:partition=quake,owners
     - run_cellbender:mem_mb=16000
-    - run_cellbender:time="4:00:00"
+    - run_cellbender:time="5:00:00"
     - run_cellbender:partition=gpu
     - run_cellbender:gpus=1
     - cellranger_count:mem_mb=128000
@@ -47,8 +47,9 @@ set-resources:
     - cellranger_count:threads=20
     - cellranger_count:disk_mb=1000000
     - aggregate_h5ads:mem_mb=210000
-    - aggregate_annotated:mem_mb=120000
-    - annotate_by_tissue:mem_mb=120000
+    - aggregate_h5ads:time="01:00:00"
+    - aggregate_pre_annotated:mem_mb=120000
+    - pre_annotate_by_tissue:mem_mb=120000
     - cellranger_vdj:mem_mb=120000
     - star_solo_vdj:time="24:00:00"
     - star_solo_vdj:mem_mb=64000
@@ -60,5 +61,10 @@ set-resources:
     - scvi_global:gpus=1
     - scvi_global:mem_mb=128000
     - scvi_global:time="6:00:00"
-    - bcell_subset:time="2:00:00"
-    - bcell_subset:mem_mb=64000
+    - scvi_bcells:gpus=1
+    - scvi_bcells:mem_mb=128000
+    - scvi_bcells:time="6:00:00"
+    - subset_bcells:time="1:00:00"
+    - subset_bcells:mem_mb=64000
+    - remove_nonb:mem_mb=64000
+    - remove_nonb:time="1:00:00"
