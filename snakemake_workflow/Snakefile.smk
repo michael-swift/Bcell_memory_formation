@@ -66,7 +66,7 @@ include: "rules/vdjc.smk"
 include: "rules/qc.smk"
 include: "rules/get_resources.smk"
 include: "rules/cell_calling.smk"
-
-#localrules:combine_cb_cr
+include: "rules/annotate.smk"
+#localrules:merge_vdj
 def samplesheet_lookup(idx, col):
     return samplesheets.loc[idx, col]

@@ -19,6 +19,7 @@ from matplotlib import pyplot as plt
 
 # TODO set scanpy output dir
 
+
 def perform_qc(adata, filter_cells=True):
     # calculate qc metrics
     adata.var["mt"] = adata.var_names.str.startswith(
@@ -70,6 +71,7 @@ def cluster(adata, batch_correct=False, batch_key="tissue"):
     sc.tl.leiden(adata, resolution=0.2)
     return adata
 
+
 def recluster(adata, batch_correct):
     sc.pp.pca(adata)
     print("constructing neighbors graph")
@@ -95,6 +97,7 @@ def setup_figure_outs(tissue, output_dir):
     )
 
     return output_dir, output_formats, output_suffix
+
 
 def run_gex_label_routine(adata, tissue):
     # remove IGH and IGL genes
@@ -123,6 +126,7 @@ def run_gex_label_routine(adata, tissue):
 
     return adata_tissue
 
+
 def run_celltypist(adata):
     # High Resolution
     predictions = celltypist.annotate(
@@ -140,7 +144,7 @@ def run_celltypist(adata):
         adata,
         model="Immune_All_Low.pkl",
         majority_voting=True,
-        over_clustering=adata.obs.loc[:,"leiden"],
+        over_clustering=adata.obs.loc[:, "leiden"],
     )
     adata = predictions.to_adata(prefix="my_leiden_")
     g = sns.jointplot(
@@ -170,15 +174,13 @@ def run_scrublet(adata, layers):
         # calculate fraction of leiden cluster that is doublets, conservatively if more than 25 % are doublets, label every cell as doublet associated
         # doing this because scrublet appears to suffer from quite a few false negatives, but setting the cutoff lower is less surgical
         selector = (
-            adata.obs.groupby(
-                "leiden"
-            ).predicted_doublets_counts.value_counts(normalize=True)[:, "True"]
+            adata.obs.groupby("leiden").predicted_doublets_counts.value_counts(
+                normalize=True
+            )[:, "True"]
             > 0.25
         )
         exclude_leidens = selector[selector].index
-        adata.obs["doublet_associated"] = adata.obs["leiden"].isin(
-            exclude_leidens
-        )
+        adata.obs["doublet_associated"] = adata.obs["leiden"].isin(exclude_leidens)
     # plot layer comparisons
     g = sns.heatmap(
         sc.metrics.confusion_matrix(
@@ -251,9 +253,7 @@ def assign_technical_categories(adata, tissue):
         & (~adata.obs["doublet_associated"])
     )
 
-    adata.obs["rare_or_bad_q_cell"] = (
-        adata.obs["leiden"].astype(int) > 16
-    )
+    adata.obs["rare_or_bad_q_cell"] = adata.obs["leiden"].astype(int) > 16
 
 
 def annotate_cell_cycle(adata, cell_cycle_genes):
@@ -295,6 +295,7 @@ def annotate_cell_cycle(adata, cell_cycle_genes):
     save_figure(fig, "{}_cell_cycle_scoring".format(tissue))
     return adata
 
+
 ###############################
 #### execution ################
 ###############################
@@ -303,26 +304,26 @@ h5ad = str(snakemake.input)
 output_file = str(snakemake.output.tissue_obj)
 fig_dir = str(snakemake.output.fig_dir)
 tissue = snakemake.wildcards.tissue
-cell_cycle_genes = pd.read_table(str(snakemake.params.cell_cycle_genes), index_col = 0)
+cell_cycle_genes = pd.read_table(str(snakemake.params.cell_cycle_genes), index_col=0)
 adata_full = sc.read_h5ad(h5ad)
 # filter to tissue
 print(tissue)
-print("shape of adata",adata_full.shape)
+print("shape of adata", adata_full.shape)
 adata = adata_full[adata_full.obs["tissue"] == tissue].copy()
 del adata_full
 gc.collect()
 print("shape of adata post filter", adata.shape)
 
-adata.X = adata.layers['cellbender_counts']
+adata.X = adata.layers["cellbender_counts"]
 adata.var_names_make_unique()
 adata.obs_names_make_unique()
-print(adata.obs.groupby('donor').tissue.value_counts())
+print(adata.obs.groupby("donor").tissue.value_counts())
 subsample = False
 if subsample:
     sc.pp.subsample(adata, n_obs=10000)
     print("subsampling data to ", adata.shape[0], " cells")
 # QC and metadata integration
-print(adata.obs.groupby('donor').tissue.value_counts())
+print(adata.obs.groupby("donor").tissue.value_counts())
 adata = perform_qc(adata, filter_cells=True)
 # data transform
 print("transforming gene expression")
@@ -332,8 +333,10 @@ print("log base 2")
 sc.pp.log1p(adata, chunk_size=10000)
 adata = adata[adata.obs.sample_uid != "TBd3_fresh_B200"]
 print("top highly variable genes")
-sc.pp.highly_variable_genes(adata, n_top_genes = 1000)
-adata.var.loc[adata.var.index.str.contains("IGH|IGL|IGK|FOS|JUN|HSP|RPL"),"highly_variable"] = False
+sc.pp.highly_variable_genes(adata, n_top_genes=1000)
+adata.var.loc[
+    adata.var.index.str.contains("IGH|IGL|IGK|FOS|JUN|HSP|RPL"), "highly_variable"
+] = False
 
 adata.raw = adata
 # perform gex labeling routine
@@ -355,20 +358,25 @@ gex_labels_to_write = [
     "probable_hq_single_b_cell",
     "possible_b_cell",
     "probable_hq_single_not_b_cell",
-    "rare_or_bad_q_cell", "doublet_associated"]
+    "rare_or_bad_q_cell",
+    "doublet_associated",
+]
 
 ## Setup outputs
-output_dir, output_formats, output_suffix = setup_figure_outs(tissue=tissue, output_dir=fig_dir)
+output_dir, output_formats, output_suffix = setup_figure_outs(
+    tissue=tissue, output_dir=fig_dir
+)
+
+
 def save_figure(
-        fig,
-        name,
-        output_dir=output_dir,
-        output_suffix=output_suffix,
-        output_formats=output_formats
-    ):
-        for output_format in output_formats:
-            fig.savefig(
-                output_dir + "/" + name + output_suffix + output_format)
+    fig,
+    name,
+    output_dir=output_dir,
+    output_suffix=output_suffix,
+    output_formats=output_formats,
+):
+    for output_format in output_formats:
+        fig.savefig(output_dir + "/" + name + output_suffix + output_format)
 
 
 ## run routine
@@ -376,7 +384,7 @@ adata = run_gex_label_routine(adata, tissue)
 # write obs matrix for vdj integration
 print("writing h5ad")
 
-adata.write_h5ad(output_file,
+adata.write_h5ad(
+    output_file,
     compression="gzip",
 )
-

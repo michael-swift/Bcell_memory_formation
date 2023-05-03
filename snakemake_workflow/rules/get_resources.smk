@@ -115,11 +115,13 @@ rule add_TICA_metadata:
         adata.obs.loc[:, "tissue"] = adata.obs.Organ.map(
             lambda x: TICA_to_Bursa.get(x, x)
         )
-        adata.obs.loc[:,"sample_uid"] = adata.obs.Organ.astype(str) + "_" + adata.obs.Donor.astype(str)
-        adata.obs.loc[:,'donor'] = adata.obs.Donor
+        adata.obs.loc[:, "sample_uid"] = (
+            adata.obs.Organ.astype(str) + "_" + adata.obs.Donor.astype(str)
+        )
+        adata.obs.loc[:, "donor"] = adata.obs.Donor
         # these are not real cellbender counts rn
-        adata.X = adata.layers['counts']
-        adata.layers['cellbender_counts'] = adata.X
+        adata.X = adata.layers["counts"]
+        adata.layers["cellbender_counts"] = adata.X
         adata.write_h5ad(output[0], compression="gzip")
 
 

@@ -2,6 +2,7 @@ import scanpy as sc
 import pandas as pd
 import anndata as ad
 import gc
+
 # reaggregate the tissue adata objects
 h5ads = snakemake.input.h5ads
 print(len(h5ads), "duplication by snakemake causing a lot of h5ads")
@@ -16,5 +17,5 @@ adata = ad.concat(adatas)
 del adatas
 gc.collect()
 adata.obs_names_make_unique()
-adata.write_h5ad(snakemake.output.full_h5ad, compression = 'gzip')
+adata.write_h5ad(snakemake.output.full_h5ad, compression="gzip")
 adata.obs.to_csv(snakemake.output.adata_obs)

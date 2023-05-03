@@ -1,5 +1,6 @@
 samplesheet = samplesheets
 
+
 include: "vdjc.smk"
 
 
@@ -12,7 +13,7 @@ rule call_cells:
     log:
         "{base}/logs/{donor}_call_cells.log",
     conda:
-        "../envs/pacbio.yaml",
+        "../envs/pacbio.yaml"
     resources:
         mem_mb="65000",
     params:
@@ -24,15 +25,16 @@ rule call_cells:
         "-outdir {wildcards.base}/aggregated/cell_calls "
         "-outname {wildcards.donor} "
         "2> {log}"
-        
+
+
 rule combine_cells_with_vdj_annotations:
     input:
         vdj_info=rules.realign_to_polished_germline.output,
         cell_calls=rules.call_cells.output.called_cells,
     output:
-        "{base}/aggregated/cell_calls/{donor}_called_cells_vdj_annotated.tsv.gz"
+        "{base}/aggregated/cell_calls/{donor}_called_cells_vdj_annotated.tsv.gz",
     log:
-        "{base}/logs/{donor}_combined_cell_call_and_annotation.log"
+        "{base}/logs/{donor}_combined_cell_call_and_annotation.log",
     params:
         scripts=config["vdj_scripts"],
     resources:
@@ -44,6 +46,7 @@ rule combine_cells_with_vdj_annotations:
         "-outdir {wildcards.base}/aggregated/cell_calls "
         "-outname {wildcards.donor}_called_cells_vdj_annotated "
         "2> {log}"
+
 
 rule align_cell_v_sequences:
     input:
