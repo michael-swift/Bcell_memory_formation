@@ -16,7 +16,7 @@ rule cellranger_count:
         config["gex_fastq_dirs"],
     output:
         "{base_gex}/per_sample/cellranger/sample_stamps/{sample_uid}.done",
-        "{base_gex}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5",
+    # "{base_gex}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5",
     params:
         name="count_cellranger",
         base=config["base"]["gex"],
@@ -35,11 +35,18 @@ rule cellranger_count:
         " --no-bam && touch {output}"
 
 
+rule copy_cellranger:
+    input:
+        rules.cellranger_count.output,
+    output:
+        temp("{base_gex}/per_sample/cellranger_cp/{sample_uid}/outs/raw_feature_bc_matrix.h5")
+    shell:
+        "cp {wildcards.base_gex}/per_sample/cellranger/{wildcards.sample_uid}/outs/raw_feature_bc_matrix.h5 {output}"
+
+
 rule run_cellbender:
     input:
-        ancient(
-            "{base_gex}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5"
-        ),
+            "{base_gex}/per_sample/cellranger_cp/{sample_uid}/outs/raw_feature_bc_matrix.h5",
     output:
         "{base_gex}/per_sample/cellbender/{sample_uid}/background_removed.h5",
         "{base_gex}/per_sample/cellbender/{sample_uid}/background_removed_cell_barcodes.csv",
@@ -71,7 +78,7 @@ rule run_cellbender:
 rule combine_cb_cr:
     input:
         cr=ancient(
-            "{base_gex}/per_sample/cellranger/{sample_uid}/outs/raw_feature_bc_matrix.h5"
+            "{base_gex}/per_sample/cellranger_cp/{sample_uid}/outs/raw_feature_bc_matrix.h5"
         ),
         cb=ancient(
             "{base_gex}/per_sample/cellbender/{sample_uid}/background_removed.h5"

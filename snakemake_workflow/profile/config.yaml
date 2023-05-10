@@ -48,8 +48,8 @@ set-resources:
     - cellranger_count:disk_mb=1000000
     - aggregate_h5ads:mem_mb=210000
     - aggregate_h5ads:time="01:00:00"
-    - aggregate_pre_annotated:mem_mb=120000
-    - pre_annotate_by_tissue:mem_mb=120000
+    - aggregate_annotated:mem_mb=120000
+    - annotate_by_tissue:mem_mb=120000
     - cellranger_vdj:mem_mb=120000
     - star_solo_vdj:time="24:00:00"
     - star_solo_vdj:mem_mb=64000
@@ -71,5 +71,5 @@ set-resources:
     - scvi_all_cells:gpus=1
     - scvi_all_cells:mem_mb=64000
     - scvi_all_cells:time="6:00:00"
-    - scvi_all_cells:partition="gpu,owners"
+    - scvi_all_cells:partition="gpu,owners,quake"
     - merge_vdj:mem_mb=32000

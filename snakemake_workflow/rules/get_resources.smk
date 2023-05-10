@@ -110,6 +110,7 @@ rule add_TICA_metadata:
             "SPL": "SP",
             "ILN": "LN",
             "MLN": "LN",
+            "LLN": "LN",
         }
         adata = sc.read_h5ad(input[0])
         adata.obs.loc[:, "tissue"] = adata.obs.Organ.map(

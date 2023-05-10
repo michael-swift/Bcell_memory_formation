@@ -62,7 +62,7 @@ rule remove_nonb:
     input:
         full_h5ad="{base_gex}/annotate/scvi/all_cells.h5ad.gz",
     output:
-        bcells="{base_gex}/annotate/bcells.h5ad.gz",
+        bcells=temp("{base_gex}/annotate/bcells.h5ad.gz"),
     resources:
         partition="quake,owners",
     log:
@@ -93,7 +93,7 @@ rule scvi_bcells:
         bcell_h5ad="{base_gex}/annotate/bcells.h5ad.gz",
     output:
         model=directory("{base_gex}/annotate/scvi/model/covariates/"),
-        adata="{base_gex}/annotate/scvi/bcells.h5ad.gz",
+        adata=temp("{base_gex}/annotate/scvi/bcells.h5ad.gz"),
     resources:
         partition="quake,owners",
     log:
@@ -169,9 +169,10 @@ rule subset_bcells:
     input:
         adata="{base_gex}/annotate/vdjc/bcells.h5ad.gz",
     output:
-        asc="{base_gex}/annotate/asc.h5ad.gz",
-        mb="{base_gex}/annotate/mb.h5ad.gz",
-        nb_other="{base_gex}/annotate/nb_other.h5ad.gz",
+        asc="{base_gex}/outs/asc.h5ad.gz",
+        mb="{base_gex}/outs/mb.h5ad.gz",
+        nb_other="{base_gex}/outs/nb_other.h5ad.gz",
+        all_igh="{base_gex}/outs/all_igh.h5ad.gz",
     resources:
         partition="quake,owners",
     log:
@@ -185,11 +186,13 @@ rule subset_bcells:
         adata = adata[adata.obs.Immune_All_Low_conf_score > 0.97]
         # add convenience column named celltypist
         adata.obs["celltypist"] = adata.obs["Immune_All_Low_predicted_labels"]
-        mb = adata[adata.obs.Immune_All_Low_predicted_labels.str.contains("Memory|Age")]
+        mb = adata[adata.obs.Immune_All_Low_predicted_labels.str.contains("Memory|Age|Germinal|Proliferative")]
         mb.write_h5ad(output.mb, compression="gzip")
         asc = adata[adata.obs.Immune_All_Low_predicted_labels.str.contains("Plasma")]
         asc.write_h5ad(output.asc, compression="gzip")
         nb_other = adata[
-            ~adata.obs.Immune_All_Low_predicted_labels.str.contains("Plasma|Memory|Age")
+            ~adata.obs.Immune_All_Low_predicted_labels.str.contains("Plasma|Memory|Age|Germinal|Proliferative")
         ]
         nb_other.write_h5ad(output.nb_other, compression="gzip")
+        all_igh = adata[~adata.obs.lineage_id.isna()]
+        all_igh.write_h5ad(output.all_igh, compression="gzip")

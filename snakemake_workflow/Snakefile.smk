@@ -29,9 +29,6 @@ samplesheets["expected_cells"] = (
 samplesheets["species"] = "human"
 donors = list(set(samplesheets[samplesheets.species == "human"].donor.to_list()))
 
-# filter samplesheet:
-# samplesheets = samplesheets[~samplesheets.sample_uid.str.contains('TBd6_fresh_LN|TBd6_fresh_BM|TBd6_fresh_SP|TBd3_fresh_B20')]
-#samplesheets = samplesheets.iloc[:2]
 samplesheets_gex = samplesheets[samplesheets.lib_type == "gex"]
 samplesheets_gex.set_index("sample_uid", inplace=True)
 samplesheets_vdj = samplesheets[samplesheets.lib_type == "vdj"]
@@ -44,16 +41,10 @@ print(sample_uids)
 # make processsed data dir
 for k in base.keys():
     os.makedirs(base[k], exist_ok=True)
-
 rule all:
     input:
         #expand("{base}/per_sample/cellranger_vdj/{sample_uid_vdj}/outs/web_summary.html", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
-        expand("{base_gex}/annotate/asc.h5ad.gz", base_gex = base['gex']),
-        #expand("{base}/per_sample/fastqc/{sample_uid_vdj}/", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
-        #expand("{base}/per_sample/star_solo_vdj/{sample_uid_vdj}/Aligned.out.bam", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
-        #expand("{base}/aggregated/lineage_clustering/final_lineage_ids/{donor}.tsv.gz", base=base['vdj'], donor=donors),
-        #expand("{base}/aggregated/vtrees/{which}/{donor}_v_trees.tsv", base = base['vdj'], which = ['cells'], donor = donors),
-        #expand("{base}/aggregated/cell_calls/{donor}_called_cells_vdj_annotated.tsv.gz", base = base['vdj'], donor = donors)
+        expand("{base_gex}/outs/{celltypes}.h5ad.gz", base_gex = base['gex'], celltypes = ['asc', 'mb', 'nb_other']),
     params:
         name="all",
         partition="quake",
