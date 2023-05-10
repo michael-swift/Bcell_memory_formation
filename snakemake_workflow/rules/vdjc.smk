@@ -10,7 +10,7 @@ rule cellranger_vdj:
         cell_ranger=config["cell_ranger"],
         vdj_reference=config["vdj_reference"],
         fastq_dir=config["vdj_fastq_dir"],
-        inner_primers=config["inner_primers"]
+        inner_primers=config["inner_primers"],
     resources:
         mem_mb="128000",
         partition="quake",
@@ -25,6 +25,7 @@ rule cellranger_vdj:
         "{params.cell_ranger}/cellranger vdj --id={wildcards.sample_uid_vdj} "
         "--reference={params.vdj_reference} --fastqs {params.fastq_dir} "
         "--sample={wildcards.sample_uid_vdj} --localcores=20 > {log}"
+
 
 rule igblast:
     input:
@@ -58,6 +59,7 @@ rule igblast:
                 -num_threads {resources.threads}
         """
 
+
 rule filter_and_annotate:
     input:
         tenX=rules.cellranger_vdj.output.csv,
@@ -65,7 +67,7 @@ rule filter_and_annotate:
     output:
         "{base}/per_sample/vdj_preprocess/{sample_uid_vdj}/igblast_filtered_annotated.tsv.gz",
     conda:
-        "../envs/pacbio.yaml",
+        "../envs/pacbio.yaml"
     log:
         "{base}/logs/{sample_uid_vdj}_filter_vdj.log",
     resources:
@@ -81,10 +83,34 @@ rule filter_and_annotate:
         "> {log} "
         "2> {log}"
 
+
 def aggregate_input(wildcards):
-    samplelist = ["{}/per_sample/vdj_preprocess/{}/igblast_filtered_annotated.tsv.gz".format(wildcards.base, sample_uid_vdj) for sample_uid_vdj in samplesheets_vdj[(samplesheets_vdj.donor == wildcards.donor)].sample_uid]
+    samplelist = [
+        "{}/per_sample/vdj_preprocess/{}/igblast_filtered_annotated.tsv.gz".format(
+            wildcards.base, sample_uid_vdj
+        )
+        for sample_uid_vdj in samplesheets_vdj[
+            (samplesheets_vdj.donor == wildcards.donor)
+        ].sample_uid
+    ]
     return samplelist
 
+<<<<<<< HEAD
+=======
+
+def get_cb_umi_maps(wildcards):
+    maplist = [
+        "{}/whitelisted/{}_seq_ids_barcodes_whitelisted.tsv".format(
+            config["outs_basedir"], sid
+        )
+        for sid in samplesheets[
+            (samplesheets.donor == wildcards.donor)
+            & (samplesheets.primer_set == wildcards.primer_set)
+        ].index
+    ]
+    return maplist
+
+>>>>>>> hacked_together_cellranger_outputs
 
 rule combine_samples:
     input:
@@ -92,7 +118,7 @@ rule combine_samples:
     output:
         "{base}/aggregated/vdj/{donor}_combined.tsv.gz",
     conda:
-        "../envs/pacbio.yaml",
+        "../envs/pacbio.yaml"
     log:
         "{base}/logs/{donor}_combined.log",
     resources:
@@ -107,6 +133,7 @@ rule combine_samples:
         "-outdir {wildcards.base}/aggregated/vdj "
         "-name {wildcards.donor} "
 
+
 rule call_germlines:
     input:
         rules.combine_samples.output,
@@ -118,8 +145,14 @@ rule call_germlines:
     conda:
         "../envs/grmlin.yaml"
     params:
+<<<<<<< HEAD
         organism=lambda wildcards: samplesheets_vdj[
                 samplesheets_vdj.donor == str(wildcards.donor)]["species"].values[0],
+=======
+        organism=lambda wildcards: samplesheets[
+            samplesheets.donor == str(wildcards.donor)
+        ]["species"].values[0],
+>>>>>>> hacked_together_cellranger_outputs
         grmlin=config["grmlin"],
         IGDBDIR=config["IGDBDIR"],
     resources:
@@ -133,6 +166,7 @@ rule call_germlines:
         "--verbose "
         "-max_sequences 500000 "
         "> {log}"
+
 
 # the checkpoint that shall trigger re-evaluation of the DAG
 checkpoint prepare_cdr3_groups_for_distance_evaluation:
@@ -163,6 +197,7 @@ checkpoint prepare_cdr3_groups_for_distance_evaluation:
         
         """
 
+
 rule fasta_to_hamming_distance_matrix:
     input:
         "{base}/aggregated/lineage_clustering/cdr3/{donor}/{group}.fasta",
@@ -171,7 +206,7 @@ rule fasta_to_hamming_distance_matrix:
     log:
         "{base}/logs/cluster_lineages/matrix_calc/cdr3/{donor}_{group}.log",
     conda:
-        "../envs/pacbio.yaml",
+        "../envs/pacbio.yaml"
     params:
         scripts=config["vdj_scripts"],
     resources:
@@ -183,6 +218,7 @@ rule fasta_to_hamming_distance_matrix:
         "{output} "
         "-hamming"
 
+
 rule fasta_to_levenshtein_distance_matrix:
     input:
         "{base}/aggregated/lineage_clustering/templated/{donor}/{group}_{seq_element}.fasta",
@@ -191,7 +227,7 @@ rule fasta_to_levenshtein_distance_matrix:
     log:
         "{base}/logs/cluster_lineages/matrix_calc/templated/{donor}_{group}_{seq_element}.log",
     conda:
-        "../envs/pacbio.yaml",
+        "../envs/pacbio.yaml"
     params:
         scripts=config["vdj_scripts"],
     resources:
@@ -202,31 +238,45 @@ rule fasta_to_levenshtein_distance_matrix:
         "{input} "
         "{output} "
 
+
 def aggregate_cdr3_npy_files(wildcards):
-    checkpoint_output = checkpoints.prepare_cdr3_groups_for_distance_evaluation.get(**wildcards).output.groups
-    #small_groups = expand("{base}/aggregated/lineage_clustering/cdr3/{donor}/{group}_cdr3.npy",
+    checkpoint_output = checkpoints.prepare_cdr3_groups_for_distance_evaluation.get(
+        **wildcards
+    ).output.groups
+    # small_groups = expand("{base}/aggregated/lineage_clustering/cdr3/{donor}/{group}_cdr3.npy",
     #        base=wildcards.base,
     #        donor=wildcards.donor,
     #       group=glob_wildcards(os.path.join(checkpoint_output, "{group}_cdr3.npy")).group)
-    large_groups = expand("{base}/aggregated/lineage_clustering/cdr3/{donor}/{group}_cdr3.npy",
-            base=wildcards.base,
-            donor=wildcards.donor,
-           group=glob_wildcards(os.path.join(checkpoint_output, "{group}_cdr3.fasta")).group)
+    large_groups = expand(
+        "{base}/aggregated/lineage_clustering/cdr3/{donor}/{group}_cdr3.npy",
+        base=wildcards.base,
+        donor=wildcards.donor,
+        group=glob_wildcards(
+            os.path.join(checkpoint_output, "{group}_cdr3.fasta")
+        ).group,
+    )
     return large_groups
+
 
 def aggregate_templated_npy_files(wildcards):
     checkpoint_output = checkpoints.cluster_cdr3s.get(**wildcards).output.clusters
-    v_files = expand("{base}/aggregated/lineage_clustering/templated/{donor}/{group}_templated_v.npy",
-            base=wildcards.base,
-            donor=wildcards.donor,
-            group=glob_wildcards(os.path.join(checkpoint_output, "{group}_templated_v.fasta")).group)
-    j_files = expand("{base}/aggregated/lineage_clustering/templated/{donor}/{group}_templated_j.npy",
-            base=wildcards.base,
-            donor=wildcards.donor,
-           group=glob_wildcards(os.path.join(checkpoint_output, "{group}_templated_j.fasta")).group)
+    v_files = expand(
+        "{base}/aggregated/lineage_clustering/templated/{donor}/{group}_templated_v.npy",
+        base=wildcards.base,
+        donor=wildcards.donor,
+        group=glob_wildcards(
+            os.path.join(checkpoint_output, "{group}_templated_v.fasta")
+        ).group,
+    )
+    j_files = expand(
+        "{base}/aggregated/lineage_clustering/templated/{donor}/{group}_templated_j.npy",
+        base=wildcards.base,
+        donor=wildcards.donor,
+        group=glob_wildcards(
+            os.path.join(checkpoint_output, "{group}_templated_j.fasta")
+        ).group,
+    )
     return v_files + j_files
-
-
 
 
 # an aggregation over all produced clusters
@@ -236,7 +286,7 @@ checkpoint cluster_cdr3s:
         npy=aggregate_cdr3_npy_files,
     output:
         airr="{base}/aggregated/lineage_clustering/templated/{donor}/{donor}_unique_vdjs_cdr3_clusters.tsv.gz",
-        clusters=directory("{base}/aggregated/lineage_clustering/templated/{donor}/")
+        clusters=directory("{base}/aggregated/lineage_clustering/templated/{donor}/"),
     wildcard_constraints:
         donor="TBd[0-9]",
     log:
@@ -262,6 +312,7 @@ checkpoint cluster_cdr3s:
         
         """
 
+
 rule cluster_templated_regions:
     input:
         airr=rules.call_germlines.output.preprocessed,
@@ -272,7 +323,7 @@ rule cluster_templated_regions:
     log:
         "{base}/logs/cluster_templated/{donor}_cluster_templated.log",
     conda:
-        "../envs/pacbio.yaml",
+        "../envs/pacbio.yaml"
     params:
         scripts=config["vdj_scripts"],
     resources:
@@ -286,6 +337,7 @@ rule cluster_templated_regions:
         "-matrixdir {wildcards.base}/aggregated/lineage_clustering/templated/{wildcards.donor} "
         "-samplename {wildcards.donor} "
         "2> {log}"
+
 
 rule create_germline_db:
     input:
@@ -339,7 +391,8 @@ rule polish_germlines:
     params:
         scripts=config["vdj_scripts"],
         organism=lambda wildcards: samplesheets_vdj[
-                samplesheets_vdj.donor == str(wildcards.donor)]["species"].values[0],
+            samplesheets_vdj.donor == str(wildcards.donor)
+        ]["species"].values[0],
         IGDBDIR=config["IGDBDIR"],
     log:
         "{base}/logs/polish_germlines/{donor}_polish_germlines.log",

@@ -5,8 +5,8 @@ library_info: "samplesheets/library_info.tsv"
 # output directory for processed data
 
 base: 
-  gex: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline_2"
   vdj: "/oak/stanford/groups/quake/shared/swiftShare/tb_vdj_pipeline_TBd1_redo"
+  gex: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline"
 # specificed in multi_configs
 gex_fastq_dirs: ["/oak/stanford/groups/quake/shared/swiftShare/tb_gex_fastqs"]
 # vdj_fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/ilm7_vdj/"
