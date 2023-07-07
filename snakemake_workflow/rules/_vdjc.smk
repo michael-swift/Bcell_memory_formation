@@ -95,9 +95,6 @@ def aggregate_input(wildcards):
     ]
     return samplelist
 
-<<<<<<< HEAD
-=======
-
 def get_cb_umi_maps(wildcards):
     maplist = [
         "{}/whitelisted/{}_seq_ids_barcodes_whitelisted.tsv".format(
@@ -110,7 +107,6 @@ def get_cb_umi_maps(wildcards):
     ]
     return maplist
 
->>>>>>> hacked_together_cellranger_outputs
 
 rule combine_samples:
     input:

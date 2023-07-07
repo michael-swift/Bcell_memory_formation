@@ -9,7 +9,7 @@ import gc
 import pathlib
 import seaborn as sns
 from matplotlib import pyplot as plt
-
+import anndata as ad
 ###############################
 ###############################
 # single cell preprocessing ###
@@ -17,10 +17,8 @@ from matplotlib import pyplot as plt
 ###############################
 ###############################
 
-# TODO set scanpy output dir
 
-
-def perform_qc(adata, filter_cells=True):
+def perform_qc(adata, filter_cells=True, min_genes=300, min_counts=1000):
     # calculate qc metrics
     adata.var["mt"] = adata.var_names.str.startswith(
         "MT-"
@@ -38,11 +36,10 @@ def perform_qc(adata, filter_cells=True):
         save="prefilter",
     )
     if filter_cells == True:
-        sc.pp.filter_cells(adata, min_counts=800)
-        sc.pp.filter_cells(adata, min_genes=300)
+        sc.pp.filter_cells(adata, min_counts=min_counts)
+        sc.pp.filter_cells(adata, min_genes=min_genes)
         sc.pp.filter_genes(adata, min_cells=10)
         sc.pp.filter_cells(adata, max_genes=16000)
-        sc.pp.filter_cells(adata, max_counts=300000)
     adata = adata[adata.obs["pct_counts_mt"] < 12.5]
     # plot results of filtering
     sc.pl.violin(
@@ -54,7 +51,6 @@ def perform_qc(adata, filter_cells=True):
     )
     sc.pl.highest_expr_genes(adata, save="postfilter")
     return adata
-
 
 def cluster(adata, batch_correct=False, batch_key="tissue"):
     print("PCA-ing")
@@ -70,7 +66,6 @@ def cluster(adata, batch_correct=False, batch_key="tissue"):
     print("leiden-ing")
     sc.tl.leiden(adata, resolution=0.2)
     return adata
-
 
 def recluster(adata, batch_correct):
     sc.pp.pca(adata)
@@ -98,34 +93,24 @@ def setup_figure_outs(tissue, output_dir):
 
     return output_dir, output_formats, output_suffix
 
-
 def run_gex_label_routine(adata, tissue):
-    # remove IGH and IGL genes
-    # and genes associated with dissociation for clustering analysis
-    # just from variable gene definition
-    adata_tissue = adata
-    adata_tissue = cluster(adata_tissue, batch_correct=False)
-    filter_low_abundance_cell_groups = False
+    adata = cluster(adata, batch_correct=False)
     cell_group = "predicted_labels"
-    if filter_low_abundance_cell_groups:
-        select = adata_tissue.obs[cell_group].value_counts() > (
-            adata_tissue.obs.shape[0] / 1000
-        )
-        adata_tissue = adata_tissue[
-            adata_tissue.obs[cell_group].isin(select[select == True].index)
-        ]
     #### Celltypist ####
-    adata_tissue = run_celltypist(adata_tissue)
+    adata = run_celltypist(adata)
     #### Scrublet ####
     # doublet removal and scoring
-    adata_tissue = run_scrublet(adata_tissue, layers=["counts", "cellbender_counts"])
+    adatas = []
+    for sample in adata.sample_uid.unique():
+        print(f"running scrublet on {sample}")
+        adata_sample = run_scrublet(adata[adata.obs.sample_uid == sample], layers=["counts", "cellbender_counts"])
+        adatas = adatas.append(adata_sample)
+    adata = ad.concat(adatas) 
     # Algo for definitely being a B cell
-    assign_technical_categories(adata_tissue, tissue)
+    assign_technical_categories(adata, tissue)
     # Cell cycle Annotation
-    adata_tissue = annotate_cell_cycle(adata_tissue, cell_cycle_genes)
-
-    return adata_tissue
-
+    adata = annotate_cell_cycle(adata, cell_cycle_genes, genes = 30)
+    return adata
 
 def run_celltypist(adata):
     # High Resolution
@@ -133,7 +118,7 @@ def run_celltypist(adata):
         adata, model="Immune_All_Low.pkl", majority_voting=False
     )
     adata = predictions.to_adata(prefix="Immune_All_Low_")
-    # not sure why this isn't added automatically
+    # not sure why this isn't added automatically but need it for scanpy
     adata.uns["log1p"] = {"base": np.e}
     # Low Resolution
     predictions = celltypist.annotate(
@@ -156,7 +141,6 @@ def run_celltypist(adata):
     save_figure(g.figure, "confidence_scores_celltypist")
     return adata
 
-
 def run_scrublet(adata, layers):
     for layer in layers:
         scrub = scr.Scrublet(adata.to_df(layer=layer))
@@ -166,21 +150,20 @@ def run_scrublet(adata, layers):
         adata.obs.loc[:, score] = doublet_scores
         adata.obs.loc[:, prediction] = predicted_doublets
         # modify predicted doublets based on manual score cutoff
-        sns.displot(data=adata.obs, x=score)
+        fig, axs = plt.subplots(1,2)        
+        sns.displot(data=adata.obs, x=score, ax = axs[0])
         plt.yscale("log")
-        sns.displot(data=adata.obs, x=score, kind="ecdf")
-        adata.obs.loc[:, prediction] = adata.obs[score] > 0.2
+        sns.displot(data=adata.obs, x=score, kind="ecdf", ax=axs[1])
+        save_figure(fig, "doublet_scores")
         adata.obs.loc[:, prediction] = adata.obs[prediction].astype(str)
-        # calculate fraction of leiden cluster that is doublets, conservatively if more than 25 % are doublets, label every cell as doublet associated
-        # doing this because scrublet appears to suffer from quite a few false negatives, but setting the cutoff lower is less surgical
         selector = (
             adata.obs.groupby("leiden").predicted_doublets_counts.value_counts(
                 normalize=True
             )[:, "True"]
-            > 0.25
+            > 0.15
         )
-        exclude_leidens = selector[selector].index
-        adata.obs["doublet_associated"] = adata.obs["leiden"].isin(exclude_leidens)
+        doublet_clusters = selector[selector].index
+        adata.obs["doublet_associated"] = adata.obs["leiden"].isin(doublet_clusters)
     # plot layer comparisons
     g = sns.heatmap(
         sc.metrics.confusion_matrix(
@@ -192,34 +175,18 @@ def run_scrublet(adata, layers):
         annot=True,
     )
     save_figure(g.figure, "doublet_layers_confusion_matrix")
-    ## Plot Background Removal Examples
-    gene = "IGKC"
-    _umi = sc.get.obs_df(adata, keys=gene, layer="counts")
-    _bg = sc.get.obs_df(adata, keys=gene, layer="cellbender_counts")
-    data = pd.concat([_bg, _umi], axis=1)
-    data.columns = ["cbender", "umi"]
-    data = data.melt()
-    g = sns.displot(data, x="value", hue="variable", kind="ecdf", log_scale=True)
-    save_figure(g.figure, "{}_bg_remove".format(gene))
 
-    gene = "AZU1"
-    _umi = sc.get.obs_df(adata, keys=gene, layer="counts")
-    _bg = sc.get.obs_df(adata, keys=gene, layer="cellbender_counts")
-    data = pd.concat([_bg, _umi], axis=1)
-    data.columns = ["cbender", "umi"]
-    data = data.melt()
-    g = sns.displot(data, x="value", hue="variable", kind="ecdf", log_scale=True)
-    save_figure(g.figure, "{}_bg_remove".format(gene))
-    gene = "IL7R"
-    _umi = sc.get.obs_df(adata, keys=gene, layer="counts")
-    _bg = sc.get.obs_df(adata, keys=gene, layer="cellbender_counts")
-    data = pd.concat([_bg, _umi], axis=1)
-    data.columns = ["cbender", "umi"]
-    data = data.melt()
-    g = sns.displot(data, x="value", hue="variable", kind="ecdf", log_scale=True)
-    save_figure(g.figure, "{}_bg_removal_comparison".format(gene))
+    g = sns.heatmap(
+        sc.metrics.confusion_matrix(
+            "predicted_doublets_{}".format(layers[0]),
+            "doublet_associated",
+            adata.obs,
+            normalize=False,
+        ),
+        annot=True,
+    )
+    save_figure(g.figure, "doublet_associated_confusion_matrix")
     return adata
-
 
 def assign_technical_categories(adata, tissue):
     """Possible Categories are
@@ -228,12 +195,14 @@ def assign_technical_categories(adata, tissue):
     possible_b_cell:
     rare_or_bad_q_cell:
     """
+    believable_leidens = adata.obs['leiden'].value_counts(normalize=True)
+    believable_leidens = permissible_leidens[permissible_leidens > 0.01].index.tolist()
     adata.obs["possible_b_cell"] = (
         adata.obs["my_leiden_majority_voting"].str.contains("B cells|Plasma")
         | adata.obs["Immune_All_High_predicted_labels"].str.contains("B cell|Plasma")
         | adata.obs["Immune_All_Low_predicted_labels"].str.contains("B cell|Plasma")
     )
-    # change categorical to boolian
+    # change categorical doublet label to boolean for filtering
     bool_mapper = {"True": True, "False": False}
     adata.obs["predicted_doublets_counts"] = (
         adata.obs["predicted_doublets_counts"].astype(str).map(bool_mapper)
@@ -241,7 +210,7 @@ def assign_technical_categories(adata, tissue):
     adata.obs["probable_hq_single_b_cell"] = (
         adata.obs["possible_b_cell"]
         & ~adata.obs["predicted_doublets_counts"]
-        & (~adata.obs["leiden"].astype(int) <= 16)
+        & (adata.obs["leiden"].isin(believable_leidens)) # cells in tiny clusters typically artifacts
         & (~adata.obs["doublet_associated"])
         & adata.obs["Immune_All_High_predicted_labels"].str.contains("B cell|Plasma")
         & adata.obs["Immune_All_Low_predicted_labels"].str.contains("B cell|Plasma")
@@ -249,16 +218,13 @@ def assign_technical_categories(adata, tissue):
     adata.obs["probable_hq_single_not_b_cell"] = (
         ~adata.obs["possible_b_cell"]
         & ~adata.obs["predicted_doublets_counts"]
-        & (~adata.obs["leiden"].astype(int) <= 16)
+        & (~adata.obs["leiden"].isin(believable_leidens))
         & (~adata.obs["doublet_associated"])
     )
-
     adata.obs["rare_or_bad_q_cell"] = adata.obs["leiden"].astype(int) > 16
 
-
-def annotate_cell_cycle(adata, cell_cycle_genes):
-    # develop a crude way to label cycling and non-cycling then test features by t-test
-    genes_contributing_to_score = 30
+def annotate_cell_cycle(adata, cell_cycle_genes, genes):
+    genes_contributing_to_score = genes
     sc.tl.score_genes(
         adata,
         gene_list=cell_cycle_genes.loc[:genes_contributing_to_score, "cc"],
@@ -269,7 +235,7 @@ def annotate_cell_cycle(adata, cell_cycle_genes):
         gene_list=cell_cycle_genes.loc[:genes_contributing_to_score, "anti_cc"],
         score_name="anticorrelation_cycling",
     )
-    adata.obs["corr_cycling"] = adata.obs["correlation_cycling"] > 0.05
+    adata.obs["corr_cycling"] = adata.obs["correlation_cycling"] > 0.01
     adata.obs["anticorr_cycling"] = adata.obs["anticorrelation_cycling"] > 0.4
     cycling_mapper = {True: "True", False: "False"}
     use_non_cycling = False
@@ -303,6 +269,7 @@ def annotate_cell_cycle(adata, cell_cycle_genes):
 h5ad = str(snakemake.input)
 output_file = str(snakemake.output.tissue_obj)
 fig_dir = str(snakemake.output.fig_dir)
+sc._settings.figdir = fig_dir
 tissue = snakemake.wildcards.tissue
 cell_cycle_genes = pd.read_table(str(snakemake.params.cell_cycle_genes), index_col=0)
 adata_full = sc.read_h5ad(h5ad)
@@ -313,8 +280,7 @@ adata = adata_full[adata_full.obs["tissue"] == tissue].copy()
 del adata_full
 gc.collect()
 print("shape of adata post filter", adata.shape)
-
-adata.X = adata.layers["cellbender_counts"]
+adata.X = adata.layers["counts"]
 adata.var_names_make_unique()
 adata.obs_names_make_unique()
 print(adata.obs.groupby("donor").tissue.value_counts())
@@ -334,6 +300,7 @@ sc.pp.log1p(adata, chunk_size=10000)
 adata = adata[adata.obs.sample_uid != "TBd3_fresh_B200"]
 print("top highly variable genes")
 sc.pp.highly_variable_genes(adata, n_top_genes=1000)
+# remove IGH and Dissociation associated genes from highly variable
 adata.var.loc[
     adata.var.index.str.contains("IGH|IGL|IGK|FOS|JUN|HSP|RPL"), "highly_variable"
 ] = False
@@ -367,7 +334,6 @@ output_dir, output_formats, output_suffix = setup_figure_outs(
     tissue=tissue, output_dir=fig_dir
 )
 
-
 def save_figure(
     fig,
     name,
@@ -378,12 +344,10 @@ def save_figure(
     for output_format in output_formats:
         fig.savefig(output_dir + "/" + name + output_suffix + output_format)
 
-
 ## run routine
 adata = run_gex_label_routine(adata, tissue)
 # write obs matrix for vdj integration
 print("writing h5ad")
-
 adata.write_h5ad(
     output_file,
     compression="gzip",

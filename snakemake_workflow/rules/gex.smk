@@ -39,13 +39,16 @@ rule copy_cellranger:
     input:
         rules.cellranger_count.output,
     output:
-        temp("{base_gex}/per_sample/cellranger_cp/{sample_uid}/outs/raw_feature_bc_matrix.h5")
+        temp(
+            "{base_gex}/per_sample/cellranger_cp/{sample_uid}/outs/raw_feature_bc_matrix.h5"
+        ),
     shell:
         "cp {wildcards.base_gex}/per_sample/cellranger/{wildcards.sample_uid}/outs/raw_feature_bc_matrix.h5 {output}"
 
+
 rule run_cellbender:
     input:
-            "{base_gex}/per_sample/cellranger_cp/{sample_uid}/outs/raw_feature_bc_matrix.h5",
+        "{base_gex}/per_sample/cellranger_cp/{sample_uid}/outs/raw_feature_bc_matrix.h5",
     output:
         "{base_gex}/per_sample/cellbender/{sample_uid}/background_removed.h5",
         "{base_gex}/per_sample/cellbender/{sample_uid}/background_removed_cell_barcodes.csv",
@@ -96,7 +99,7 @@ rule combine_cb_cr:
         filter_cells=True,
         samplesheets=config["samplesheets"],
     script:
-        config["workflow_dir"] + "/scripts/post_cellranger/combine_cr_cb.py"
+        config["workflow_dir"] + "/scripts/gex_process/combine_cr_cb.py"
 
 
 rule aggregate_h5ads:
@@ -119,4 +122,4 @@ rule aggregate_h5ads:
         min_counts=50,
         filter_cells=True,
     script:
-        config["workflow_dir"] + "/scripts/post_cellranger/aggregate_h5ads.py"
+        config["workflow_dir"] + "/scripts/gex_process/aggregate_h5ads.py"

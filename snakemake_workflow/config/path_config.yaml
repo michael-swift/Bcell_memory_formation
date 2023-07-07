@@ -17,7 +17,7 @@ species: human
 # partition (for cluster computing)
 partition: "quake,owners"
 workflow_dir: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow" 
-samplesheets: ["samplesheets/samplesheet_TBd1_redo.tsv"]
+samplesheets: ["samplesheets/samplesheet.tsv"]
 samplesheet_vdj: ["samplesheets/extended_samplesheet_vdj_TBd1_redo.tsv"]
 # Software
 #---------------------------

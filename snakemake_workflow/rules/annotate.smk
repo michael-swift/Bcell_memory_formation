@@ -16,7 +16,7 @@ rule annotate_by_tissue:
     conda:
         config["workflow_dir"] + "/envs/scanpy.yaml"
     script:
-        config["workflow_dir"] + "/scripts/post_cellranger/annotate.py"
+        config["workflow_dir"] + "/scripts/gex_preprocess/annotate.py"
 
 
 rule aggregate_annotated:
@@ -36,8 +36,7 @@ rule aggregate_annotated:
     conda:
         config["workflow_dir"] + "/envs/scanpy.yaml"
     script:
-        config["workflow_dir"] + "/scripts/post_cellranger/aggregate_annotated.py"
-
+        config["workflow_dir"] + "/scripts/gex_preprocess/aggregate_annotated.py"
 
 rule scvi_all_cells:
     input:
@@ -47,7 +46,7 @@ rule scvi_all_cells:
     log:
         "{base_gex}/logs/annotate/scvi.obj_all.log",
     params:
-        scripts=config["workflow_dir"] + "/scripts/post_cellranger/",
+        scripts=config["workflow_dir"] + "/scripts/gex_preprocess/",
         cell_cycle_genes="{}/resources/cell_cycle/cell_cycle_genes.tab".format(
             config["workflow_dir"],
         ),
@@ -57,21 +56,19 @@ rule scvi_all_cells:
     shell:
         "python {params.scripts}train_scvi_all.py {input} -output_file {output.adata} -covariate_genes {params.cell_cycle_genes} -subsample {params.subsample}"
 
-
 rule remove_nonb:
     input:
         full_h5ad="{base_gex}/annotate/scvi/all_cells.h5ad.gz",
     output:
-        bcells=temp("{base_gex}/annotate/bcells.h5ad.gz"),
+        bcells="{base_gex}/annotate/bcells.h5ad.gz",
     resources:
         partition="quake,owners",
     log:
         "{base_gex}/logs/annotate/removenonb_preprocess.log",
     params:
-        scripts=config["workflow_dir"] + "/scripts/post_cellranger/",
+        scripts=config["workflow_dir"] + "/scripts/gex_preprocess/",
     run:
         import scanpy as sc
-
         adata = sc.read_h5ad(str(input))
         bcells = adata[adata.obs.probable_hq_single_b_cell.astype(str) == "True"]
         bcells.obs.loc[:, "atlas"] = adata.obs.donor.str.contains("TBd")
@@ -79,36 +76,34 @@ rule remove_nonb:
         bcells.obs.loc[:, "atlas"] = bcells.obs["atlas"].map(bool_mapper)
         bcells.write_h5ad(output.bcells, compression="gzip")
 
-
-rule pseudo_make_vdj:
+rule dummy_make_vdj:
     "need to connect to vdjc pipeline"
     output:
         "{base_gex}/vdjc/integrated_no_contaminants_with_all_ambient_flags.tsv.gz",
     shell:
         "cat {output}"
 
-
 rule scvi_bcells:
     input:
         bcell_h5ad="{base_gex}/annotate/bcells.h5ad.gz",
     output:
         model=directory("{base_gex}/annotate/scvi/model/covariates/"),
-        adata=temp("{base_gex}/annotate/scvi/bcells.h5ad.gz"),
+        adata="{base_gex}/annotate/scvi/bcells.h5ad.gz",
     resources:
         partition="quake,owners",
     log:
         "{base_gex}/logs/annotate/scvi.obj_preprocess.log",
     params:
-        scripts=config["workflow_dir"] + "/scripts/post_cellranger/",
+        scripts=config["workflow_dir"] + "/scripts/gex_preprocess/",
         cell_cycle_genes="{}/resources/cell_cycle/cell_cycle_genes.tab".format(
             config["workflow_dir"],
         ),
         subsample="False",
+        layer="counts"
     conda:
         "scvi-2023"
     shell:
-        "python {params.scripts}train_scvi.py {input} -output_file {output.adata} -output_model {output.model} -covariate_genes {params.cell_cycle_genes} -subsample {params.subsample}"
-
+        "python {params.scripts}train_scvi.py {input} -output_file {output.adata} -output_model {output.model} -covariate_genes {params.cell_cycle_genes} -subsample {params.subsample} -layer {params.layer}"
 
 rule merge_vdj:
     input:
@@ -117,7 +112,7 @@ rule merge_vdj:
             "{base_gex}/vdjc/integrated_no_contaminants_with_all_ambient_flags.tsv.gz"
         ),
     output:
-        adata="{base_gex}/annotate/vdjc/bcells.h5ad.gz",
+        adata=temp("{base_gex}/annotate/vdjc/bcells.h5ad.gz"),
     resources:
         partition="quake,owners",
     log:
@@ -125,7 +120,6 @@ rule merge_vdj:
     run:
         import pandas as pd
         import scanpy as sc
-
         adata = sc.read_h5ad(input.bcell_h5ad)
         adata.obs_names_make_unique()
         vdj_df = pd.read_table(input.vdj_df)
@@ -141,12 +135,12 @@ rule merge_vdj:
         # select only columns of interest
         vdj_columns = [
             "c_call",
-            "v_mismatch",
             "vdj_sequence",
             "v_call",
             "n_umis",
             "n_droplets_vdj",
             "v_identity",
+            "v_mismatch",
             "lineage_id",
             "cb",
             "sample_uid",
@@ -169,30 +163,36 @@ rule subset_bcells:
     input:
         adata="{base_gex}/annotate/vdjc/bcells.h5ad.gz",
     output:
-        asc="{base_gex}/outs/asc.h5ad.gz",
-        mb="{base_gex}/outs/mb.h5ad.gz",
-        nb_other="{base_gex}/outs/nb_other.h5ad.gz",
-        all_igh="{base_gex}/outs/all_igh.h5ad.gz",
+        asc="{base_gex}/outs/ASC.h5ad.gz",
+        mb="{base_gex}/outs/MB.h5ad.gz",
+        nb_other="{base_gex}/outs/NB_other.h5ad.gz",
+        only_igh="{base_gex}/outs/only_igh.h5ad.gz",
+        bcells="{base_gex}/outs/bcells.h5ad.gz",
     resources:
         partition="quake,owners",
     log:
         "{base_gex}/logs/annotate/subset_bcells_preprocess.log",
     params:
-        scripts=config["workflow_dir"] + "/scripts/post_cellranger/",
+        scripts=config["workflow_dir"] + "/scripts/gex_preprocess/",
     run:
         import scanpy as sc
-
         adata = sc.read_h5ad(str(input))
-        adata = adata[adata.obs.Immune_All_Low_conf_score > 0.97]
         # add convenience column named celltypist
         adata.obs["celltypist"] = adata.obs["Immune_All_Low_predicted_labels"]
-        mb = adata[adata.obs.Immune_All_Low_predicted_labels.str.contains("Memory|Age|Germinal|Proliferative")]
-        mb.write_h5ad(output.mb, compression="gzip")
-        asc = adata[adata.obs.Immune_All_Low_predicted_labels.str.contains("Plasma")]
-        asc.write_h5ad(output.asc, compression="gzip")
-        nb_other = adata[
-            ~adata.obs.Immune_All_Low_predicted_labels.str.contains("Plasma|Memory|Age|Germinal|Proliferative")
+        MB = adata[
+            adata.obs.Immune_All_Low_predicted_labels.str.contains(
+                "Memory|Age|Germinal|Proliferative"
+            )
         ]
-        nb_other.write_h5ad(output.nb_other, compression="gzip")
-        all_igh = adata[~adata.obs.lineage_id.isna()]
-        all_igh.write_h5ad(output.all_igh, compression="gzip")
+        MB.write_h5ad(output.mb, compression="gzip")
+        ASC = adata[adata.obs.Immune_All_Low_predicted_labels.str.contains("Plasma")]
+        ASC.write_h5ad(output.asc, compression="gzip")
+        NB_other = adata[
+            ~adata.obs.Immune_All_Low_predicted_labels.str.contains(
+                "Plasma|Memory|Age|Germinal|Proliferative"
+            )
+        ]
+        NB_other.write_h5ad(output.nb_other, compression="gzip")
+        only_igh = adata[~adata.obs.lineage_id.isna()]
+        only_igh.write_h5ad(output.only_igh, compression="gzip")
+        adata.write_h5ad(output.bcells, compression = "gzip")

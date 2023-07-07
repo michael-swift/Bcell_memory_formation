@@ -58,11 +58,8 @@ set-resources:
     - igblast:mem_mb=65000
     - igblast:time="24:00:00"
     - igblast:threads=20
-    - scvi_global:gpus=1
-    - scvi_global:mem_mb=128000
-    - scvi_global:time="6:00:00"
     - scvi_bcells:gpus=1
-    - scvi_bcells:mem_mb=128000
+    - scvi_bcells:mem_mb=64000
     - scvi_bcells:time="6:00:00"
     - subset_bcells:time="1:00:00"
     - subset_bcells:mem_mb=64000

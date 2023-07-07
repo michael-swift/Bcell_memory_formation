@@ -8,6 +8,7 @@ shell.prefix("set +euo pipefail;")
 
 configfile: "config/path_config.yaml"
 
+
 base = config["base"]
 library_info = config["library_info"]
 libuid_to_datadirs = pd.read_table(library_info, sep="    ", engine="python")
@@ -21,14 +22,14 @@ samplesheets = pd.concat(
     ],
     ignore_index=True,
 )
-
+#print(samplesheets)
 # Parse Samplesheet
 samplesheets["expected_cells"] = (
     samplesheets["expected_cells_thousands"].astype(int) * 1000
 )
 samplesheets["species"] = "human"
 donors = list(set(samplesheets[samplesheets.species == "human"].donor.to_list()))
-#print(samplesheets)
+
 
 samplesheets_gex = samplesheets[samplesheets.lib_type == "gex"]
 samplesheets_gex.set_index("sample_uid", inplace=True)
@@ -38,11 +39,13 @@ sample_uids_vdj = samplesheets_vdj.sample_uid.to_list()
 samplesheets = samplesheets_gex
 sample_uids = samplesheets.index.to_list()
 tissues = samplesheets.tissue.to_list()
-print(sample_uids)
+#print(sample_uids)
 
 # make processsed data dir
 for k in base.keys():
     os.makedirs(base[k], exist_ok=True)
+
+
 rule all:
     input:
         #expand("{base}/per_sample/cellranger_vdj/{sample_uid_vdj}/outs/web_summary.html", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
@@ -52,21 +55,23 @@ rule all:
         #expand("{base}/aggregated/lineage_clustering/final_lineage_ids/{donor}.tsv.gz", base=base['vdj'], donor=donors),
         #expand("{base}/aggregated/vtrees/{which}/{donor}_v_trees.tsv", base = base['vdj'], which = ['cells'], donor = donors),
         #expand("{base}/aggregated/cell_calls/{donor}_called_cells_vdj_annotated.tsv.gz", base = base['vdj'], donor = donors),
-        expand("{base_gex}/outs/{celltypes}.h5ad.gz", base_gex = base['gex'], celltypes = ['asc', 'mb', 'nb_other']),
-
+        expand(
+            "{base_gex}/outs/{celltypes}.h5ad.gz",
+            base_gex=base["gex"],
+            celltypes=["ASC", "MB", "NB_other", "bcells", "only_igh"],
+        ),
     params:
         name="all",
         partition="quake",
     resources:
-        threads=4
+        threads=4,
 
 
 include: "rules/gex.smk"
-include: "rules/vdjc.smk"
-include: "rules/qc.smk"
 include: "rules/get_resources.smk"
-include: "rules/cell_calling.smk"
 include: "rules/annotate.smk"
-#localrules:merge_vdj
+include: "rules/qc.smk"
+
+# localrules:merge_vdj
 def samplesheet_lookup(idx, col):
     return samplesheets.loc[idx, col]
