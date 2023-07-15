@@ -1,6 +1,5 @@
 import os
 
-
 rule get_genome_fasta_and_gtf:
     """ Get genome and GTF from ensembl """
     output:
@@ -86,7 +85,7 @@ rule pull_TICA_data:
         "mkdir -p {output[0]} && "
         "cd {output[0]} && "
         "wget {params.global_url} && "
-        "wget {params.bcell_url}"
+        "wget {params.bcell_url} &&"
 
 
 rule add_TICA_metadata:
@@ -103,7 +102,7 @@ rule add_TICA_metadata:
         mem_mb=32000,
     run:
         import scanpy as sc
-
+        import numpy as np
         TICA_to_Bursa = TICA_to_Bursa = {
             "BLD": "PB",
             "BMA": "BM",
@@ -120,7 +119,11 @@ rule add_TICA_metadata:
             adata.obs.Organ.astype(str) + "_" + adata.obs.Donor.astype(str)
         )
         adata.obs.loc[:, "donor"] = adata.obs.Donor
-        # these are not real cellbender counts rn
+        # careful! these are not real cellbender counts rn
         adata.X = adata.layers["counts"]
         adata.layers["cellbender_counts"] = adata.X
+        for layer in ['cellbender_counts', 'counts']:
+        # careful! these are not real doublet scores at this point, assumes TICA Curators removed all doublets
+            adata.obs[f'predicted_doublets_{layer}'] = "False"
+            adata.obs[f'doublet_scores_{layer}'] = np.nan
         adata.write_h5ad(output[0], compression="gzip")

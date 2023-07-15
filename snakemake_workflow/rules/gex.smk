@@ -7,7 +7,6 @@ def wildcard_input(wildcards):
 #
 species = config["species"]
 
-
 rule cellranger_count:
     # snakemake and cellranger don't play well together because they both want control of the directory
     # touching .done file  to work around
@@ -33,7 +32,6 @@ rule cellranger_count:
         " --sample={wildcards.sample_uid}"
         " --nosecondary"
         " --no-bam && touch {output}"
-
 
 rule copy_cellranger:
     input:
@@ -94,19 +92,35 @@ rule combine_cb_cr:
         partition="quake,owners",
         time="0-1",
     params:
-        min_genes=1,
-        min_counts=1,
+        min_genes=250,
+        min_counts=800,
         filter_cells=True,
         samplesheets=config["samplesheets"],
     script:
-        config["workflow_dir"] + "/scripts/gex_process/combine_cr_cb.py"
+        config["workflow_dir"] + "/scripts/gex_preprocess/combine_cr_cb.py"
 
+
+rule scrublet:
+    input:
+        "{base_gex}/per_sample/cellranger_cellbender/{sample_uid}/combined.h5ad.gz",
+    output:
+        h5ad="{base_gex}/per_sample/scrublet/{sample_uid}/combined.h5ad.gz"
+    log:
+        "{base_gex}/logs/{sample_uid}/scrublet.log",
+    resources:
+        mem_mb="32000",
+        partition="quake,owners",
+        time="0-1",
+    conda:
+        config["workflow_dir"] + "/envs/scanpy.yaml"
+    script:
+        config["workflow_dir"] + "/scripts/gex_preprocess/run_scrublet.py"
 
 rule aggregate_h5ads:
     """ aggregate h5 from cellranger or h5ads scanpy """
     input:
         expand(
-            "{base_gex}/per_sample/cellranger_cellbender/{sample_uid}/combined.h5ad.gz",
+            "{base_gex}/per_sample/scrublet/{sample_uid}/combined.h5ad.gz",
             base_gex=config["base"]["gex"],
             sample_uid=sample_uids,
         ),
@@ -122,4 +136,4 @@ rule aggregate_h5ads:
         min_counts=50,
         filter_cells=True,
     script:
-        config["workflow_dir"] + "/scripts/gex_process/aggregate_h5ads.py"
+        config["workflow_dir"] + "/scripts/gex_preprocess/aggregate_h5ads.py"

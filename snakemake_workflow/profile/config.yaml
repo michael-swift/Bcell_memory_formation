@@ -19,7 +19,7 @@ default-resources:
   - threads=4
   - disk_mb=500000
   - tmpdir="/scratch/groups/quake/mswift"
-restart-times: 1
+restart-times: 0
 rerun-triggers: mtime
 max-jobs-per-second: 10
 max-status-checks-per-second: 1
@@ -49,7 +49,8 @@ set-resources:
     - aggregate_h5ads:mem_mb=210000
     - aggregate_h5ads:time="01:00:00"
     - aggregate_annotated:mem_mb=120000
-    - annotate_by_tissue:mem_mb=120000
+    - annotate_cell_cycle_b_cell:mem_mb=64000
+    - annotate_cell_cycle_b_cell:time="2:00:00"
     - cellranger_vdj:mem_mb=120000
     - star_solo_vdj:time="24:00:00"
     - star_solo_vdj:mem_mb=64000
@@ -64,9 +65,11 @@ set-resources:
     - subset_bcells:time="1:00:00"
     - subset_bcells:mem_mb=64000
     - remove_nonb:mem_mb=64000
-    - remove_nonb:time="1:00:00"
+    - remove_nonb:time="0:30:00"
     - scvi_all_cells:gpus=1
     - scvi_all_cells:mem_mb=64000
     - scvi_all_cells:time="6:00:00"
     - scvi_all_cells:partition="gpu,owners,quake"
     - merge_vdj:mem_mb=32000
+    - run_celltypist_by_tissue:mem_mb=64000
+    - run_celltypist_by_tissue:time="1:00:00"

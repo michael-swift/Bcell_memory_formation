@@ -31,14 +31,11 @@ out_dir = args.output_model
 covariate_genes = args.covariate_genes
 subsample = args.subsample
 print(type(subsample))
-covariate_genes_df = pd.read_table(covariate_genes, index_col=0)
-nuisance_genes = ["XIST", "FOS", "JUN"]
 print("loading data")
 adata = sc.read_h5ad(FILENAME)
 layer = "counts"
-
 if subsample == "True":
-    sc.pp.subsample(adata, n_obs=50000)
+    sc.pp.subsample(adata, n_obs=100000)
 
 # setup batch column
 adata.obs["donor_tissue"] = (
@@ -49,30 +46,13 @@ adata.obs["donor_tissue"] = (
 scvi.model.SCVI.setup_anndata(adata, layer=layer, batch_key="donor_tissue")
 vae = scvi.model.SCVI(adata, n_layers=2, n_latent=30, gene_likelihood="nb")
 # train
-vae.train(max_epochs=150)
+vae.train(max_epochs=300)
 # get latent rep
 Z_hat = vae.get_latent_representation()
 # calculate umap using latent representation
 adata.obsm["X_scVI_all"] = Z_hat
-add_continuous = False
-if add_continuous:
-    # additionaly good covariates could be XIST and FOS/JUN
-    scvi.model.SCVI.setup_anndata(
-        adata,
-        layer=layer,
-        batch_key="donor_tissue",
-        continuous_covariate_keys=["correlation_cycling"],
-    )
-    vae = scvi.model.SCVI(adata, n_layers=2, n_latent=30, gene_likelihood="nb")
-    # train
-    vae.train(max_epochs=150)
-    # get latent rep
-    Z_hat = vae.get_latent_representation()
-    # calculate umap using latent representation
-    adata.obsm["X_scVI_cont_all"] = Z_hat
-    vae.save(out_dir)
 
-add_cellbender_model = False
+add_cellbender_model = True
 if add_cellbender_model:
     # setup vanilla model:
     layer = "cellbender_counts"
@@ -84,5 +64,4 @@ if add_cellbender_model:
     Z_hat = vae.get_latent_representation()
     # calculate umap using latent representation
     adata.obsm["X_scVI_cellbender_all"] = Z_hat
-
 adata.write_h5ad(outfile)

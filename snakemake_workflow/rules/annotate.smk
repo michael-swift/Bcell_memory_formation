@@ -1,10 +1,43 @@
-rule annotate_by_tissue:
-    """ performs preprocessing and qc as well as celltypist labeling, cell cycle assignment, doublet calling, adds samplesheet info to object"""
+rule scvi_all_cells:
     input:
-        "{base_gex}/aggregated/aggr_gex_raw.h5ad.gz",
+        rules.aggregate_h5ads.output
     output:
-        fig_dir=directory("{base_gex}/annotate/figures_{tissue}/"),
-        tissue_obj="{base_gex}/annotate/tissue_objs/{tissue}/annotated_processed.h5ad.gz",
+        adata="{base_gex}/scvi_all/gex.h5ad.gz",
+    log:
+        "{base_gex}/logs/annotate/scvi.obj_all.log",
+    params:
+        scripts=config["workflow_dir"] + "/scripts/gex_preprocess/",
+        cell_cycle_genes="{}/resources/cell_cycle/cell_cycle_genes.tab".format(
+            config["workflow_dir"],
+        ),
+        subsample="True",
+    conda:
+        "scvi-2023"
+    shell:
+        "python {params.scripts}train_scvi_all.py {input} -output_file {output.adata} -covariate_genes {params.cell_cycle_genes} -subsample {params.subsample}"
+
+
+rule run_celltypist_by_tissue:
+    input:
+        rules.scvi_all_cells.output
+    output:
+        tissue_obj="{base_gex}/annotate/tissue_objs/{tissue}/celltypist.h5ad.gz",
+    resources:
+        partition="quake,owners",
+    params:
+    log:
+        "{base_gex}/logs/annotate/{tissue}/celltypist_by_tissue.log",
+    conda:
+        config["workflow_dir"] + "/envs/scanpy.yaml"
+    script:
+        config["workflow_dir"] + "/scripts/gex_preprocess/run_celltypist.py"
+
+rule annotate_cell_cycle_b_cell:
+    """ performs preprocessing and qc, cell cycle assignment, doublet filtering, adds samplesheet info to object"""
+    input:
+        rules.run_celltypist_by_tissue.output
+    output:
+        "{base_gex}/annotate/tissue_objs/{tissue}/annotated_processed.h5ad.gz",
     resources:
         partition="quake,owners",
     params:
@@ -16,16 +49,15 @@ rule annotate_by_tissue:
     conda:
         config["workflow_dir"] + "/envs/scanpy.yaml"
     script:
-        config["workflow_dir"] + "/scripts/gex_preprocess/annotate.py"
-
+        config["workflow_dir"] + "/scripts/gex_preprocess/annotate_doublet_cc.py"
 
 rule aggregate_annotated:
     input:
-        h5ads=expand(
+        h5ads=list(set(expand(
             "{base_gex}/annotate/tissue_objs/{tissue}/annotated_processed.h5ad.gz",
             base_gex=base["gex"],
             tissue=tissues,
-        ),
+        ))),
     output:
         full_h5ad="{base_gex}/annotate/gex_object.h5ad.gz",
         adata_obs="{base_gex}/annotate/adata.obs.tab.gz",
@@ -38,29 +70,11 @@ rule aggregate_annotated:
     script:
         config["workflow_dir"] + "/scripts/gex_preprocess/aggregate_annotated.py"
 
-rule scvi_all_cells:
-    input:
-        full_h5ad="{base_gex}/annotate/gex_object.h5ad.gz",
-    output:
-        adata="{base_gex}/annotate/scvi/all_cells.h5ad.gz",
-    log:
-        "{base_gex}/logs/annotate/scvi.obj_all.log",
-    params:
-        scripts=config["workflow_dir"] + "/scripts/gex_preprocess/",
-        cell_cycle_genes="{}/resources/cell_cycle/cell_cycle_genes.tab".format(
-            config["workflow_dir"],
-        ),
-        subsample="False",
-    conda:
-        "scvi-2023"
-    shell:
-        "python {params.scripts}train_scvi_all.py {input} -output_file {output.adata} -covariate_genes {params.cell_cycle_genes} -subsample {params.subsample}"
-
 rule remove_nonb:
     input:
-        full_h5ad="{base_gex}/annotate/scvi/all_cells.h5ad.gz",
+        rules.aggregate_annotated.output.full_h5ad
     output:
-        bcells="{base_gex}/annotate/bcells.h5ad.gz",
+        bcells=temp("{base_gex}/annotate/bcells.h5ad.gz"),
     resources:
         partition="quake,owners",
     log:
@@ -70,10 +84,7 @@ rule remove_nonb:
     run:
         import scanpy as sc
         adata = sc.read_h5ad(str(input))
-        bcells = adata[adata.obs.probable_hq_single_b_cell.astype(str) == "True"]
-        bcells.obs.loc[:, "atlas"] = adata.obs.donor.str.contains("TBd")
-        bool_mapper = {True: "Tabula_Bursa", False: "TICA"}
-        bcells.obs.loc[:, "atlas"] = bcells.obs["atlas"].map(bool_mapper)
+        bcells = adata[(adata.obs.possible_b_cell == True) | (adata.obs.possible_b_cell == "True")]
         bcells.write_h5ad(output.bcells, compression="gzip")
 
 rule dummy_make_vdj:
@@ -85,7 +96,7 @@ rule dummy_make_vdj:
 
 rule scvi_bcells:
     input:
-        bcell_h5ad="{base_gex}/annotate/bcells.h5ad.gz",
+        rules.remove_nonb.output
     output:
         model=directory("{base_gex}/annotate/scvi/model/covariates/"),
         adata="{base_gex}/annotate/scvi/bcells.h5ad.gz",
@@ -107,7 +118,7 @@ rule scvi_bcells:
 
 rule merge_vdj:
     input:
-        bcell_h5ad="{base_gex}/annotate/scvi/bcells.h5ad.gz",
+        bcell_h5ad=rules.scvi_bcells.output.adata,
         vdj_df=ancient(
             "{base_gex}/vdjc/integrated_no_contaminants_with_all_ambient_flags.tsv.gz"
         ),
