@@ -6,7 +6,7 @@ library_info: "samplesheets/library_info.tsv"
 
 base: 
   vdj: "/oak/stanford/groups/quake/shared/swiftShare/tb_vdj_pipeline_TBd1_redo"
-  gex: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline"
+  gex: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline_all"
 # specificed in multi_configs
 gex_fastq_dirs: ["/oak/stanford/groups/quake/shared/swiftShare/tb_gex_fastqs"]
 # vdj_fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/ilm7_vdj/"
@@ -17,7 +17,7 @@ species: human
 # partition (for cluster computing)
 partition: "quake,owners"
 workflow_dir: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow" 
-samplesheets: ["samplesheets/samplesheet.tsv"]
+samplesheets: ["samplesheets/final_samplesheet.tsv"]
 samplesheet_vdj: ["samplesheets/extended_samplesheet_vdj_TBd1_redo.tsv"]
 # Software
 #---------------------------

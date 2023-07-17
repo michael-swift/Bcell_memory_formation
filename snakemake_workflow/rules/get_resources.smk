@@ -85,7 +85,7 @@ rule pull_TICA_data:
         "mkdir -p {output[0]} && "
         "cd {output[0]} && "
         "wget {params.global_url} && "
-        "wget {params.bcell_url} &&"
+        "wget {params.bcell_url}"
 
 
 rule add_TICA_metadata:
@@ -119,7 +119,7 @@ rule add_TICA_metadata:
             adata.obs.Organ.astype(str) + "_" + adata.obs.Donor.astype(str)
         )
         adata.obs.loc[:, "donor"] = adata.obs.Donor
-        # careful! these are not real cellbender counts rn
+        # careful! these are not real cellbender counts rn, used to integrate properly with our data
         adata.X = adata.layers["counts"]
         adata.layers["cellbender_counts"] = adata.X
         for layer in ['cellbender_counts', 'counts']:

@@ -41,7 +41,7 @@ set-resources:
     - run_cellbender:time="5:00:00"
     - run_cellbender:partition=gpu
     - run_cellbender:gpus=1
-    - cellranger_count:mem_mb=128000
+    - cellranger_count:mem_mb=64000
     - cellranger_count:partition=quake,owners
     - cellranger_count:time="24:00:00"
     - cellranger_count:threads=20

@@ -39,7 +39,7 @@ sample_uids_vdj = samplesheets_vdj.sample_uid.to_list()
 samplesheets = samplesheets_gex
 sample_uids = samplesheets.index.to_list()
 tissues = samplesheets.tissue.to_list()
-#print(sample_uids)
+print(sample_uids)
 
 # make processsed data dir
 for k in base.keys():
