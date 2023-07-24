@@ -28,6 +28,7 @@ samplesheet = pd.concat([pd.read_table(
 ], ignore_index=True)
 
 samplesheet = samplesheet.set_index('sample_uid')
+
 metadata_columns = samplesheet.columns.values
 
 

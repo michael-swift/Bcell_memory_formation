@@ -41,7 +41,6 @@ tmp_in_file = "{}/in.fasta".format(scratchdir)
 tmp_align_file = "{}/aln.fasta".format(scratchdir)
 #########################################################################################################
 
-target_seq = "AGGTGCAGTTGGTGGAATCTGGGGGAGGCGTGGTCCAGCCTGGGAGGTCCCTGAGACTCTCCTGTGCAGCCTCTGGATTCACCTTCAGTCGCTATGCTATACACTGGGTCCGCCAGGCTCCAGGCAAGGGGCTGGAGTGGGTGGCAGTTATATCATATGATGGAAACAATCAATATTACGCAGACACCATGCAGGGCCGATTCACCATCTCCAGAGACAATTCCGAGAACATGCTGTATCTGCAAATGAACAGCCTGGGACCTGAGGACACAGGTCTTTATTATTGTG"
 germline_sequences = SeqIO.to_dict(SeqIO.parse(germline_db_path, "fasta"))
 germline_sequences = {k:str(v.seq) for k, v in germline_sequences.items()}
 

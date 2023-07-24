@@ -15,7 +15,7 @@ rule cellranger_vdj:
         mem_mb="128000",
         partition="quake",
         disk_mb=64000,
-        time="3-00",
+        time="2-00",
         threads=20,
     threads: 20,
     shell:
@@ -24,6 +24,7 @@ rule cellranger_vdj:
         "rm -rf {wildcards.sample_uid_vdj} && "
         "{params.cell_ranger}/cellranger vdj --id={wildcards.sample_uid_vdj} "
         "--reference={params.vdj_reference} --fastqs {params.fastq_dir} "
+        "--chain=IG "
         "--sample={wildcards.sample_uid_vdj} --localcores=20 > {log}"
 
 rule igblast:
@@ -141,7 +142,7 @@ checkpoint prepare_cdr3_groups_for_distance_evaluation:
     output:
         groups=directory("{base}/aggregated/lineage_clustering/cdr3/{donor}/"),
     wildcard_constraints:
-        donor="TBd[1-6]",
+        donor="TBd[0-9]",
     log:
         "{base}/logs/cluster_lineages/{donor}_prepare_for_clustering.log",
     conda:

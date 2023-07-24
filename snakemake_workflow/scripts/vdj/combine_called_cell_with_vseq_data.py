@@ -31,21 +31,15 @@ amplicon_df = amplicon_df.drop(['sequence_id',
                                 'reads',
                                 'rev_comp', 
                                 'sequence', 
-                                'umis', 
-                                'tissue',
+                                'umis',
+                                'lib_type', 
                                 'sample_index',
+                                'expected_cells_thousands',
                                 'donor',
                                 'sample_type',
-                                'sample_descriptor',
+                                'subanatomical_location',
                                 'tissue',
-                                'BA CONC (ng/uL)',
-                                'LIB QUALITY (0-3)',
-                                'LIB CONC (ng/uL)',
-                                'LIB MOLARITY (nM)',
-                                'LIB AVG LEN (bp)',
-                                'Pool weight',
-                                'expect cells (k)',
-                                'lib_type'], axis=1)
+                                'ht_sample'], axis=1)
 amplicon_df = amplicon_df.drop([x for x in amplicon_df.columns if x.startswith("Unnamed")], axis=1)
 amplicon_df = amplicon_df.drop([x for x in amplicon_df.columns if x.startswith("c_")], axis=1)
 amplicon_df = amplicon_df.drop([x for x in amplicon_df.columns if x.endswith("_start")], axis=1)

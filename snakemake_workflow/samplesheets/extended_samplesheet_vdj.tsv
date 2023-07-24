@@ -1,16 +1,16 @@
 sample_uid	donor	sample_type	sample_descriptor_old	tissue	BA CONC (ng/uL)	sample_index	LIB QUALITY (0-3)	LIB CONC (ng/uL)	LIB MOLARITY (nM)	LIB AVG LEN (bp)	Pool weight	expect cells (k)	lib_type	sample_descriptor	library_uid	sample_gid
-TBd1_frozen_BMa	TBd1	frozen	BMa	BM	4.7	B2	3	66.45	234.84	495.0	0.004551247042	10.0	vdj	BMa		TBd1_frozen_BMa
-TBd1_frozen_BMb	TBd1	frozen	BMb	BM	9.8	B5	2	47.61	169.26	507.0	0.004551247042	10.0	vdj	BMb		TBd1_frozen_BMb
-TBd1_frozen_BMoverA	TBd1	frozen	BMoverA	BM	6.93	B8	3	8.34	27.06	556.0	0.01820498817	40.0	vdj	BMoverA		TBd1_frozen_BMoverA
-TBd1_frozen_BMoverB	TBd1	frozen	BMoverB	BM	0.393	B11	3	76.38	237.27	571.0	0.01820498817	40.0	vdj	BMoverB		TBd1_frozen_BMoverB
+TBd1_frozen_BMa	TBd1	frozen	BMa	BM	4.7	B2,E5   3	66.45	234.84	495.0	0.004551247042	10.0	vdj	BMa		TBd1_frozen_BMa
+TBd1_frozen_BMb	TBd1	frozen	BMb	BM	9.8	B5,E6	2	47.61	169.26	507.0	0.004551247042	10.0	vdj	BMb		TBd1_frozen_BMb
+TBd1_frozen_BMoverA	TBd1	frozen	BMoverA	BM	6.93	B8,E7	3	8.34	27.06	556.0	0.01820498817	40.0	vdj	BMoverA		TBd1_frozen_BMoverA
+TBd1_frozen_BMoverB	TBd1	frozen	BMoverB	BM	0.393	B11,E8	3	76.38	237.27	571.0	0.01820498817	40.0	vdj	BMoverB		TBd1_frozen_BMoverB
 TBd1_frozen_LNa	TBd1	frozen	LNa	LN	1.31	B3	3	26.85	83.43	563.0	0.004551247042	10.0	vdj	LNa		TBd1_frozen_LNa
 TBd1_frozen_LNb	TBd1	frozen	LNb	LN	1.47	B6	3	20.91	64.53	575.0	0.004551247042	10.0	vdj	LNb		TBd1_frozen_LNb
 TBd1_frozen_LNoverA	TBd1	frozen	LNoverA	LN	2.54	B9	3	35.55	113.25	549.0	0.01820498817	40.0	vdj	LNoverA		TBd1_frozen_LNoverA
 TBd1_frozen_LNoverB	TBd1	frozen	LNoverB	LN	2.32	B12	3	28.6692	91.02	555.0	0.01820498817	40.0	vdj	LNoverB		TBd1_frozen_LNoverB
-TBd1_frozen_PBa	TBd1	frozen	PBa	PB	6.6	B1	3	60.3	200.1	530.0	0.004551247042	10.0	vdj	PBa		TBd1_frozen_PBa
-TBd1_frozen_PBb	TBd1	frozen	PBb	PB	4.97	B4	3	40.35	129.99	538.0	0.004551247042	10.0	vdj	PBb		TBd1_frozen_PBb
-TBd1_frozen_PBoverA	TBd1	frozen	PBoverA	PB	7.98	B7	3	61.44	184.74	591.0	0.004551247042	40.0	vdj	PBoverA		TBd1_frozen_PBoverA
-TBd1_frozen_PBoverB	TBd1	frozen	PBoverB	PB	6.24	B10	3	32.82	100.8	575.0	0.01820498817	40.0	vdj	PBoverB		TBd1_frozen_PBoverB
+TBd1_frozen_PBa	TBd1	frozen	PBa	PB	6.6	B1,E1	3	60.3	200.1	530.0	0.004551247042	10.0	vdj	PBa		TBd1_frozen_PBa
+TBd1_frozen_PBb	TBd1	frozen	PBb	PB	4.97	B4,E2	3	40.35	129.99	538.0	0.004551247042	10.0	vdj	PBb		TBd1_frozen_PBb
+TBd1_frozen_PBoverA	TBd1	frozen	PBoverA	PB	7.98	B7,E3	3	61.44	184.74	591.0	0.004551247042	40.0	vdj	PBoverA		TBd1_frozen_PBoverA
+TBd1_frozen_PBoverB	TBd1	frozen	PBoverB	PB	6.24	B10,E4	3	32.82	100.8	575.0	0.01820498817	40.0	vdj	PBoverB		TBd1_frozen_PBoverB
 TBd2_frozen_BMa	TBd2	frozen	BMa	BM	7.73	E9	3	67.5	214.8	565.0	0.02912798107	10.0	vdj	BMa		TBd2_frozen_BMa
 TBd2_frozen_BMb	TBd2	frozen	BMb	BM	4.29	E11	3	41.16	131.13	562.0	0.004551247042	10.0	vdj	BMb		TBd2_frozen_BMb
 TBd2_frozen_BMoverA	TBd2	frozen	BMoverA	BM	8.94	H9	3	14.91	50.46	529.0	0.004551247042	40.0	vdj	BMoverA		TBd2_frozen_BMoverA
