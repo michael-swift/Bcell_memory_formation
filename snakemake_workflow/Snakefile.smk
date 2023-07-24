@@ -7,11 +7,7 @@ shell.prefix("set +euo pipefail;")
 
 configfile: "config/path_config.yaml"
 
-
 base = config["base"]
-library_info = config["library_info"]
-libuid_to_datadirs = pd.read_table(library_info, sep="    ", engine="python")
-libuid_to_datadirs = libuid_to_datadirs.set_index("library_uid")["path"].to_dict()
 
 # TODO put in config
 samplesheets = pd.concat(
@@ -49,14 +45,16 @@ rule all:
         #expand("{base_gex}/annotate/gex_object.h5ad.gz", base_gex = base['gex']),
         #expand("{base}/per_sample/fastqc/{sample_uid_vdj}/", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
         #expand("{base}/per_sample/star_solo_vdj/{sample_uid_vdj}/Aligned.out.bam", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
-        #expand("{base}/aggregated/lineage_clustering/final_lineage_ids/{donor}.tsv.gz", base=base['vdj'], donor=donors),
-        #expand("{base}/aggregated/vtrees/{which}/{donor}_v_trees.tsv", base = base['vdj'], which = ['cells'], donor = donors),
-        #expand("{base}/aggregated/cell_calls/{donor}_called_cells_vdj_annotated.tsv.gz", base = base['vdj'], donor = donors),
         expand(
             "{base_gex}/outs/{celltypes}.h5ad.gz",
             base_gex=base["gex"],
             celltypes=["ASC", "MB", "NB_other", "bcells", "only_igh", "all_cells"],
         ),
+        #expand("{base}/aggregated/vdj/{donor}_combined.tsv.gz", base=base['vdj'], donor=donors),
+        #expand("{base}/aggregated/lineage_clustering/final_lineage_ids/{donor}.tsv.gz", base=base['vdj'], donor=donors),
+        #expand("{base}/aggregated/vtrees/{which}/{donor}_v_trees.tsv", base = base['vdj'], which = ['cells'], donor = donors),
+        #expand("{base}/aggregated/cell_calls/{donor}_called_cells_vdj_annotated.tsv.gz", base = base['vdj'], donor = donors)
+
     params:
         name="all",
         partition="quake",
