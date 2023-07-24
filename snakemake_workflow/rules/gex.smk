@@ -64,7 +64,7 @@ rule run_cellbender:
         total_droplets=lambda wildcards: samplesheet_lookup(
             wildcards.sample_uid, "expected_cells"
         )
-        * 3,
+        * 3, # cellbender often fails when sample quality is not amazing / depending on tissue, changing this param can fix this
     shell:
         "cellbender remove-background"
         " --input {input}"
@@ -72,6 +72,7 @@ rule run_cellbender:
         " --total-droplets-included {params.total_droplets}"
         " --expected-cells {params.expected_cells}"
         " --fpr 0.01"
+        " --low-count-threshold 10"
         " --cuda"
 
 

@@ -5,7 +5,6 @@ from collections import defaultdict
 
 shell.prefix("set +euo pipefail;")
 
-
 configfile: "config/path_config.yaml"
 
 
@@ -20,16 +19,14 @@ samplesheets = pd.concat(
         pd.read_table("{}".format(x), dtype="str", sep="\t", engine="python")
         for x in config["samplesheets"]
     ],
-    ignore_index=True,
+    ignore_index=False,
 )
-#print(samplesheets)
 # Parse Samplesheet
 samplesheets["expected_cells"] = (
     samplesheets["expected_cells_thousands"].astype(int) * 1000
 )
 samplesheets["species"] = "human"
 donors = list(set(samplesheets[samplesheets.species == "human"].donor.to_list()))
-
 
 samplesheets_gex = samplesheets[samplesheets.lib_type == "gex"]
 samplesheets_gex.set_index("sample_uid", inplace=True)
@@ -58,7 +55,7 @@ rule all:
         expand(
             "{base_gex}/outs/{celltypes}.h5ad.gz",
             base_gex=base["gex"],
-            celltypes=["ASC", "MB", "NB_other", "bcells", "only_igh"],
+            celltypes=["ASC", "MB", "NB_other", "bcells", "only_igh", "all_cells"],
         ),
     params:
         name="all",

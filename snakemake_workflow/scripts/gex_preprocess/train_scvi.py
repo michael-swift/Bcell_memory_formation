@@ -52,7 +52,7 @@ batch_key = 'tissue'
 
 # setup scVI model:
 scvi.model.JaxSCVI.setup_anndata(adata, layer=layer, batch_key=batch_key)
-vae = scvi.model.JaxSCVI(adata, n_layers=2, n_latent=30, gene_likelihood="nb")
+vae = scvi.model.JaxSCVI(adata, n_layers=2, n_latent=10, gene_likelihood="nb")
 # train
 vae.train(max_epochs=150)
 # get latent rep
@@ -81,7 +81,7 @@ if add_continuous:
         batch_key=batch_key,
         continuous_covariate_keys=nuisance_genes,
     )
-    vae = scvi.model.SCVI(adata_cond, n_layers=2, n_latent=20, gene_likelihood="nb")
+    vae = scvi.model.SCVI(adata_cond, n_layers=2, n_latent=10, gene_likelihood="nb")
     # train
     vae.train(max_epochs=150)
     # get latent rep
@@ -95,7 +95,7 @@ if add_linear_decoded:
     # setup linear
     layer = "counts"
     scvi.model.LinearSCVI.setup_anndata(adata, layer=layer, batch_key=batch_key)
-    model = scvi.model.LinearSCVI(adata, n_latent=20)
+    model = scvi.model.LinearSCVI(adata, n_latent=10)
     # train
     model.train(max_epochs=150, plan_kwargs={"lr":5e-3}, check_val_every_n_epoch=10)
     # get latent rep

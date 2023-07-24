@@ -46,13 +46,13 @@ adata.obs["donor_tissue"] = (
 scvi.model.SCVI.setup_anndata(adata, layer=layer, batch_key="donor_tissue")
 vae = scvi.model.SCVI(adata, n_layers=2, n_latent=30, gene_likelihood="nb")
 # train
-vae.train(max_epochs=300)
+vae.train(max_epochs=150)
 # get latent rep
 Z_hat = vae.get_latent_representation()
 # calculate umap using latent representation
 adata.obsm["X_scVI_all"] = Z_hat
 
-add_cellbender_model = True
+add_cellbender_model = False
 if add_cellbender_model:
     # setup vanilla model:
     layer = "cellbender_counts"

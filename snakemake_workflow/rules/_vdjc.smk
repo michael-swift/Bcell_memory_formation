@@ -26,7 +26,6 @@ rule cellranger_vdj:
         "--reference={params.vdj_reference} --fastqs {params.fastq_dir} "
         "--sample={wildcards.sample_uid_vdj} --localcores=20 > {log}"
 
-
 rule igblast:
     input:
         rules.cellranger_vdj.output.fasta,

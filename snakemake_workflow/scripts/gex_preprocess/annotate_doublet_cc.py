@@ -26,11 +26,10 @@ def assign_technical_categories(adata):
     possible_b_cell: This is likely a high quality cell or doublet, it is likely to be a B cell
     rare_or_bad_q_cell: empirically these seem to be non-B cells and likely ambient droplets or other technical artifcats
     """
-    # Believable leidens
+    ## Flag Believable leidens
     believable_leidens = adata.obs['leiden'].value_counts(normalize=True)
     believable_leidens = believable_leidens[believable_leidens > 0.001].index.tolist()
-    # doublet flagging by majority voting of high hierarchy cell type
-    # create an empty Series with the same index as adata.obs
+    ## doublet flagging by majority voting of high hierarchy cell type
     majority_voting_doublet = pd.Series(False, index=adata.obs.index)
     # iterate over each unique leiden value
     for i in adata.obs.leiden.unique():
@@ -41,7 +40,12 @@ def assign_technical_categories(adata):
     # add the majority_voting_doublet column to adata.obs
     adata.obs['majority_voting_doublet'] = majority_voting_doublet
     adata.obs["rare_or_bad_q_cell"] = ~adata.obs["leiden"].isin(believable_leidens)
+    # manually change majority voting flag for plasmablasts
+    condition = adata.obs["Immune_All_Low_predicted_labels"] == "Plasmablasts"
+    # Updating the "majority_voting_doublet" column based on condition
+    adata.obs.loc[condition, "majority_voting_doublet"] = False
 
+    ##########################################
     # Rules to Assign Technical Categories
     adata.obs["possible_b_cell"] = (
         adata.obs["majority_voting_low_predicted_labels"].str.contains("B cell|Plasma")

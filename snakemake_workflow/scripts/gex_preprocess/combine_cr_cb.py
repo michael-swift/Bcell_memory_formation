@@ -45,8 +45,8 @@ samplesheets = pd.concat(
         )
         for x in snakemake.params.samplesheets
     ],
-    ignore_index=True,
 )
+samplesheets = samplesheets.reset_index()
 print(samplesheets)
 print(samplesheets["donor"])
 print(samplesheets["sample_uid"])
