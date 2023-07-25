@@ -47,6 +47,24 @@ rule combine_cells_with_vdj_annotations:
         "-outname {wildcards.donor}_called_cells_vdj_annotated "
         "2> {log}"
 
+rule add_sample_info:
+    input:
+        rules.combine_cells_with_vdj_annotations.output,
+    output:
+        "{base}/aggregated/cell_calls/{donor}_called_cells_vdj_annotated_extended.tsv.gz",
+    log:
+        "{base}/logs/{donor}_add_sample_info.log",
+    params:
+        scripts=config["vdj_scripts"],
+        samplesheet=config["samplesheet"],
+    resources:
+        mem_mb="64000",
+    shell:
+        "python {params.scripts}/add_sample_info.py "
+        "{input} "
+        "-samplesheet {params.samplesheet} "
+        "-output {output} "
+        ">2 {log}"
 
 rule align_cell_v_sequences:
     input:
