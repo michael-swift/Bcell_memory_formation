@@ -1,4 +1,4 @@
-samplesheet = samplesheets
+smplesheet = samplesheets
 
 
 include: "vdjc.smk"
@@ -7,7 +7,7 @@ include: "vdjc.smk"
 rule call_cells:
     input:
         VDJ_file=rules.realign_to_polished_germline.output,
-    output:
+   output:
         called_cells="{base}/aggregated/cell_calls/{donor}_called_cells.tsv.gz",
         ambient_rna="{base}/aggregated/cell_calls/{donor}_ambient_vdjs.tsv.gz",
     log:
