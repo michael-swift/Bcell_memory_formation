@@ -56,7 +56,7 @@ rule add_sample_info:
         "{base}/logs/{donor}_add_sample_info.log",
     params:
         scripts=config["vdj_scripts"],
-        samplesheet=config["samplesheet"],
+        samplesheet=config["samplesheets"][0],
     resources:
         mem_mb="64000",
     shell:
@@ -64,7 +64,7 @@ rule add_sample_info:
         "{input} "
         "-samplesheet {params.samplesheet} "
         "-output {output} "
-        ">2 {log}"
+        "> {log}"
 
 rule align_cell_v_sequences:
     input:

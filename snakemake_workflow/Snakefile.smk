@@ -66,6 +66,7 @@ include: "rules/gex.smk"
 include: "rules/get_resources.smk"
 include: "rules/annotate.smk"
 include: "rules/qc.smk"
+include: "rules/cell_calling.smk"
 
 # localrules:merge_vdj
 def samplesheet_lookup(idx, col):
