@@ -77,6 +77,7 @@ rule run_cellbender:
 
 
 rule combine_cb_cr:
+    # I filter cells here which helps reduce memory usage for merging
     input:
         cr=ancient(
             "{base_gex}/per_sample/cellranger_cp/{sample_uid}/outs/raw_feature_bc_matrix.h5"
@@ -93,8 +94,8 @@ rule combine_cb_cr:
         partition="quake,owners",
         time="0-1",
     params:
-        min_genes=250,
-        min_counts=800,
+        min_genes=500,
+        min_counts=1000,
         filter_cells=True,
         samplesheets=config["samplesheets"],
     script:
@@ -133,8 +134,8 @@ rule aggregate_h5ads:
     conda:
         config["workflow_dir"] + "/envs/scanpy.yaml"
     params:
-        min_genes=10,
-        min_counts=50,
+        min_genes=500,
+        min_counts=1000,
         filter_cells=True,
     script:
         config["workflow_dir"] + "/scripts/gex_preprocess/aggregate_h5ads.py"

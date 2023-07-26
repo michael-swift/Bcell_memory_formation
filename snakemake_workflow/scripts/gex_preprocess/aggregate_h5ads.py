@@ -20,6 +20,7 @@ def load_and_filter(filename, min_genes=min_genes, min_counts=min_counts):
     if filter_cells == True:
         sc.pp.filter_cells(adata, min_genes=min_genes)
         sc.pp.filter_cells(adata, min_counts=min_counts)
+        sc.pp.filter_genes(adata, min_cells = 10)
     adata.obs_names_make_unique()
     adata.var_names_make_unique(join="-")
     return adata
