@@ -23,7 +23,7 @@ sample_uids_vdj = samplesheets_vdj.sample_uid.to_list()
 samplesheets = samplesheets_gex
 sample_uids = samplesheets.index.to_list()
 tissues = samplesheets.tissue.to_list()
-print(sample_uids)
+#print(sample_uids)
 
 # make processsed data dir
 for k in base.keys():
@@ -36,11 +36,11 @@ rule all:
         #expand("{base_gex}/annotate/gex_object.h5ad.gz", base_gex = base['gex']),
         #expand("{base}/per_sample/fastqc/{sample_uid_vdj}/", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
         #expand("{base}/per_sample/star_solo_vdj/{sample_uid_vdj}/Aligned.out.bam", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
-        expand(
-            "{base_gex}/outs/{celltypes}.h5ad.gz",
-            base_gex=base["gex"],
-            celltypes=["ASC", "MB", "NB_other", "bcells", "only_igh", "all_cells"],
-        ),
+        #expand(
+        #    "{base_gex}/outs/{celltypes}.h5ad.gz",
+        #    base_gex=base["gex"],
+        #    celltypes=["ASC", "MB", "NB_other", "bcells", "only_igh", "all_cells"],
+        #),
         #expand("{base}/aggregated/vdj/{donor}_combined.tsv.gz", base=base['vdj'], donor=donors),
         #expand("{base}/aggregated/lineage_clustering/final_lineage_ids/{donor}.tsv.gz", base=base['vdj'], donor=donors),
         #expand("{base}/aggregated/vtrees/{which}/{donor}_v_trees.tsv", base = base['vdj'], which = ['cells'], donor = donors),

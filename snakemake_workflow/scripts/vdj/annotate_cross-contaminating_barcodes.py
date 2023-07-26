@@ -10,7 +10,7 @@ plt.style.use('./config/bursa.mplstyle')
 ######################## PATH CONFIG ################################
 
 parser = argparse.ArgumentParser()
-parser.add_argument('input_paths', nargs='+', 
+parser.add_argument('-input_paths', nargs='+', required="True",
                     help="list of files to combine")
 parser.add_argument('-outname', required="True", 
                     help="name for combined sample set")
@@ -21,7 +21,7 @@ parser.add_argument('-locus', default='IGH')
 args = parser.parse_args()
 
 filenames = args.input_paths
-outname = args.name
+outname = args.outname
 outdir = args.outdir
 FIGURE_OUTDIR = args.figure_outdir
 TARGET_LOCUS = args.locus
@@ -168,7 +168,7 @@ total_nc_umis = cdf['max'].sum() + ncdf['n_umis'].values.sum()
 pc = total_c_umis/(total_nc_umis+total_c_umis)
 print("Total UMIs associated with likely droplet of origin:", 
       file=sys.stderr)
-print(total_nc_umi, file=sys.stderr)
+print(total_nc_umis, file=sys.stderr)
 print("Total contaminant:", 
       file=sys.stderr)
 print(total_c_umis, file=sys.stderr)

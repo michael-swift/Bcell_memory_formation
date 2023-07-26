@@ -140,14 +140,19 @@ rule annotate_likely_cross_contaminants:
     log:
         "{base}/logs/remove_cross_contaminating_vdjs_IGH.log",
     resources:
-        mem_meb="65000",
+        mem_mb="128000",
     conda:
-        "../envs/scanpy.py",
+        "../envs/plot_minimal.yaml",
     shell:
-        "python {params.scripts}/annotate_cross-contaminating_barcodes.py "
-        "-input_paths {input} "
-        "-outname all_vdj_cell_calls "
-        "-outdir {wildcards.base} "
-        "-figure_outdir {output.figures} "
-        "locus IGH "
-        "2> {log}"
+        """
+        mkdir -p {wildcards.base}/figures/cross_contamination_stats/
+
+        python {params.scripts}/annotate_cross-contaminating_barcodes.py \
+        -input_paths {input} \
+        -outname all_vdj_cell_calls \
+        -outdir {wildcards.base} \
+        -figure_outdir {output.figures} \
+        -locus IGH \
+        2> {log}
+
+        """

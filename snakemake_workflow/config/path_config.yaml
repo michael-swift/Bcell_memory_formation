@@ -18,7 +18,7 @@ partition: "quake,owners"
 workflow_dir: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow" 
 samplesheets: ["samplesheets/final_samplesheet.tsv"]
 samplesheet_vdj: ["samplesheets/final_samplesheet_vdj.tsv"]
-
+sample_relationships: "samplesheets/sample_relationships.tsv"
 # Software
 #---------------------------
 vdj_scripts: "scripts/vdj"
