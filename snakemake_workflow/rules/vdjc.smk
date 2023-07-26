@@ -141,14 +141,7 @@ rule call_germlines:
     conda:
         "../envs/grmlin.yaml"
     params:
-<<<<<<< HEAD
-        organism=lambda wildcards: samplesheets_vdj[
-                samplesheets_vdj.donor == str(wildcards.donor)]["species"].values[0],
-=======
-        organism=lambda wildcards: samplesheets[
-            samplesheets.donor == str(wildcards.donor)
-        ]["species"].values[0],
->>>>>>> hacked_together_cellranger_outputs
+        organism="human", 
         grmlin=config["grmlin"],
         IGDBDIR=config["IGDBDIR"],
     resources:

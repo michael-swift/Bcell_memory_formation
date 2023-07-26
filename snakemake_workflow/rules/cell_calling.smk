@@ -1,4 +1,4 @@
-samplesheet = samplesheets
+smplesheet = samplesheets
 
 
 include: "vdjc.smk"
@@ -7,7 +7,7 @@ include: "vdjc.smk"
 rule call_cells:
     input:
         VDJ_file=rules.realign_to_polished_germline.output,
-    output:
+   output:
         called_cells="{base}/aggregated/cell_calls/{donor}_called_cells.tsv.gz",
         ambient_rna="{base}/aggregated/cell_calls/{donor}_ambient_vdjs.tsv.gz",
     log:
@@ -47,6 +47,24 @@ rule combine_cells_with_vdj_annotations:
         "-outname {wildcards.donor}_called_cells_vdj_annotated "
         "2> {log}"
 
+rule add_sample_info:
+    input:
+        rules.combine_cells_with_vdj_annotations.output,
+    output:
+        "{base}/aggregated/cell_calls/{donor}_called_cells_vdj_annotated_extended.tsv.gz",
+    log:
+        "{base}/logs/{donor}_add_sample_info.log",
+    params:
+        scripts=config["vdj_scripts"],
+        samplesheet=config["samplesheets"][0],
+    resources:
+        mem_mb="64000",
+    shell:
+        "python {params.scripts}/add_sample_info.py "
+        "{input} "
+        "-samplesheet {params.samplesheet} "
+        "-output {output} "
+        "> {log}"
 
 rule align_cell_v_sequences:
     input:
@@ -101,4 +119,37 @@ rule build_cell_v_trees:
         "-outdir {wildcards.base}/aggregated/vtrees/cells "
         "-scratchdir {wildcards.base}/aggregated/vtrees/cells/{wildcards.donor}_scratch "
         "-samplename {wildcards.donor} "
+        "2> {log}"
+
+def fetch_all_donor_cell_calls(wildcards):
+    files = [
+        "{}/aggregated/cell_calls/"
+        "{}_called_cells_vdj_annotated_extended.tsv.gz".format(
+            wildcards.base, donor
+        )
+        for donor in samplesheets_vdj.donor.unique()
+        ]
+    return files
+
+rule annotate_likely_cross_contaminants:
+    input:
+        fetch_all_donor_cell_calls,
+    output:
+        tsv="{base}/all_vdj_cell_calls_IGH.tsv.gz",
+        figures=directory("{base}/figures/cross_contamination_stats"),
+    params:
+        scripts=config["vdj_scripts"],
+    log:
+        "{base}/logs/remove_cross_contaminating_vdjs_IGH.log"
+    resources:
+        mem_meb="65000",
+    conda:
+        "../envs/scanpy.py"
+    shell:
+        "python {params.scripts}/annotate_cross-contaminating_barcodes.py "
+        "-input_paths {input} "
+        "-outname all_vdj_cell_calls "
+        "-outdir {wildcards.base} "
+        "-figure_outdir {output.figures} "
+        "locus IGH"
         "2> {log}"
