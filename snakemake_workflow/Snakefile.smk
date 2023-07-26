@@ -58,10 +58,8 @@ include: "rules/get_resources.smk"
 include: "rules/annotate.smk"
 include: "rules/qc.smk"
 include: "rules/cell_calling.smk"
-<<<<<<< HEAD
 include: "rules/associate_gex_vdj.smk"
-=======
->>>>>>> 49e88260a07cbf757a5cfb7383dbe72ea0d28ab9
+
 # localrules:merge_vdj
 def samplesheet_lookup(idx, col):
     return samplesheets.loc[idx, col]
