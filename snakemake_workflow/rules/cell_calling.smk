@@ -7,7 +7,7 @@ include: "vdjc.smk"
 rule call_cells:
     input:
         VDJ_file=rules.realign_to_polished_germline.output,
-   output:
+    output:
         called_cells="{base}/aggregated/cell_calls/{donor}_called_cells.tsv.gz",
         ambient_rna="{base}/aggregated/cell_calls/{donor}_ambient_vdjs.tsv.gz",
     log:
@@ -47,6 +47,7 @@ rule combine_cells_with_vdj_annotations:
         "-outname {wildcards.donor}_called_cells_vdj_annotated "
         "2> {log}"
 
+
 rule add_sample_info:
     input:
         rules.combine_cells_with_vdj_annotations.output,
@@ -65,6 +66,7 @@ rule add_sample_info:
         "-samplesheet {params.samplesheet} "
         "-output {output} "
         "> {log}"
+
 
 rule align_cell_v_sequences:
     input:
@@ -121,15 +123,15 @@ rule build_cell_v_trees:
         "-samplename {wildcards.donor} "
         "2> {log}"
 
+
 def fetch_all_donor_cell_calls(wildcards):
     files = [
         "{}/aggregated/cell_calls/"
-        "{}_called_cells_vdj_annotated_extended.tsv.gz".format(
-            wildcards.base, donor
-        )
+        "{}_called_cells_vdj_annotated_extended.tsv.gz".format(wildcards.base, donor)
         for donor in samplesheets_vdj.donor.unique()
-        ]
+    ]
     return files
+
 
 rule annotate_likely_cross_contaminants:
     input:
@@ -140,7 +142,7 @@ rule annotate_likely_cross_contaminants:
     params:
         scripts=config["vdj_scripts"],
     log:
-        "{base}/logs/remove_cross_contaminating_vdjs_IGH.log"
+        "{base}/logs/remove_cross_contaminating_vdjs_IGH.log",
     resources:
         mem_meb="65000",
     conda:

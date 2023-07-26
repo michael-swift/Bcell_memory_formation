@@ -4,19 +4,10 @@ import glob
 from collections import defaultdict
 
 shell.prefix("set +euo pipefail;")
-
 configfile: "config/path_config.yaml"
-
 base = config["base"]
-
 # TODO put in config
-samplesheets = pd.concat(
-    [
-        pd.read_table("{}".format(x), dtype="str", sep="\t", engine="python")
-        for x in config["samplesheets"]
-    ],
-    ignore_index=False,
-)
+samplesheets = pd.concat([pd.read_table("{}".format(x), dtype="str", sep="\t", engine="python") for x in config["samplesheets"]], ignore_index=False)
 # Parse Samplesheet
 samplesheets["expected_cells"] = (
     samplesheets["expected_cells_thousands"].astype(int) * 1000
@@ -45,16 +36,15 @@ rule all:
         #expand("{base_gex}/annotate/gex_object.h5ad.gz", base_gex = base['gex']),
         #expand("{base}/per_sample/fastqc/{sample_uid_vdj}/", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
         #expand("{base}/per_sample/star_solo_vdj/{sample_uid_vdj}/Aligned.out.bam", base = base['gex'], sample_uid_vdj = sample_uids_vdj),
-        # expand(
-        #     "{base_gex}/outs/{celltypes}.h5ad.gz",
-        #     base_gex=base["gex"],
-        #     celltypes=["ASC", "MB", "NB_other", "bcells", "only_igh", "all_cells"],
-        # ),
+        expand(
+            "{base_gex}/outs/{celltypes}.h5ad.gz",
+            base_gex=base["gex"],
+            celltypes=["ASC", "MB", "NB_other", "bcells", "only_igh", "all_cells"],
+        ),
         #expand("{base}/aggregated/vdj/{donor}_combined.tsv.gz", base=base['vdj'], donor=donors),
         #expand("{base}/aggregated/lineage_clustering/final_lineage_ids/{donor}.tsv.gz", base=base['vdj'], donor=donors),
         #expand("{base}/aggregated/vtrees/{which}/{donor}_v_trees.tsv", base = base['vdj'], which = ['cells'], donor = donors),
-        expand("{base}/all_vdj_cell_calls_IGH.tsv.gz", base = base['vdj'])
-
+        #expand("{base}/all_vdj_cell_calls_IGH.tsv.gz", base = base['vdj'])
     params:
         name="all",
         partition="quake",
@@ -67,7 +57,6 @@ include: "rules/get_resources.smk"
 include: "rules/annotate.smk"
 include: "rules/qc.smk"
 include: "rules/cell_calling.smk"
-
 # localrules:merge_vdj
 def samplesheet_lookup(idx, col):
     return samplesheets.loc[idx, col]
