@@ -7,7 +7,7 @@ include: "vdjc.smk"
 rule call_cells:
     input:
         VDJ_file=rules.realign_to_polished_germline.output,
-   output:
+    output:
         called_cells="{base}/aggregated/cell_calls/{donor}_called_cells.tsv.gz",
         ambient_rna="{base}/aggregated/cell_calls/{donor}_ambient_vdjs.tsv.gz",
     log:
@@ -122,18 +122,12 @@ rule build_cell_v_trees:
         "2> {log}"
 
 def fetch_all_donor_cell_calls(wildcards):
-    files = [
-        "{}/aggregated/cell_calls/"
-        "{}_called_cells_vdj_annotated_extended.tsv.gz".format(
-            wildcards.base, donor
-        )
-        for donor in samplesheets_vdj.donor.unique()
-        ]
+    files = ["{}/aggregated/cell_calls/{}_called_cells_vdj_annotated_extended.tsv.gz".format(wildcards.base, donor) for donor in samplesheets_vdj.donor.unique()]
     return files
 
 rule annotate_likely_cross_contaminants:
     input:
-        fetch_all_donor_cell_calls,
+        fetch_all_donor_cell_calls
     output:
         tsv="{base}/all_vdj_cell_calls_IGH.tsv.gz",
         figures=directory("{base}/figures/cross_contamination_stats"),
@@ -144,12 +138,12 @@ rule annotate_likely_cross_contaminants:
     resources:
         mem_meb="65000",
     conda:
-        "../envs/scanpy.py"
+        "../envs/scanpy.py",
     shell:
         "python {params.scripts}/annotate_cross-contaminating_barcodes.py "
         "-input_paths {input} "
         "-outname all_vdj_cell_calls "
         "-outdir {wildcards.base} "
         "-figure_outdir {output.figures} "
-        "locus IGH"
+        "locus IGH "
         "2> {log}"
