@@ -44,7 +44,11 @@ def assign_technical_categories(adata):
     condition = adata.obs["Immune_All_Low_predicted_labels"] == "Plasmablasts"
     # Updating the "majority_voting_doublet" column based on condition
     adata.obs.loc[condition, "majority_voting_doublet"] = False
-
+    # Add contamination score:
+    t_cell_contamination_genes = ['CD3E', 'CD3D', 'CD247']
+    myeloid_contamination_genes = ['ELANE', 'AZU1', 'S100A8', 'MPO']
+    sc.tl.score_genes(adata, gene_list = t_cell_contamination_genes, score_name = 't_cell_score')
+    sc.tl.score_genes(adata, gene_list = myeloid_contamination_genes, score_name = 'myeloid_score')
     ##########################################
     # Rules to Assign Technical Categories
     adata.obs["possible_b_cell"] = (
@@ -59,7 +63,9 @@ def assign_technical_categories(adata):
         adata.obs["possible_b_cell"]
         & (adata.obs["Immune_All_Low_predicted_labels"].str.contains("B cell|Plasma"))
         & (~adata.obs["majority_voting_doublet"])
-           & (adata.obs['Immune_All_Low_conf_score'] > 0.95))
+           & (adata.obs['Immune_All_Low_conf_score'] > 0.95)
+        & (adata.obs.myeloid_score < 0)
+        & (adata.obs.t_cell_score < 0))
     adata.obs["probable_hq_single_not_b_cell"] = (
         (~adata.obs["possible_b_cell"])
         & (~adata.obs["rare_or_bad_q_cell"])

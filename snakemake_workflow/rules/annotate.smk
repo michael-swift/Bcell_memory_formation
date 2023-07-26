@@ -7,7 +7,7 @@ rule scvi_all_cells:
         "{base_gex}/logs/annotate/scvi.obj_all.log",
     params:
         scripts=config["workflow_dir"] + "/scripts/gex_preprocess/",
-        cell_cycle_genes="{}/resources/cell_cycle/cell_cycle_genes.tab".format(
+        cell_cycle_genes="{}/resources/cell_cycle/cell_cycle_genes.tsv".format(
             config["workflow_dir"],
         ),
         subsample="False",
@@ -21,7 +21,7 @@ rule run_celltypist_by_tissue:
     input:
         rules.scvi_all_cells.output,
     output:
-        tissue_obj="{base_gex}/annotate/tissue_objs/{tissue}/celltypist.h5ad.gz",
+        tissue_obj=temp("{base_gex}/annotate/tissue_objs/{tissue}/celltypist.h5ad.gz"),
     resources:
         partition="quake,owners",
     log:
@@ -41,7 +41,7 @@ rule annotate_cell_cycle_b_cell:
     resources:
         partition="quake,owners",
     params:
-        cell_cycle_genes="{}/resources/cell_cycle/cell_cycle_genes.tab".format(
+        cell_cycle_genes="{}/resources/cell_cycle/cell_cycle_genes.tsv".format(
             config["workflow_dir"]
         ),
     log:
@@ -64,8 +64,8 @@ rule aggregate_annotated:
             )
         ),
     output:
-        full_h5ad="{base_gex}/annotate/gex_object.h5ad.gz",
-        adata_obs="{base_gex}/annotate/adata.obs.tab.gz",
+        full_h5ad="{base_gex}/annotate/all_annotated.h5ad.gz",
+        adata_obs="{base_gex}/annotate/all_adata.obs.tsv.gz",
     resources:
         partition="quake,owners",
     log:
@@ -82,7 +82,7 @@ rule remove_nonb:
     output:
         bcells=temp("{base_gex}/annotate/bcells.h5ad.gz"),
     resources:
-        partition="quake,owners",
+        partition="quake,owners,normal",
     log:
         "{base_gex}/logs/annotate/removenonb_preprocess.log",
     params:
@@ -109,23 +109,64 @@ rule scvi_bcells:
     input:
         rules.remove_nonb.output,
     output:
-        model=directory("{base_gex}/annotate/scvi/model/covariates/"),
-        adata="{base_gex}/annotate/scvi/bcells.h5ad.gz",
-    resources:
-        partition="quake,owners",
+        model=directory("{base_gex}/annotate/scvi/model/bcells/"),
+        adata="{base_gex}/annotate/scvi/bcells.h5ad.gz"
     log:
         "{base_gex}/logs/annotate/scvi.obj_preprocess.log",
     params:
         scripts=config["workflow_dir"] + "/scripts/gex_preprocess/",
-        cell_cycle_genes="{}/resources/cell_cycle/cell_cycle_genes.tab".format(
+        cell_cycle_genes="{}/resources/cell_cycle/cell_cycle_genes.tsv".format(
             config["workflow_dir"],
         ),
-        subsample="False",
+        subsample="True",
         layer="counts",
     conda:
         "scvi-2023"
     shell:
         "python {params.scripts}train_scvi.py {input} -output_file {output.adata} -output_model {output.model} -covariate_genes {params.cell_cycle_genes} -subsample {params.subsample} -layer {params.layer}"
+
+rule scvi_bcells_cc:
+    input:
+        rules.remove_nonb.output,
+    output:
+        model=directory("{base_gex}/annotate/scvi/model/cc_covariates/"),
+        adata="{base_gex}/annotate/scvi/bcells_cc.h5ad.gz",
+        latent_rep="{base_gex}/annotate/scvi/cell_cycle_latent_rep.csv"
+    log:
+        "{base_gex}/logs/annotate/scvi.obj_preprocess.log",
+    params:
+        scripts=config["workflow_dir"] + "/scripts/gex_preprocess/",
+        cell_cycle_genes="{}/resources/cell_cycle/cell_cycle_genes.tsv".format(
+            config["workflow_dir"],
+        ),
+        subsample="True",
+        layer="counts",
+    conda:
+        "scvi-2023"
+    shell:
+        "python {params.scripts}train_scvi_cc.py {input} -output_file {output.adata} -output_model {output.model} -covariate_genes {params.cell_cycle_genes} -subsample {params.subsample} -layer {params.layer} -latent_rep {output.latent_rep}"
+
+rule scvi_bcells_ldvae:
+    input:
+        rules.remove_nonb.output,
+    output:
+        model=directory("{base_gex}/annotate/scvi/model/ldvae/"),
+        adata="{base_gex}/annotate/scvi/bcells_ldvae.h5ad.gz",
+        latent_rep="{base_gex}/annotate/scvi/ldvae_latent_rep.csv",
+        loadings="{base_gex}/annotate/scvi/ldvae_loadings.csv"
+    log:
+        "{base_gex}/logs/annotate/scvi.obj_preprocess.log",
+    params:
+        scripts=config["workflow_dir"] + "/scripts/gex_preprocess/",
+        cell_cycle_genes="{}/resources/cell_cycle/cell_cycle_genes.tsv".format(
+            config["workflow_dir"],
+        ),
+        subsample="True",
+        layer="counts",
+    conda:
+        "scvi-2023"
+    shell:
+        "python {params.scripts}train_scvi_ldvae.py {input} -output_file {output.adata} -output_model {output.model} -covariate_genes {params.cell_cycle_genes} -subsample {params.subsample} -layer {params.layer} -latent_rep {output.latent_rep} -loadings {output.loadings}"
 
 
 rule merge_vdj:
@@ -143,7 +184,6 @@ rule merge_vdj:
     run:
         import pandas as pd
         import scanpy as sc
-
         adata = sc.read_h5ad(input.bcell_h5ad)
         adata.obs_names_make_unique()
         vdj_df = pd.read_table(input.vdj_df)
@@ -182,10 +222,31 @@ rule merge_vdj:
         adata.obs_names_make_unique()
         adata.write_h5ad(output.adata)
 
+rule add_latent_reps:
+    input:
+        adata="{base_gex}/annotate/vdjc/bcells.h5ad.gz",
+        ldvae_rep="{base_gex}/annotate/scvi/ldvae_latent_rep.csv",
+        loadings="{base_gex}/annotate/scvi/ldvae_loadings.csv", 
+        cc_rep="{base_gex}/annotate/scvi/cell_cycle_latent_rep.csv"
+    resources:
+        partition="quake,owners",
+    output:
+        adata="{base_gex}/addreps/bcells.h5ad.gz"
+    log:
+        "{base_gex}/logs/annotate/add_reps.log",
+
+    run:
+        import scanpy as sc
+        import pandas as pd
+        adata = sc.read_h5ad(input.adata)
+        adata.obsm["ldvae"]= pd.read_csv(latent_rep, index_col = 0)
+        adata.varm["ldvae_loadings"]= pd.read_csv(loadings, index_col = 0)
+        adata.obsm["cc_rep"]= pd.read_csv(cc_rep, index_col = 0)
+        adata.write_h5ad(output.adata)
 
 rule subset_bcells:
     input:
-        adata="{base_gex}/annotate/vdjc/bcells.h5ad.gz",
+        adata="{base_gex}/addreps/bcells.h5ad.gz"
     output:
         asc="{base_gex}/outs/ASC.h5ad.gz",
         mb="{base_gex}/outs/MB.h5ad.gz",
@@ -196,8 +257,6 @@ rule subset_bcells:
         partition="quake,owners",
     log:
         "{base_gex}/logs/annotate/subset_bcells_preprocess.log",
-    params:
-        scripts=config["workflow_dir"] + "/scripts/gex_preprocess/",
     run:
         import scanpy as sc
 

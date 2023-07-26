@@ -21,13 +21,13 @@ samplesheets = pd.concat(
 samplesheets["expected_cells"] = (
     samplesheets["expected_cells_thousands"].astype(int) * 1000
 )
+
 samplesheets["species"] = "human"
 donors = list(set(samplesheets[samplesheets.species == "human"].donor.to_list()))
-
 samplesheets_gex = samplesheets[samplesheets.lib_type == "gex"]
 samplesheets_gex.set_index("sample_uid", inplace=True)
 samplesheets_vdj = samplesheets[samplesheets.lib_type == "vdj"]
-# set wildcards
+# setup wildcards
 sample_uids_vdj = samplesheets_vdj.sample_uid.to_list()
 samplesheets = samplesheets_gex
 sample_uids = samplesheets.index.to_list()
@@ -59,7 +59,7 @@ rule all:
         name="all",
         partition="quake",
     resources:
-        threads=4,
+        threads=1,
 
 
 include: "rules/gex.smk"
