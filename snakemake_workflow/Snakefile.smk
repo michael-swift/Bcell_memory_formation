@@ -44,8 +44,9 @@ rule all:
         #expand("{base}/aggregated/vdj/{donor}_combined.tsv.gz", base=base['vdj'], donor=donors),
         #expand("{base}/aggregated/lineage_clustering/final_lineage_ids/{donor}.tsv.gz", base=base['vdj'], donor=donors),
         #expand("{base}/aggregated/vtrees/{which}/{donor}_v_trees.tsv", base = base['vdj'], which = ['cells'], donor = donors),
-        expand("{base}/all_vdj_cell_calls_IGH.tsv.gz", base = base['vdj']),
-        expand("{base}/integrated_cell_calls.tsv.gz", base=base['vdj'])
+        #expand("{base}/all_vdj_cell_calls_IGH.tsv.gz", base = base['vdj']),
+        expand("{base}/integrated_cell_calls_ambient_annotated.tsv.gz", base=base['vdj']),
+        expand("{base}/pgen_marginal.tsv.gz", base=base['vdj'])
     params:
         name="all",
         partition="quake",

@@ -19,7 +19,7 @@ parser.add_argument('-output', required="True",
 args = parser.parse_args()
 
 input_paths = args.input
-outdir = args.output
+output = args.output
 
 ######################################################################
 pdf = []
@@ -33,4 +33,4 @@ pdf.columns = ['cdr3_full', 'pgen_nt', 'cdr3_aa_full', 'pgen_aa']
 pdf = pdf.groupby(['cdr3_full', 'pgen_nt', 'cdr3_aa_full', 'pgen_aa']).size()
 pdf = pdf.reset_index()[['cdr3_full', 'pgen_nt', 'cdr3_aa_full', 'pgen_aa']]
 
-x.to_csv(f'{output}', sep='\t', header=False)
+pdf.to_csv(f'{output}', sep='\t', header=False)

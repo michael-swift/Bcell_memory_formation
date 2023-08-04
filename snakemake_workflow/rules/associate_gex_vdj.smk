@@ -26,15 +26,34 @@ rule integrate_gex_and_vdj_data:
         "-info {params.info} "
         "2> {log}"
 
+rule annotate_gex_ambient:
+    input:
+        "{base_vdj}/integrated_cell_calls.tsv.gz",
+    output:
+        "{base_vdj}/integrated_cell_calls_ambient_annotated.tsv.gz",
+    params:
+        scripts=config["vdj_scripts"],
+    log:
+        "{base_vdj}/logs/annotate_ambient.log",
+    resources:
+        mem_mb="128000",
+    conda:
+        "../envs/pacbio.yaml",
+    shell:
+        "python {params.scripts}/annotate_ambient_rna_in_GEX_samples.py "
+        "-input {input} "
+        "-output {output} "
+        "2> {log}"
 
 # the checkpoint that shall trigger re-evaluation of the DAG
 checkpoint prepare_for_olga:
     input:
-        rules.integrate_gex_and_vdj_data.output,
+        "{base_vdj}/integrated_cell_calls.tsv.gz",
     output:
-        groups=directory(expand("{base_vdj}/aggregated/olga/cdr3", base_vdj=base['vdj'])),
+        groups=directory("{base_vdj}/aggregated/olga/cdr3"),
+        complete="{base_vdj}/aggregated/olga/cdr3/cdr3_compile.complete",
     log:
-        expand("{base_vdj}/logs/prepare_for_olga.log", base_vdj = base['vdj']),
+        "{base_vdj}/logs/prepare_for_olga.log",
     conda:
         "../envs/pacbio.yaml"
     params:
@@ -53,13 +72,14 @@ checkpoint prepare_for_olga:
         -outdir {params.base}/aggregated/olga/cdr3 \
         2> {log}
         
+        touch {output.complete}
         """
 
 rule run_olga:
     input:
         "{base_vdj}/aggregated/olga/cdr3/cdr3nt_chunk-{group}.tsv",
     output:
-        "{base_vdj}/aggregated/olga/pgen/{donor}/pgen_marginal-{group}.tsv",
+        "{base_vdj}/aggregated/olga/pgen/pgen_marginal-{group}.tsv",
     log:
         "{base_vdj}/logs/olga/{group}.log",
     conda:
@@ -70,7 +90,6 @@ rule run_olga:
         mem_mb="8000",
         time="8:00:00",
     shell:
-
         "olga-compute_pgen --humanIGH "
         "-i {input} "
         "-o {output} "
@@ -82,18 +101,19 @@ def aggregate_olga_output(wildcards):
         **wildcards
     ).output.groups
     
-    groups = expand(
+    files = expand(
         "{base_vdj}/aggregated/olga/pgen/pgen_marginal-{group}.tsv",
-        base=wildcards.base_vdj,
+        base_vdj=wildcards.base_vdj,
         group=glob_wildcards(
             os.path.join(checkpoint_output, "cdr3nt_chunk-{group}.tsv")
-        ).group,
-    )
-    return groups
+            ).group,
+        )
+    return files
 
 rule concatenate_olga_output:
     input:
-        aggregate_olga_output,
+        files=aggregate_olga_output,
+        checkpoint_complete="{base_vdj}/aggregated/olga/cdr3/cdr3_compile.complete",
     output:
         "{base_vdj}/pgen_marginal.tsv.gz",
     log:
@@ -107,7 +127,7 @@ rule concatenate_olga_output:
         time="12:00:00",
     shell:
         "python {params.scripts}/concatenate_olga_output.py "
-        "-input {input} "
+        "-input {input.files} "
         "-output {output} "
         "2> {log}"
 
