@@ -12,7 +12,7 @@ plt.style.use('analysis/scripts/bursa.mplstyle')
 
 ######################## PATH CONFIG ################################
 
-df_loc = 'data/vdj/integrated_cell_calls_ambient_annotated.gz'
+df_loc = 'data/vdj/integrated_cell_calls_ambient_annotated.tsv.gz'
 FIGURE_OUTDIR = 'analysis/figures/si figures/'
 
 ######################## ############ ################################
@@ -116,9 +116,9 @@ for tissue in ['PB', 'BM', 'SP', 'LN']:
 
     ax_abundances[it].set_xlim([0.5,200])
 
-ax_abundances[3].set_xlabel('Num. of B cells with VDJ')
-ax_expression[3].set_xlabel('IGH UMIs attributable to cell')
-ax_mutations[3].set_xlabel('Divergence from germline variant\n(percent)')
+ax_abundances[3].set_xlabel('Number of sampled clonally related cells\n(Number of B cells with identical VDJ)')
+ax_expression[3].set_xlabel('IGH expression in cell\n(IGH UMIs attributable to cell)')
+ax_mutations[3].set_xlabel('IGHV divergence from germline variant\n(percent)')
 
 fig.legend(loc='upper left', bbox_to_anchor=(1.0,1), frameon=False, handlelength=0.5)
 fig.tight_layout()
