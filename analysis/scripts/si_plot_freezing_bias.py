@@ -87,8 +87,7 @@ celltype_dist['95_CI_lower'] = CI[0]/celltype_dist['n']
 celltype_dist['95_CI_upper'] = CI[1]/celltype_dist['n']
 celltype_dist['fraction'] = celltype_dist['fraction'] + np.maximum(1/celltype_dist['n'], 10**-4)
 
-
-fig, ax = plt.subplots(1,1, figsize=(2.7,1.8), sharex=True)
+fig, ax = plt.subplots(1,1, figsize=(4,2), sharex=True)
 
 donor3 = celltype_dist[celltype_dist.donor=='TBd3']
 
