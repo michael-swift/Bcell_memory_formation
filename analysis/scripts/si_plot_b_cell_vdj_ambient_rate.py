@@ -38,7 +38,7 @@ df['has_vdj'] = df.vdj_sequence.notna()
 s = {"IGHM":"IGHM|D", "IGHD":"IGHM|D"}
 df['switched'] = df.c_call.map(lambda x: s.get(x, 'switched'))
 df['switched'] = df['switched'] == 'switched'
-df['hypermutated'] = df.v_mismatch.map(lambda x: True if x > 2 else False)
+df['hypermutated'] = df.v_mismatch.map(lambda x: True if x > 0 else False)
 # focus on GEX samples
 df = df[df.sample_uid_gex.notna()]
 
@@ -83,6 +83,8 @@ for subset, label in [(bcells_common, 'common-singlets')]:
 
 
     fig = plt.figure(figsize=(6.5,1.8))
+    fig_naive_hm_excess, ax_naive_hm_excess = plt.subplots(figsize=(2.4,2.4))
+
     gs = gridspec.GridSpec(1, 3, figure=fig, width_ratios = [1,1.2,1], wspace=0.4)
 
     ax_p_any = fig.add_subplot(gs[0])
@@ -120,8 +122,18 @@ for subset, label in [(bcells_common, 'common-singlets')]:
     ## Naive ambient estimation
 
     print(vdj_rates.columns)
-
-    for count, marker in [('switched','.')]:#, ('hypermutated', '.')]:# 'hypermutated']:
+    IGHC_label = f'IGHC-based estimate\nof Naive B cell contamination'
+    HM_label = f'Ambient contamination rate necessary\nif all hypermutated VDJs are ambient'
+    for count, marker, axes, color, label in [('switched',
+                                        '.',
+                                        ax_naive,
+                                        bcelltype_colors_alt['Naive B cells'], 
+                                        IGHC_label),
+                                        ('hypermutated',
+                                        '.',
+                                        ax_naive_hm_excess,
+                                        (0,0,0,0.5),
+                                        HM_label)]:
 
         data = bcells[(bcells.subtype == "Naive B cells") & (bcells.has_vdj)].groupby("sample_uid_gex")[count].mean()
         data.name = 'measured'
@@ -136,36 +148,38 @@ for subset, label in [(bcells_common, 'common-singlets')]:
         data = data[data.subtype == 'Naive B cells']
         data['p_ambient_vdj'] = 1. - data['p_real_vdj']
         data['Ambient-based estimate'] = data.p_ambient_vdj + 10**-4
-        data['IGHC-based estimate'] = (data['measured'])/(data[f'baseline {count}']) + 10**-4
+        data[f'Naive-population-based estimate'] = (data['measured'])/(data[f'baseline {count}']) + 10**-4
 
 
-        # ax_naive.set_title('Naive B cell contamination rate')
+        # axes.set_title('Naive B cell contamination rate')
         sns.scatterplot(data,
                         x='Ambient-based estimate', 
-                        y='IGHC-based estimate', 
-                        color=bcelltype_colors_alt['Naive B cells'], 
+                        y=f'Naive-population-based estimate', 
+                        color=color, 
                         legend=False, 
-                        ax=ax_naive, 
+                        ax=axes, 
                         marker=marker,
                         clip_on=False)
-        ax_naive.set_xlabel('Ambient-based estimate\nof Naive B cell contamination')
-        ax_naive.set_ylabel('IGHC-based estimate\nof Naive B cell contamination')
+        axes.set_xlabel('Ambient-based estimate\nof Naive B cell contamination')
+        axes.set_ylabel(label)
 
-        ax_naive.set_xscale('log')
-        ax_naive.set_yscale('log')
-        ax_naive.set
+        axes.set_xscale('log')
+        axes.set_yscale('log')
+        axes.set
         xs = np.logspace(-3.5,-0.5,20,base=10)
         ys_lower=0.2*xs
         ys_upper = 5*xs
-        ax_naive.plot(xs,ys_lower,  '--', color='0.5', lw=0.5)
-        ax_naive.plot(xs,ys_upper, '--', color='0.5', lw=0.5)
-        ax_naive.plot(xs,xs, color='0.5', lw=0.75)
-        ax_naive.set_xlim([10**-4,10**0.5])
-        ax_naive.set_ylim([10**-4,10**0.5])
-        fig.savefig(f'{FIGURE_OUTDIR}/bcell_VDJs_{label}.pdf', bbox_inches='tight')
+        axes.plot(xs,ys_lower,  '--', color='0.5', lw=0.5)
+        axes.plot(xs,ys_upper, '--', color='0.5', lw=0.5)
+        axes.plot(xs,xs, color='0.5', lw=0.75)
+        axes.set_xlim([10**-4,10**0.5])
+        axes.set_ylim([10**-4,10**0.5])
+        fig.savefig(f'{FIGURE_OUTDIR}/bcell_VDJs_common-singlets.pdf', bbox_inches='tight')
 
-
-
+    ax_naive_hm_excess.set_xlabel('Estimated Naive B cell ambient\nVDJ contamination rate')
+    fig_naive_hm_excess.tight_layout()
+    fig_naive_hm_excess.savefig(f'{FIGURE_OUTDIR}/naive_hm_vs_ambient_rate.pdf', bbox_inches='tight')
+    print(vdj_rates.columns)
     vdj_rates.to_csv(f'data/vdj/ambient_rate_and_prob_own_vdj_by_celltype_{label}.tsv',
                      index=True,
                      sep='\t')
