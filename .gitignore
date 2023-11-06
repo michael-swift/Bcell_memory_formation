@@ -22,3 +22,4 @@ Analysis/notebooks/*
 .ipynb_checkpoint*
 *arx*
 *.tab
+*figures*

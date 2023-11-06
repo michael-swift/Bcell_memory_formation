@@ -1,0 +1,27 @@
+axes.titlesize : 7
+axes.labelsize : 7
+lines.linewidth : 1
+lines.markersize : 5
+font.size: 7
+legend.fontsize: 6
+xtick.labelsize: 6
+ytick.labelsize: 6
+legend.title_fontsize: 7
+font.family: sans-serif
+pdf.fonttype: 42
+ps.fonttype: 42
+figure.dpi: 150
+figure.facecolor:  (1.0, 1.0, 1.0, 0.)
+axes.facecolor:    (1.0, 1.0, 1.0, 0.)
+axes.edgecolor : black
+savefig.facecolor: (1.0, 1.0, 1.0, 0.)
+axes.linewidth: 0.5
+xtick.minor.width: 0.3
+ytick.minor.width: 0.3
+xtick.major.width: 0.5
+ytick.major.width: 0.5
+axes.labelcolor : black  # Axes label color
+xtick.color : black      # X tick color
+ytick.color : black      # Y tick color
+xtick.labelcolor : black # X tick label color
+ytick.labelcolor : black # Y tick label color
