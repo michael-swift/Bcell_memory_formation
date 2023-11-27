@@ -61,7 +61,10 @@ bcelltype_colors_alt = {
                     'ASC-2':'#4598C4',
                     'ASC-3':'#1B699D',
                     'ASC-4':'#7071A3',
-                    'ASCs': '#1f78b4'}
+                    'ASCs': '#1f78b4',
+                    'B cells': "#e31a1c",
+                    'Pro-B cells':'#FFFFFF',
+                    'Cycling B cells':'#FFFFFF'}
 #### helper functions #####
 
 ### IGH colors
