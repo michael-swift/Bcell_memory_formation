@@ -281,7 +281,6 @@ rule subset_bcells:
         only_igh.write_h5ad(output.only_igh, compression="gzip")
         adata.write_h5ad(output.bcells, compression="gzip")
 
-
 rule cp_all_cells:
     input:
         rules.aggregate_annotated.output.full_h5ad,
