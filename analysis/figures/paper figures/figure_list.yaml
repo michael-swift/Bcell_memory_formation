@@ -1,0 +1,87 @@
+Figure1/main_figure1_study_overview_simplified_transparent.pdf:
+ - schematic : schematic
+ - Figure1/overview_figure_raw.pdf : study_overview.ipynb
+ - Figure1/overview_figure_raw.pdf : study_overview.ipynb
+
+Figure2/main_figure2_lineage_tissue_distribution.pdf:
+  - Figure2/hexplot.pdf: lineage_distribution_among_tissues.ipynb
+  - Figure2/hexplot_permuted.pdf: lineage_distribution_among_tissues.ipynb
+  - Figure2/private_fraction_donors1to6.pdf : lineage_distribution_among_tissues.ipynb
+  - Figure2/collapse_all_donors.pdf : probability_of_lineage_sharing.ipynb
+
+Figure3/main_figure3_within_lineage_tissue_distribution_vertical.pdf: 
+  - Figure3/TBd6_tree4.pdf : plot_trees.ipynb
+  - Figure3/TBd6_tree77.pdf : plot_trees.ipynb
+  - Figure3/TBd6_tree86.pdf : plot_trees.ipynb
+  - Figure3/tissue_hypermutation.pdf: within_lineage_distributions.ipynb
+  - Figure3/tissue_distributions_within_lineage.pdf: within_lineage_distributions.ipynb
+  - Figure3/conditional_memB_hypermutation.pdf: within_lineage_distributions.ipynb
+
+Figure4/main_figure4_celltype_distributions.pdf:
+  - Figure4/common_celltype_hypermutation_distribution.pdf: effective_exit_rates.ipynb
+  - Figure4/celltype_distribution_within_lineage.pdf: within_lineage_distributions.ipynb
+  - schematic: schematic
+  - Figure4/constant_exit_rate_repertoire_wide.pdf: effective_exit_rates.ipynb
+  - Figure4/stacked_density_celltype_data_vs_constant_rate.pdf: effective_exit_rates.ipynb
+  - Figure4/v_mismatch_diff_chance_ASCs.pdf: invitro_differentiation.ipynb
+
+Figure5/main_figure5_celltype_composition.pdf:
+  - Figure5/lineage_compostion_celltype_any_cells.pdf: effective_exit_rates.ipynb
+  - Figure5/lineage_compostion_celltype_total_cells.pdf: effective_exit_rates.ipynb
+  - Figure5/clone_size_distribution_by_celltype.pdf: multitissue_clone_subtype_excess.ipynb
+  - Figure5/multitissue_and_multiLN_celltypes.pdf: multitissue_clone_subtype_excess.ipynb
+
+Figure6/main_figure6_vdj_sharing.pdf:
+  - Figure6/VDJsharing_EPS_1_downsample_3000_simplified_PB.pdf: vdj_tissue_sharing.ipynb
+  - Figure6/unscaled_VDJsharing_EPS_1_downsample_3000_simplified_PB.pdf: vdj_tissue_sharing.ipynb
+  - Figure6/VDJsharing_LNsecond_EPS_1_downsample_3000.pdf: vdj_subanatomical_sharing.ipynb
+
+EDFigure1/ed_figure1_celltype_counts.pdf:
+  - EDFigure1/ed_figure1_celltype_counts.pdf: schematic_overview.ipynb
+
+EDFigure2/ed_figure2_cycling.pdf: #check if want to edit notebook to send file to correct path
+  - EDFigure2/ed_figure2_cycling.pdf: cycling.ipynb
+
+EDFigure3/ed_figure3_lineage_distribution.pdf:
+  - EDFigure3/lineage_size_distribution_downsampled.pdf : probability_of_lineage_sharing.ipynb
+  - EDFigure3/EDFigure_tissue_distribution_of_lineages.pdf: lineage_distribution_among_tissues.ipynb
+  - EDFigure3/collapse_donor1.pdf: probability_of_lineage_sharing.ipynb
+  - EDFigure3/collapse_all_donors2to6.pdf: probability_of_lineage_sharing.ipynb
+  - EDFigure3/collapse_parameter_downsample_to_5000.pdf: probability_of_lineage_sharing.ipynb
+
+EDFigure4: ed_figure4_asc_subtypes.pdf:
+ - a: : vdj_subanatomical_sharing.ipynb
+ - b?
+ - c?
+ - d?
+ - figures/asc_overview/cycling_fraction_per_tissue.pdf:
+EDFigure5: ed_figure5_asc_subtypes.pdf:
+ - a?
+ - b?
+ - c?
+ - d?
+ - e?
+
+EDFigure6/ed_figure6_within_lineage_hm_level_distributions.pdf:
+  - EDFigure6/celltype_hm_level_distributions_within_lineage.pdf: within_lineage_distributions.ipynb
+  - EDFigure6/isotype_hm_level_distributions_within_lineage.pdf: within_lineage_distributions.ipynb
+
+  EDFigure7/ed_figure7_within_lineage_hm_diff_distributions.pdf:
+  - EDFigure7/celltype_hm_diff_distributions_within_lineage.pdf: within_lineage_distributions.ipynb
+  - EDFigure7/isotype_hm_diff_distributions_within_lineage.pdf: within_lineage_distributions.ipynb
+
+EDFigure8: ed_figure8_celltype_composition_naive_lineages.pdf
+ - EDFigure8/naive_lineage_hypermutation.pdf: effective_exit_rates.ipynb
+ - EDFigure8/naive_lineage_composition.pdf: effective_exit_rates.ipynb
+
+EDFigure9: EDFigure9/ed_figure9_donor_sharing.pdf:
+ - EDFigure9/ED_donor_sharing.pdf
+
+EDFigure10: EDFigure10/ed_figure10_vdj_sharing.pdf:
+ - EDFigure10/clonal_expansion_by_donor_and_tissue.pdf: vdj_abundance_distribution.ipynb
+ - EDFigure10/VDJsharing_EPS_1_downsample_3000_simplified_BM_SP_LN.pdf: vdj_tissue_sharing.ipynb
+ - EDFigure10/unscaled_VDJsharing_EPS_1_downsample_3000_simplified_BM_SP_LN.pdf: vdj_tissue_sharing.ipynb
+ - EDFigure10/VDJsharing_LNascertainment_EPS_1_downsample_3000.pdf: vdj_subanatomical_sharing.ipynb
+
+EDFigure11: EDFigure11/ed_figure11_memB_shared.pdf:
+ - a, b, c
