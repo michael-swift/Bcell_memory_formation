@@ -36,7 +36,7 @@ Figure6/main_figure6_vdj_sharing.pdf:
   - Figure6/VDJsharing_LNsecond_EPS_1_downsample_3000.pdf: vdj_subanatomical_sharing.ipynb
 
 EDFigure1/ed_figure1_celltype_counts.pdf:
-  - EDFigure1/ed_figure1_celltype_counts.pdf: schematic_overview.ipynb # regenerated, needs font change
+  - EDFigure1/ed_figure1_celltype_counts.pdf: schematic_overview.ipynb
 
 EDFigure2/ed_figure2_cycling.pdf:
   - EDFigure2/ed_figure2_cycling.pdf: cycling.ipynb
