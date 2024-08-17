@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../../shared_data"
+		},
+		{
+			"path": "../../../../../kerna/repos/lamindb"
+		}
+	],
+	"settings": {}
+}
