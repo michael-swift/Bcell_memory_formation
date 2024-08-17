@@ -49,11 +49,11 @@ EDFigure3/ed_figure3_lineage_distribution.pdf:
   - EDFigure3/collapse_parameter_downsample_to_5000.pdf: probability_of_lineage_sharing.ipynb
 
 EDFigure4/ed_figure4_ASC_characterization.pdf:
-  - EDFigure4/umapcelltypist_ASC.pdf: ASCs.ipynb
-  - EDFigure4/cycling_fraction_per_tissue.pdf: ASCs.ipynb
-  - EDFigure4/dotplot_ascs.pdf: ASCs.ipynb
-  - EDFigure4/ASC_subtype_abundances_tissue.pdf: ASCs.ipynb
-  - EDFigure4/ecdf_ASC.pdf: ASCs.ipynb
+  - EDFigure4/umapcelltypist_ASC.pdf: ASC_subtype_characterization.ipynb
+  - EDFigure4/cycling_fraction_per_tissue.pdf: ASC_subtype_characterization.ipynb
+  - EDFigure4/dotplot_ascs.pdf: ASC_subtype_characterization.ipynb
+  - EDFigure4/ASC_subtype_abundances_tissue.pdf: ASC_subtype_characterization.ipynb
+  - EDFigure4/ecdf_ASC.pdf: ASC_subtype_characterization.ipynb
   - EDFigure4/stackedbar_ASC_c_call.pdf: ASC_subtype_ighc_usage.ipynb
 
 EDFigure5/ed_figure5_CR_characterization.pdf:
