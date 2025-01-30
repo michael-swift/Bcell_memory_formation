@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it as below."
+authors:
+  - family-names: Cvijović
+    given-names: Ivana
+    affiliation: "Department of Applied Physics, Stanford University"
+  - family-names: Swift
+    given-names: Michael
+    affiliation: "Department of Chemical and Systems Biology, Stanford University"
+  - family-names: Quake
+    given-names: Stephen R.
+    affiliation: "Department of Applied Physics, Stanford University"
+title: "Long-term B cell memory emerges at uniform relative rates in the human immune response"
+version: 1.0.0
+date-released: 2024-01-23
+url: "https://github.com/michael-swift/Bcell_memory_formation"
+repository-code: "https://github.com/michael-swift/Bcell_memory_formation"
+preferred-citation:
+  type: article
+  authors:
+    - family-names: Cvijović
+      given-names: Ivana
+    - family-names: Swift
+      given-names: Michael
+    - family-names: Quake
+      given-names: Stephen R.
+  title: "Long-term B cell memory emerges at uniform relative rates in the human immune response"
+  year: 2024
+  journal: "bioRxiv"
+  doi: "10.1101/2023.11.27.568934"
+  url: "https://www.biorxiv.org/content/10.1101/2023.11.27.568934v2" 

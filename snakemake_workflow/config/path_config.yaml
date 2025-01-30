@@ -5,10 +5,8 @@ base:
   gex: "/oak/stanford/groups/quake/shared/swiftShare/tabula_bursa_pipeline_all"
   vdj: "/oak/stanford/groups/quake/shared/swiftShare/full_tb_vdj_pipeline"
 
-# specificed in multi_configs
-gex_fastq_dirs: ["/oak/stanford/groups/quake/shared/swiftShare/tb_gex_fastqs"]
-#vdj_fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/ilm7_vdj/"
-# vdj_fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/tb_vdj_fastqs_TBd1_reseq/fastq_cellranger/AAAYVNGHV/"
+# specified in multi_configs
+gex_fastq_dirs: ["/oak/stanford/groups/quake/shared/swiftShare/all_tb_gex_fastqs"]
 vdj_fastq_dir: "/oak/stanford/groups/quake/shared/swiftShare/all_tb_vdj_fastqs"
 
 # human or mouse
@@ -19,6 +17,7 @@ workflow_dir: "/home/groups/quake/mswift/tabula-bursa/snakemake_workflow"
 samplesheets: ["samplesheets/final_samplesheet.tsv"]
 samplesheet_vdj: ["samplesheets/final_samplesheet_vdj.tsv"]
 sample_relationships: "samplesheets/sample_relationships.tsv"
+
 # Software
 #---------------------------
 vdj_scripts: "scripts/vdj"
@@ -50,9 +49,6 @@ ighc_db:
 IGDBDIR: /oak/stanford/groups/quake/shared/swiftShare/igblast
 scripts: 
 path_to_grmlin:
-# params:
-decontX_mode: filtered
-
 # sequencing read length e.g. 100 for 2x100 paired-end sequencing
 # (used during STAR genome generation)
 read_length: 90
