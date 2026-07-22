@@ -16,6 +16,7 @@ Raw sequencing data is available at NCBI under accession number PRJNA1203354.
 
 ## Publication
 Preprint available on bioRxiv: [https://www.biorxiv.org/content/10.1101/2023.11.27.568934v2](https://www.biorxiv.org/content/10.1101/2023.11.27.568934v2)
+Paper available in PNAS: [https://www.pnas.org/doi/10.1073/pnas.2406474122](https://www.pnas.org/doi/10.1073/pnas.2406474122)
 
 ## Disclaimer
 This software is provided as-is for research reproducibility purposes. While we aim to be helpful, we make no guarantees about providing ongoing support or maintenance for the code in this repository.
